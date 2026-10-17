@@ -90,7 +90,13 @@ struct BankPickerView: View {
                 Text("No banks loaded yet. Pull to retry.").foregroundStyle(.secondary)
             }
             ForEach(model.banks, id: \.name) { bank in
-                Button(bank.name) { start(bank) }
+                Button { start(bank) } label: {
+                    HStack {
+                        Text(bank.name)
+                        if bank.beta == true { Text("beta").font(.caption).foregroundStyle(.secondary) }
+                    }
+                }
+                .tint(.primary)
             }
         }
         .navigationTitle("Choose bank")

@@ -121,7 +121,7 @@ final class AppModel {
         isBusy = true
         defer { isBusy = false }
         do {
-            banks = try await client().aspsps(country: "SE").filter { $0.beta != true }.sorted { $0.name < $1.name }
+            banks = try await client().aspsps(country: "SE").sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         } catch {
             errorMessage = describe(error)
         }
