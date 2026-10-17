@@ -105,6 +105,22 @@ import Foundation
         #expect(transport.calls[2].request.url?.query?.contains("continuation_key=k2") == true)
     }
 
+    @Test func sessionLookupReturnsAccountUIDs() async throws {
+        let transport = StubTransport([(200, #"{"status":"AUTHORIZED","accounts":["acc-uid-1","acc-uid-2"],"accounts_data":[{"uid":"acc-uid-1","identification_hash":"a"}],"aspsp":{"name":"Swedbank","country":"SE"},"access":{"valid_until":"2027-04-15T12:00:00Z"}}"#)])
+        let uids = try await client(transport).sessionAccountUIDs("sess-1")
+        #expect(transport.calls[0].request.url?.path == "/sessions/sess-1")
+        #expect(uids == ["acc-uid-1", "acc-uid-2"])
+    }
+
+    @Test func accountDetailsBecomeABankAccount() async throws {
+        let transport = StubTransport([(200, #"{"account_id":{"iban":"SE45 5000 0000 0583 9825 7466"},"all_account_ids":[{"identification":"8327-9,123 456 789-0","scheme_name":"BBAN"}],"name":"CARL","product":"Privatkonto","currency":"SEK","uid":"acc-uid-1"}"#)])
+        let account = try await client(transport).accountDetails(uid: "acc-uid-1")
+        #expect(transport.calls[0].request.url?.path == "/accounts/acc-uid-1/details")
+        #expect(account.product == "Privatkonto")
+        #expect(account.maskedNumber == "•••• 7466")
+        #expect(account.ownAccountIDs.contains("SE4550000000058398257466"))
+    }
+
     @Test func deleteSessionCallsTheDocumentedEndpoint() async throws {
         let transport = StubTransport([(200, #"{"message":"OK"}"#)])
         try await client(transport).deleteSession("sess-1")

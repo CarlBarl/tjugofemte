@@ -44,13 +44,28 @@ public struct AuthStart: Decodable, Equatable, Sendable {
     enum CodingKeys: String, CodingKey { case url, authorizationID = "authorization_id" }
 }
 
-public struct BankAccount: Equatable, Sendable {
+public struct BankAccount: Equatable, Sendable, Codable {
     public let uid: String
     public let name: String?
     public let product: String?
     public let currency: String?
     /// Every identifier the bank gave for this account, normalized, so transfers to it can be recognized.
     public let ownAccountIDs: Set<String>
+
+    public init(uid: String, name: String?, product: String?, currency: String?, ownAccountIDs: Set<String>) {
+        self.uid = uid
+        self.name = name
+        self.product = product
+        self.currency = currency
+        self.ownAccountIDs = ownAccountIDs
+    }
+
+    /// Last four digits of the IBAN (or any identifier), enough to tell two "Privatkonto" apart.
+    public var maskedNumber: String {
+        let preferred = ownAccountIDs.sorted().first { $0.hasPrefix("SE") && $0.count == 24 } ?? ownAccountIDs.sorted().first
+        guard let id = preferred, id.count >= 4 else { return "" }
+        return "•••• " + id.suffix(4)
+    }
 }
 
 public struct BankSession: Equatable, Sendable {
@@ -147,13 +162,19 @@ enum Wire {
         struct Access: Decodable { let validUntil: String; enum CodingKeys: String, CodingKey { case validUntil = "valid_until" } }
         struct Account: Decodable {
             struct Other: Decodable { let identification: String }
-            let uid: String
+            let uid: String?
             let name: String?
             let product: String?
             let currency: String?
             let accountID: AccountID?
             let allAccountIDs: [Other]?
             enum CodingKeys: String, CodingKey { case uid, name, product, currency, accountID = "account_id", allAccountIDs = "all_account_ids" }
+
+            func bankAccount(uid fallback: String) -> BankAccount {
+                var ids = Set((allAccountIDs ?? []).map { normalizeAccountID($0.identification) })
+                if let primary = accountID?.normalized { ids.insert(primary) }
+                return BankAccount(uid: uid ?? fallback, name: name, product: product, currency: currency, ownAccountIDs: ids)
+            }
         }
         let sessionID: String
         let access: Access
@@ -163,11 +184,7 @@ enum Wire {
 
         func session() throws -> BankSession {
             guard let until = ISO8601DateFormatter().date(from: access.validUntil) else { throw ClientError.decoding("valid_until \(access.validUntil)") }
-            let accounts = accounts.map { a in
-                var ids = Set((a.allAccountIDs ?? []).map { normalizeAccountID($0.identification) })
-                if let primary = a.accountID?.normalized { ids.insert(primary) }
-                return BankAccount(uid: a.uid, name: a.name, product: a.product, currency: a.currency, ownAccountIDs: ids)
-            }
+            let accounts = accounts.map { $0.bankAccount(uid: "") }
             return BankSession(sessionID: sessionID, bankName: aspsp.name, validUntil: until, accounts: accounts)
         }
     }

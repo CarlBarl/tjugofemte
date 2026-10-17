@@ -45,6 +45,13 @@ struct SettingsView: View {
                 if let until = model.settings.consentValidUntil {
                     LabeledContent("Access valid until", value: until.formatted(date: .abbreviated, time: .omitted))
                 }
+                if model.settings.authorizedAccounts.count > 1 {
+                    Picker("Account", selection: Binding(get: { model.settings.selectedAccountUID ?? "" }, set: { uid in Task { await model.switchAccount(to: uid) } })) {
+                        ForEach(model.settings.authorizedAccounts) { account in
+                            Text("\(account.title) \(account.subtitle)").tag(account.uid)
+                        }
+                    }
+                }
                 NavigationLink("Reconnect or change bank") { BankPickerView() }
                 Button("Disconnect bank", role: .destructive) { Task { await model.disconnectBank() } }
             } else {

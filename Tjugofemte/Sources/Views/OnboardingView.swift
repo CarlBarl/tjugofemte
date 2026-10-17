@@ -1,159 +1,230 @@
 import SwiftUI
 import EnableBankingKit
 
+/// Five screens, one action each. Step 2 mirrors the Enable Banking registration form field by field,
+/// in the form's own order, so the user never has to scroll back and forth between app and browser.
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
-    @State private var applicationID = ""
-    @State private var copied: String?
+    @State private var step = 0
+
+    private let stepCount = 5
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ProgressView(value: Double(step + 1), total: Double(stepCount))
+                .padding(.horizontal)
+                .padding(.top, 4)
+            TabView(selection: $step) {
+                KeyStep().tag(0)
+                RegisterStep().tag(1)
+                ApplicationIDStep().tag(2)
+                LinkAccountsStep().tag(3)
+                ConnectStep().tag(4)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            HStack {
+                Button("Back") { withAnimation { step -= 1 } }.disabled(step == 0)
+                Spacer()
+                Text("Step \(step + 1) of \(stepCount)").font(.footnote).foregroundStyle(.secondary)
+                Spacer()
+                Button("Next") { withAnimation { step += 1 } }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(step == stepCount - 1 || !canAdvance)
+            }
+            .padding()
+            .background(.bar)
+        }
+        .navigationTitle("Connect your bank")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear { step = firstOpenStep }
+    }
+
+    private var canAdvance: Bool {
+        switch step {
+        case 0: model.hasKey
+        case 2: model.applicationID != nil
+        default: true
+        }
+    }
+
+    private var firstOpenStep: Int {
+        if !model.hasKey { return 0 }
+        if model.applicationID == nil { return 1 }
+        if model.sessionID == nil { return 3 }
+        return 4
+    }
+}
+
+private struct StepIntro: View {
+    let title: LocalizedStringKey
+    let text: LocalizedStringKey
+    var body: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(.title2.bold())
+                Text(text).foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
+        }
+    }
+}
+
+/// A form field as the control panel shows it, with the value to paste and a copy button.
+private struct CopyRow: View {
+    @Environment(AppModel.self) private var model
+    let label: LocalizedStringKey
+    let value: String
+    var monospaced = false
+    @State private var copied = false
+
+    var body: some View {
+        Button {
+            model.copyLocally(value)
+            copied = true
+        } label: {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label).font(.subheadline).foregroundStyle(.secondary)
+                    Text(value).font(monospaced ? .system(.footnote, design: .monospaced) : .body).lineLimit(2).foregroundStyle(.primary)
+                }
+                Spacer()
+                Image(systemName: copied ? "checkmark.circle.fill" : "doc.on.doc")
+                    .foregroundStyle(copied ? Color.green : Color.accentColor)
+            }
+        }
+        .tint(.primary)
+    }
+}
+
+private struct InfoRow: View {
+    let label: LocalizedStringKey
+    let value: LocalizedStringKey
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label).font(.subheadline).foregroundStyle(.secondary)
+            Text(value)
+        }
+    }
+}
+
+private struct KeyStep: View {
+    @Environment(AppModel.self) private var model
 
     var body: some View {
         List {
+            StepIntro(title: "Your key", text: "Tjugofemte never sees your bank data. Your phone creates a key, you register it at Enable Banking yourself, and the phone talks to the bank directly. About ten minutes, once.")
             Section {
-                Text("Tjugofemte never sees your bank data. You create your own free connection at Enable Banking, and this phone talks to the bank directly. The steps below take about ten minutes.")
-            }
-
-            Section("1. Create your key") {
                 if model.hasKey, let pem = model.publicKeyPEM() {
-                    Text(pem).font(.system(.caption2, design: .monospaced)).lineLimit(6).textSelection(.enabled)
-                    copyButton("Copy public key", pem)
-                    Text("The private half was created inside this phone and cannot be exported.").font(.footnote).foregroundStyle(.secondary)
+                    Label("Key created inside this phone", systemImage: "checkmark.seal.fill").foregroundStyle(.green)
+                    Text(pem).font(.system(.caption2, design: .monospaced)).lineLimit(4).foregroundStyle(.secondary)
+                    ShareLink(item: pem) { Label("Share public key to a computer", systemImage: "square.and.arrow.up") }
                 } else {
                     Button {
                         Task { await model.generateKey() }
                     } label: {
-                        if model.isBusy { ProgressView() } else { Label("Generate key", systemImage: "key") }
+                        HStack {
+                            Label("Create key", systemImage: "key")
+                            if model.isBusy { Spacer(); ProgressView() }
+                        }
                     }
                     .disabled(model.isBusy)
                 }
+            } footer: {
+                Text("The private half never leaves the phone and cannot be exported. The public half is what you hand to Enable Banking in the next step. Sharing it is safe.")
             }
-
-            Section("2. Register an application at Enable Banking") {
-                Link(destination: Links.controlPanel) { Label("Open the Enable Banking control panel", systemImage: "safari") }
-                step("Sign in with your email, then add a new application in the Production environment, not Sandbox.")
-                step("Name it anything, for example Tjugofemte.")
-                step("Redirect URL: paste the address below. It is a page in this app's open source repository that only hands the login back to the app.")
-                copyButton("Copy redirect URL", AuthCoordinator.redirectURL.absoluteString)
-                step("Choose to provide your own public key and paste the key from step 1.")
-                step("Privacy policy and terms URLs: paste these two.")
-                copyButton("Copy privacy URL", Links.privacy.absoluteString)
-                copyButton("Copy terms URL", Links.terms.absoluteString)
-            }
-
-            Section("3. Paste the Application ID") {
-                if let id = model.applicationID {
-                    Text(id).font(.system(.footnote, design: .monospaced))
-                    Button("Change", role: .destructive) { model.saveApplicationID(""); applicationID = "" }.disabled(true)
-                } else {
-                    TextField("Application ID", text: $applicationID).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    Button("Save") { model.saveApplicationID(applicationID) }.disabled(applicationID.trimmingCharacters(in: .whitespaces).isEmpty)
-                }
-            }
-
-            Section("4. Activate by linking your accounts") {
-                step("In the control panel, open your application and choose Activate by linking accounts.")
-                step("Link every account you want to see here. Accounts you skip stay invisible to the app.")
-                step("The application will show as Restricted and Active. That is the free personal mode.")
-            }
-
-            Section("5. Connect your bank") {
-                NavigationLink { BankPickerView() } label: { Label("Choose bank", systemImage: "building.columns") }
-                    .disabled(model.stage == .needsKey || model.stage == .needsApplicationID)
-            }
-        }
-        .navigationTitle("Connect your bank")
-        .onAppear { applicationID = model.applicationID ?? "" }
-    }
-
-    private func step(_ text: LocalizedStringKey) -> some View {
-        Label { Text(text) } icon: { Image(systemName: "circle.fill").font(.system(size: 6)).foregroundStyle(.secondary) }
-    }
-
-    private func copyButton(_ title: LocalizedStringKey, _ value: String) -> some View {
-        Button {
-            model.copyLocally(value)
-            copied = value
-        } label: {
-            Label(copied == value ? "Copied" : title, systemImage: copied == value ? "checkmark" : "doc.on.doc")
         }
     }
 }
 
-struct BankPickerView: View {
-    @Environment(AppModel.self) private var model
-    @Environment(\.dismiss) private var dismiss
-    @State private var askingSSN: Bank?
-    @State private var ssn = ""
-    @State private var query = ""
-
-    private var shownBanks: [Bank] {
-        let q = query.trimmingCharacters(in: .whitespaces)
-        return q.isEmpty ? model.banks : model.banks.filter { $0.name.localizedCaseInsensitiveContains(q) }
-    }
-
-    var body: some View {
-        List {
-            if model.banks.isEmpty && !model.isBusy {
-                Text("No banks loaded yet. Pull to retry.").foregroundStyle(.secondary)
-            }
-            ForEach(shownBanks, id: \.name) { bank in
-                Button { start(bank) } label: {
-                    HStack {
-                        Text(bank.name)
-                        if bank.beta == true { Text("beta").font(.caption).foregroundStyle(.secondary) }
-                    }
-                }
-                .tint(.primary)
-            }
-        }
-        .navigationTitle("Choose bank")
-        .searchable(text: $query, prompt: "Search bank")
-        .overlay { if model.isBusy { ProgressView() } }
-        .task { if model.banks.isEmpty { await model.loadBanks() } }
-        .refreshable { await model.loadBanks() }
-        .navigationDestination(isPresented: Binding(get: { !model.pendingAccounts.isEmpty }, set: { _ in })) { AccountPickerView() }
-        .onChange(of: model.stage) { _, stage in if stage == .ready { dismiss() } }
-        .alert("Personal identity number", isPresented: Binding(get: { askingSSN != nil }, set: { if !$0 { askingSSN = nil } })) {
-            TextField("YYYYMMDDXXXX", text: $ssn).keyboardType(.numberPad)
-            Button("Continue") {
-                guard let bank = askingSSN else { return }
-                Task { await model.connect(bank: bank, psuID: ssn) }
-                askingSSN = nil
-            }
-            Button("Cancel", role: .cancel) { askingSSN = nil }
-        } message: {
-            Text("This bank needs it to start BankID. It is sent once and never stored.")
-        }
-    }
-
-    private func start(_ bank: Bank) {
-        if model.requiredCredentials(for: bank).contains(where: { ["ssn", "personnummer", "psu_id", "userid"].contains($0.lowercased()) }) {
-            askingSSN = bank
-        } else {
-            Task { await model.connect(bank: bank, psuID: nil) }
-        }
-    }
-}
-
-struct AccountPickerView: View {
+private struct RegisterStep: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         List {
+            StepIntro(title: "Register the app at Enable Banking", text: "Open the control panel, sign in with your email, and fill the form below in this order. Every value is one tap to copy.")
             Section {
-                ForEach(model.pendingAccounts, id: \.uid) { account in
-                    Button {
-                        Task { await model.chooseAccount(account.uid) }
-                    } label: {
-                        VStack(alignment: .leading) {
-                            Text(account.name ?? account.product ?? account.uid)
-                            if let product = account.product, product != account.name { Text(product).font(.caption).foregroundStyle(.secondary) }
-                        }
+                Link(destination: Links.controlPanel) { Label("Open the Enable Banking control panel", systemImage: "safari") }
+                Text("If you prefer a computer: share the public key to it from the previous step, do this step there, and come back here for step 3.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+            Section("The form, top to bottom") {
+                InfoRow(label: "1. Environment", value: "Production")
+                InfoRow(label: "2. Key", value: "Choose “Generate outside the browser and import public certificate”")
+                CopyRow(label: "3. Application name", value: "Tjugofemte")
+                CopyRow(label: "Description", value: String(localized: "Private budgeting app"))
+                InfoRow(label: "Data protection email", value: "Your own email address")
+                CopyRow(label: "Privacy policy URL", value: Links.privacy.absoluteString)
+                CopyRow(label: "Terms of service URL", value: Links.terms.absoluteString)
+                CopyRow(label: "4. Redirect URL", value: AuthCoordinator.redirectURL.absoluteString)
+                if let pem = model.publicKeyPEM() {
+                    CopyRow(label: "5. Public certificate", value: pem, monospaced: true)
+                }
+                InfoRow(label: "Then", value: "Tap Register")
+            }
+        }
+    }
+}
+
+private struct ApplicationIDStep: View {
+    @Environment(AppModel.self) private var model
+    @State private var typed = ""
+
+    var body: some View {
+        List {
+            StepIntro(title: "Application ID", text: "After Register, the control panel shows your application with its ID in the heading, next to the name. Copy it and paste it here.")
+            Section {
+                if let id = model.applicationID {
+                    Label(id, systemImage: "checkmark.seal.fill").font(.system(.footnote, design: .monospaced)).foregroundStyle(.green)
+                    Button("Use another Application ID", role: .destructive) { model.clearApplicationID() }
+                } else {
+                    HStack {
+                        TextField("Application ID", text: $typed).textInputAutocapitalization(.never).autocorrectionDisabled().font(.system(.body, design: .monospaced))
+                        Button("Paste") { if let s = model.pasteboardString() { typed = s } }.buttonStyle(.bordered)
                     }
+                    Button("Save") { model.saveApplicationID(typed) }
+                        .disabled(typed.trimmingCharacters(in: .whitespaces).count < 8)
                 }
             } footer: {
-                Text("Pick the account your salary lands on. Transfers to your other linked accounts are recognized automatically.")
+                Text("Looks like 7577f15e-45a9-43cd-a1b3-4f5b1d3387f2. It is not secret, but it is yours.")
             }
         }
-        .navigationTitle("Which account?")
+    }
+}
+
+private struct LinkAccountsStep: View {
+    var body: some View {
+        List {
+            StepIntro(title: "Link your accounts", text: "This is what makes the free personal mode work: Enable Banking only ever returns the accounts you link here.")
+            Section {
+                InfoRow(label: "1", value: "On your application's page in the control panel, tap “Activate by linking accounts”.")
+                InfoRow(label: "2", value: "Choose Sweden, your bank, and personal. Tap Link.")
+                InfoRow(label: "3", value: "Log in with BankID and approve every account you want to see. Skipped accounts stay invisible to the app.")
+                InfoRow(label: "4", value: "The application should now say Active and Restricted. That is correct.")
+            }
+            Section {
+                Label {
+                    Text("With Swedbank and the savings banks, this bank login sometimes never loads on a phone. If it spins for more than 20 seconds, finish this one step on a computer at enablebanking.com/cp. Everything else stays on the phone.")
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle").foregroundStyle(.orange)
+                }
+                .font(.footnote)
+            }
+        }
+    }
+}
+
+private struct ConnectStep: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        List {
+            StepIntro(title: "Connect", text: "Last step. Choose your bank, log in with BankID, and pick the account your salary lands on.")
+            Section {
+                NavigationLink { BankPickerView() } label: { Label("Choose bank", systemImage: "building.columns") }
+                    .disabled(model.stage == .needsKey || model.stage == .needsApplicationID)
+            } footer: {
+                Text("Bank access lasts up to 180 days. The app reminds you before it ends.")
+            }
+        }
     }
 }

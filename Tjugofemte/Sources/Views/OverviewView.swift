@@ -27,8 +27,14 @@ struct OverviewView: View {
 
     private var setupSection: some View {
         Section {
-            NavigationLink { OnboardingView() } label: {
-                Label("Connect your bank", systemImage: "building.columns")
+            if model.stage == .needsAccount {
+                NavigationLink { AccountPickerView() } label: {
+                    Label("Choose account", systemImage: "creditcard")
+                }
+            } else {
+                NavigationLink { OnboardingView() } label: {
+                    Label("Connect your bank", systemImage: "building.columns")
+                }
             }
             Button { model.startDemo() } label: {
                 Label("Try with sample data", systemImage: "sparkles")

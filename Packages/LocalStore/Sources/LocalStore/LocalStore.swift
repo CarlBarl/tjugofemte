@@ -2,6 +2,20 @@ import Foundation
 import GRDB
 import BudgetCore
 
+/// One account the user authorised, as shown in pickers. Order is the bank's order.
+public struct AuthorizedAccount: Equatable, Sendable, Codable, Identifiable {
+    public var id: String { uid }
+    public let uid: String
+    public let title: String
+    public let subtitle: String
+
+    public init(uid: String, title: String, subtitle: String) {
+        self.uid = uid
+        self.title = title
+        self.subtitle = subtitle
+    }
+}
+
 /// Non-secret app state. Secrets (key, application id, session id) live in the Keychain.
 public struct Settings: Equatable, Sendable {
     public var startDay = 25
@@ -12,6 +26,7 @@ public struct Settings: Equatable, Sendable {
     public var consentValidUntil: Date?
     /// Identifiers of every account the user authorised, so transfers between them are recognized on later fetches.
     public var ownAccountIDs: Set<String> = []
+    public var authorizedAccounts: [AuthorizedAccount] = []
 
     public init() {}
 
@@ -128,6 +143,12 @@ public final class LocalStore: Sendable {
         }
     }
 
+    /// Used when switching to another account: its history must not mix with the previous one.
+    public func deleteAllTransactions() throws {
+        try db.write { db in _ = try TransactionRow.deleteAll(db) }
+        try db.vacuum()
+    }
+
     @discardableResult
     public func purge(bookedBefore cutoff: Date) throws -> Int {
         let deleted = try db.write { db in try TransactionRow.filter(Column("booking_date") < cutoff).deleteAll(db) }
@@ -193,6 +214,9 @@ public final class LocalStore: Sendable {
             if let ids = raw["own_account_ids"], let data = ids.data(using: .utf8), let decoded = try? JSONDecoder().decode([String].self, from: data) {
                 s.ownAccountIDs = Set(decoded)
             }
+            if let json = raw["authorized_accounts"], let data = json.data(using: .utf8), let decoded = try? JSONDecoder().decode([AuthorizedAccount].self, from: data) {
+                s.authorizedAccounts = decoded
+            }
             if let json = raw["period_overrides"], let data = json.data(using: .utf8),
                let decoded = try? JSONDecoder().decode([String: Double].self, from: data) {
                 for (key, seconds) in decoded {
@@ -216,6 +240,7 @@ public final class LocalStore: Sendable {
             ("consent_valid_until", s.consentValidUntil.map { String($0.timeIntervalSince1970) }),
             ("period_overrides", json),
             ("own_account_ids", String(decoding: try JSONEncoder().encode(s.ownAccountIDs.sorted()), as: UTF8.self)),
+            ("authorized_accounts", String(decoding: try JSONEncoder().encode(s.authorizedAccounts), as: UTF8.self)),
         ]
         try db.write { db in
             for (key, value) in pairs {

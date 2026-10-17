@@ -73,6 +73,7 @@ import BudgetCore
         s.bankName = "Swedbank"
         s.consentValidUntil = day(2027, 4, 15)
         s.ownAccountIDs = ["SE4550000000058398257466", "832791234567890"]
+        s.authorizedAccounts = [AuthorizedAccount(uid: "acc-1", title: "Privatkonto", subtitle: "•••• 7466"), AuthorizedAccount(uid: "acc-2", title: "e-sparkonto", subtitle: "•••• 0402")]
         try store.saveSettings(s)
         let back = try store.settings()
         #expect(back.periodRule == PeriodRule(startDay: 27, overrides: [PeriodLabel(year: 2026, month: 12): day(2026, 11, 20)]))
@@ -81,6 +82,8 @@ import BudgetCore
         #expect(back.bankName == "Swedbank")
         #expect(back.consentValidUntil == day(2027, 4, 15))
         #expect(back.ownAccountIDs == ["SE4550000000058398257466", "832791234567890"])
+        #expect(back.authorizedAccounts.map(\.uid) == ["acc-1", "acc-2"])
+        #expect(back.authorizedAccounts[1].subtitle == "•••• 0402")
     }
 
     @Test func wipeEmptiesEveryTable() throws {

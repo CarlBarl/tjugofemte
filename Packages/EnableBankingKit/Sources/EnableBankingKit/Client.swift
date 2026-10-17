@@ -118,6 +118,18 @@ public actor EnableBankingClient {
         return records
     }
 
+    /// Account uids of an existing session, for when the app restarts with a session but no account list.
+    public func sessionAccountUIDs(_ sessionID: String) async throws -> [String] {
+        struct Response: Decodable { let accounts: [String] }
+        let response: Response = try await get("/sessions/\(sessionID)", query: [])
+        return response.accounts
+    }
+
+    public func accountDetails(uid: String) async throws -> BankAccount {
+        let account: Wire.Session.Account = try await get("/accounts/\(uid)/details", query: [])
+        return account.bankAccount(uid: uid)
+    }
+
     public func deleteSession(_ sessionID: String) async throws {
         struct OK: Decodable { let message: String? }
         let _: OK = try await send(method: "DELETE", path: "/sessions/\(sessionID)", query: [], body: nil)

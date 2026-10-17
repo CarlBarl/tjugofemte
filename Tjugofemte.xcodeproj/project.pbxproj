@@ -17,6 +17,7 @@
 		3B5AE5FF2D847056B2117B64 /* EnableBankingKit in Frameworks */ = {isa = PBXBuildFile; productRef = BEEFF995731D5ACB0A5669EE /* EnableBankingKit */; };
 		41982BC630FA9E1BD57FFEB0 /* PlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4002BEE4C453F1223B4076 /* PlanView.swift */; };
 		5AE31B2CBCB428ED4F2A456B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E1760223BAF826D936A9DF /* OnboardingView.swift */; };
+		5B1B53DF04FF0082ABE0074C /* BankViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2842F7C4A3D3DCD43A04255D /* BankViews.swift */; };
 		724D01E80492B1BA719C6256 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F54943C28D2B21C485DDD70 /* RulesView.swift */; };
 		7268EC1CDF0C7C274D2B6A70 /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE77E8BAC06D0D2DE5803399 /* OverviewView.swift */; };
 		7339B66AA3C8AE822F23B855 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C67FCF3B1D79117015DD7A4 /* DemoData.swift */; };
@@ -32,6 +33,7 @@
 /* Begin PBXFileReference section */
 		0A4002BEE4C453F1223B4076 /* PlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanView.swift; sourceTree = "<group>"; };
 		0E112C69A713E85D6674F36B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		2842F7C4A3D3DCD43A04255D /* BankViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankViews.swift; sourceTree = "<group>"; };
 		3F54943C28D2B21C485DDD70 /* RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesView.swift; sourceTree = "<group>"; };
 		4C67FCF3B1D79117015DD7A4 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		6E9E99AAA2C80B5C7AEA8019 /* Tjugofemte.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Tjugofemte.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -70,6 +72,7 @@
 		1D00C76944D29FE98BCBD43B /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				2842F7C4A3D3DCD43A04255D /* BankViews.swift */,
 				DFBE5A5E23218EFFD4D4CA74 /* Components.swift */,
 				E7B5489819F04085D120B677 /* DataPageView.swift */,
 				B5E1760223BAF826D936A9DF /* OnboardingView.swift */,
@@ -233,6 +236,7 @@
 			files = (
 				FFAD0462F767AC70D0C5D257 /* AppModel.swift in Sources */,
 				24CE743BBD2CAEB39246D655 /* AuthCoordinator.swift in Sources */,
+				5B1B53DF04FF0082ABE0074C /* BankViews.swift in Sources */,
 				A934EC3E7CCF4B27C1F9047F /* Components.swift in Sources */,
 				1ED17D2A07DE15AE92AD5C8E /* DataPageView.swift in Sources */,
 				7339B66AA3C8AE822F23B855 /* DemoData.swift in Sources */,

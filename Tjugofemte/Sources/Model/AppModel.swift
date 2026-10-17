@@ -25,7 +25,6 @@ final class AppModel {
     private(set) var hasKey = Keychain.privateKey() != nil
     private(set) var applicationID = Keychain.string(.applicationID)
     private(set) var sessionID = Keychain.string(.sessionID)
-    private(set) var pendingAccounts: [BankAccount] = []
     private(set) var banks: [Bank] = []
     private(set) var isBusy = false
     private(set) var needsReauth = false
@@ -97,6 +96,16 @@ final class AppModel {
         UIPasteboard.general.setItems([[UTType.plainText.identifier: text]], options: [.localOnly: true, .expirationDate: Date().addingTimeInterval(300)])
     }
 
+    /// Reads the system pasteboard once, for the Application ID copied from the control panel.
+    func pasteboardString() -> String? {
+        UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    func clearApplicationID() {
+        try? Keychain.set(nil, for: .applicationID)
+        applicationID = nil
+    }
+
     func saveApplicationID(_ id: String) {
         let trimmed = id.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -166,12 +175,55 @@ final class AppModel {
         s.bankName = session.bankName
         s.consentValidUntil = session.validUntil
         s.ownAccountIDs = Set(session.accounts.flatMap(\.ownAccountIDs))
+        s.authorizedAccounts = session.accounts.map(Self.listed)
         s.selectedAccountUID = nil
         try store.saveSettings(s)
         settings = s
-        pendingAccounts = session.accounts
         await ConsentReminders.schedule(validUntil: session.validUntil)
         if session.accounts.count == 1 { await chooseAccount(session.accounts[0].uid) }
+    }
+
+    private static func listed(_ account: BankAccount) -> AuthorizedAccount {
+        AuthorizedAccount(uid: account.uid, title: account.product ?? account.name ?? String(localized: "Account"), subtitle: account.maskedNumber)
+    }
+
+    /// Older installs have a session but no stored account list; rebuild it from Enable Banking.
+    func ensureAccountsListed() async {
+        guard let sessionID, settings.authorizedAccounts.isEmpty, !isDemo else { return }
+        isBusy = true
+        defer { isBusy = false }
+        do {
+            let client = try client()
+            var accounts: [BankAccount] = []
+            for uid in try await client.sessionAccountUIDs(sessionID) {
+                accounts.append(try await client.accountDetails(uid: uid))
+            }
+            var s = settings
+            s.authorizedAccounts = accounts.map(Self.listed)
+            s.ownAccountIDs = Set(accounts.flatMap(\.ownAccountIDs))
+            try store.saveSettings(s)
+            settings = s
+        } catch ClientError.sessionExpired {
+            needsReauth = true
+        } catch {
+            errorMessage = describe(error)
+        }
+    }
+
+    /// Another authorised account, no BankID needed. The old account's history is removed first.
+    func switchAccount(to uid: String) async {
+        guard uid != settings.selectedAccountUID else { return }
+        do {
+            try store.deleteAllTransactions()
+            var s = settings
+            s.selectedAccountUID = uid
+            try store.saveSettings(s)
+            settings = s
+            reload()
+            await refresh()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     /// Callback via the scene's open-URL path. Warm app: hand it to the running flow. Cold start (iOS killed
@@ -199,7 +251,6 @@ final class AppModel {
             s.selectedAccountUID = uid
             try store.saveSettings(s)
             settings = s
-            pendingAccounts = []
             await refresh()
         } catch {
             errorMessage = error.localizedDescription
@@ -325,7 +376,6 @@ final class AppModel {
         hasKey = false
         applicationID = nil
         sessionID = nil
-        pendingAccounts = []
         needsReauth = false
         reload()
         selectedPeriod = periodRule.period(containing: Date()).label
@@ -337,7 +387,7 @@ final class AppModel {
         try? Keychain.set(nil, for: .sessionID)
         sessionID = nil
         needsReauth = false
-        updateSettings { $0.selectedAccountUID = nil; $0.bankName = nil; $0.consentValidUntil = nil; $0.ownAccountIDs = [] }
+        updateSettings { $0.selectedAccountUID = nil; $0.bankName = nil; $0.consentValidUntil = nil; $0.ownAccountIDs = []; $0.authorizedAccounts = [] }
     }
 
     // MARK: Demo
