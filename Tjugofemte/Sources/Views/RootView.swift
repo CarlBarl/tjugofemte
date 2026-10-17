@@ -12,6 +12,7 @@ struct RootView: View {
             Tab("Settings", systemImage: "gearshape") { SettingsView() }
         }
         .safeAreaInset(edge: .top) { DemoBanner() }
+        .task { await model.ensureAccountsListed() }
         .alert("Something went wrong", isPresented: Binding(get: { model.errorMessage != nil }, set: { if !$0 { model.errorMessage = nil } })) {
             Button("OK", role: .cancel) {}
         } message: {
