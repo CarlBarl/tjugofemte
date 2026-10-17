@@ -6,14 +6,16 @@ public enum CSVExporter {
     /// RFC 4180 style, UTF-8, newest first. Dates are civil dates in Stockholm.
     public static func export(_ transactions: [Transaction]) -> String {
         let rows = transactions.sorted { $0.bookingDate > $1.bookingDate }.map { t in
-            [isoDay(t.bookingDate), "\(t.amount)", t.currency, text(t.counterparty), text(t.categoryID)].map(quote).joined(separator: ",")
+            [isoDay(t.bookingDate), "\(t.amount)", text(t.currency), text(t.counterparty), text(t.categoryID)].map(quote).joined(separator: ",")
         }
         return ([header] + rows).joined(separator: "\n") + "\n"
     }
 
     /// Spreadsheets execute cells starting with = + - @ or a tab. Bank text is attacker-reachable, so neutralize it.
     static func text(_ field: String) -> String {
-        guard let first = field.first, "=+-@\t\r".contains(first) else { return field }
+        let triggers: Set<Unicode.Scalar> = ["=", "+", "-", "@", "\t", "\r", "＝", "＋", "－", "＠"]
+        let first = field.unicodeScalars.drop { CharacterSet.whitespacesAndNewlines.contains($0) || CharacterSet.controlCharacters.contains($0) }.first
+        guard let first, triggers.contains(first) else { return field }
         return "'" + field
     }
 

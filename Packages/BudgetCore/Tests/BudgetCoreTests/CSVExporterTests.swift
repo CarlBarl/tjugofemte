@@ -36,3 +36,26 @@ import Foundation
         #expect(CSVExporter.export(txs).contains(",-120.5,"))
     }
 }
+
+@Suite struct CSVFormulaInjectionEdgeTests {
+    func row(_ counterparty: String, currency: String = "SEK") -> String {
+        CSVExporter.export([Transaction(dedupKey: "a", bookingDate: d(2026, 10, 1), amount: -1, currency: currency, counterparty: counterparty, categoryID: "x")])
+            .split(separator: "\n").last.map(String.init) ?? ""
+    }
+
+    @Test func combiningMarkAfterTriggerIsStillNeutralized() {
+        #expect(row("=\u{301}SUM(1)").contains("\"'=\u{301}SUM(1)\""))
+    }
+
+    @Test func leadingWhitespaceBeforeTriggerIsNeutralized() {
+        #expect(row(" \t=1+1").contains("\"' \t=1+1\""))
+    }
+
+    @Test func fullwidthTriggersAreNeutralized() {
+        #expect(row("＝1").contains("\"'＝1\""))
+    }
+
+    @Test func currencyColumnIsNeutralizedToo() {
+        #expect(row("ICA", currency: "=X").contains(",\"'=X\","))
+    }
+}
