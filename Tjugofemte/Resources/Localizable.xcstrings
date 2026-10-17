@@ -1,6 +1,34 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "": {
+      "shouldTranslate": false
+    },
+    "%@": {
+      "shouldTranslate": false
+    },
+    "%@ · %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ · %2$@"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
+    "%@ %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ %2$@"
+          }
+        }
+      },
+      "shouldTranslate": false
+    },
     "%@ left": {
       "localizations": {
         "sv": {
@@ -31,6 +59,16 @@
         }
       }
     },
+    "%lld days left": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld dagar kvar"
+          }
+        }
+      }
+    },
     "%lld months": {
       "localizations": {
         "sv": {
@@ -41,15 +79,24 @@
         }
       }
     },
-    "1. Create your key": {
+    "%lld transactions · %@ spent": {
       "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$lld transactions · %2$@ spent"
+          }
+        },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "1. Skapa din nyckel"
+            "value": "%lld transaktioner · %@ spenderat"
           }
         }
       }
+    },
+    "1": {
+      "shouldTranslate": false
     },
     "1. Environment": {
       "localizations": {
@@ -61,6 +108,9 @@
         }
       }
     },
+    "2": {
+      "shouldTranslate": false
+    },
     "2. Key": {
       "localizations": {
         "sv": {
@@ -71,15 +121,8 @@
         }
       }
     },
-    "2. Register an application at Enable Banking": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "2. Registrera en applikation hos Enable Banking"
-          }
-        }
-      }
+    "3": {
+      "shouldTranslate": false
     },
     "3. Application name": {
       "localizations": {
@@ -91,25 +134,8 @@
         }
       }
     },
-    "3. Paste the Application ID": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "3. Klistra in applikations-ID"
-          }
-        }
-      }
-    },
-    "4. Activate by linking your accounts": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "4. Aktivera genom att länka dina konton"
-          }
-        }
-      }
+    "4": {
+      "shouldTranslate": false
     },
     "4. Redirect URL": {
       "localizations": {
@@ -117,16 +143,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "4. Redirect URL"
-          }
-        }
-      }
-    },
-    "5. Connect your bank": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "5. Anslut din bank"
           }
         }
       }
@@ -141,12 +157,12 @@
         }
       }
     },
-    "A period runs from one salary to the next. When the salary day falls on a weekend or holiday, the period starts on the banking day before.": {
+    "A third of the quarterly total is set aside each period.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "En period löper från en lön till nästa. När lönedagen infaller på en helg eller helgdag börjar perioden bankdagen innan."
+            "value": "En tredjedel av kvartalsbeloppet sätts undan varje period."
           }
         }
       }
@@ -161,12 +177,22 @@
         }
       }
     },
-    "Access valid until": {
+    "About ten minutes the first time.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Åtkomst giltig till"
+            "value": "Ungefär tio minuter första gången."
+          }
+        }
+      }
+    },
+    "Access valid until %@. You get a reminder two weeks and three days before.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Åtkomsten gäller till %@. Du får en påminnelse två veckor och tre dagar innan."
           }
         }
       }
@@ -191,12 +217,22 @@
         }
       }
     },
-    "Add income source": {
+    "Add income": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Lägg till inkomst"
+          }
+        }
+      }
+    },
+    "Add one per category, or let history suggest them.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lägg till en per kategori, eller låt historiken föreslå dem."
           }
         }
       }
@@ -221,32 +257,12 @@
         }
       }
     },
-    "Always": {
+    "Always put it here": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Alltid"
-          }
-        }
-      }
-    },
-    "Always put %@ here": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lägg alltid %@ här"
-          }
-        }
-      }
-    },
-    "Amount": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Belopp"
+            "value": "Lägg alltid den här"
           }
         }
       }
@@ -257,6 +273,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Belopp per period"
+          }
+        }
+      }
+    },
+    "Amount per quarter": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Belopp per kvartal"
+          }
+        }
+      }
+    },
+    "An amount per category and period. 0 means no budget.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ett belopp per kategori och period. 0 betyder ingen budget."
           }
         }
       }
@@ -277,6 +313,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Applikations-ID"
+          }
+        }
+      }
+    },
+    "Averages from your last %lld complete periods, rounded up to 50 kr. Change what you like. 0 means no budget.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snitt från dina senaste %lld hela perioder, avrundat uppåt till 50 kr. Ändra vad du vill. 0 betyder ingen budget."
           }
         }
       }
@@ -311,12 +357,12 @@
         }
       }
     },
-    "Bank access has expired. Reconnect": {
+    "Bank access has expired.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bankåtkomsten har gått ut. Anslut igen"
+            "value": "Bankåtkomsten har gått ut."
           }
         }
       }
@@ -331,25 +377,18 @@
         }
       }
     },
-    "Bank access lasts up to 180 days. You get a reminder two weeks and three days before it ends.": {
+    "Based on this period so far, rounded up. Change what you like. 0 means no budget.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Bankåtkomsten gäller i upp till 180 dagar. Du får en påminnelse två veckor och tre dagar innan den går ut."
+            "value": "Baserat på den här perioden hittills, avrundat uppåt. Ändra vad du vill. 0 betyder ingen budget."
           }
         }
       }
     },
-    "Budget vs actual": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Budget mot utfall"
-          }
-        }
-      }
+    "beta": {
+      "shouldTranslate": false
     },
     "Budgets": {
       "localizations": {
@@ -357,6 +396,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Budgetar"
+          }
+        }
+      }
+    },
+    "Budgets per period": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budgetar per period"
           }
         }
       }
@@ -411,32 +460,12 @@
         }
       }
     },
-    "Change": {
+    "Choose “Generate outside the browser and import public certificate”": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ändra"
-          }
-        }
-      }
-    },
-    "Choose Sweden, your bank, and personal. Tap Link.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Välj Sweden, din bank och personal. Tryck på Link."
-          }
-        }
-      }
-    },
-    "Choose account": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Välj konto"
+            "value": "Välj ”Generate outside the browser and import public certificate”"
           }
         }
       }
@@ -451,22 +480,22 @@
         }
       }
     },
-    "Choose to provide your own public key and paste the key from step 1.": {
+    "Choose Sweden, your bank, and personal. Tap Link.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Välj att ange en egen publik nyckel och klistra in nyckeln från steg 1."
+            "value": "Välj Sweden, din bank och personal. Tryck på Link."
           }
         }
       }
     },
-    "Choose “Generate outside the browser and import public certificate”": {
+    "Closes the bank connection and wipes the key, the plan and every transaction from this phone.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Välj ”Generate outside the browser and import public certificate”"
+            "value": "Stänger bankkopplingen och raderar nyckeln, planen och varje transaktion från den här telefonen."
           }
         }
       }
@@ -477,6 +506,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Anslut"
+          }
+        }
+      }
+    },
+    "Connect my bank": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anslut min bank"
           }
         }
       }
@@ -501,42 +540,12 @@
         }
       }
     },
-    "Copy privacy URL": {
+    "Continue setup": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kopiera integritetslänk"
-          }
-        }
-      }
-    },
-    "Copy public key": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kopiera publik nyckel"
-          }
-        }
-      }
-    },
-    "Copy redirect URL": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kopiera redirect-adress"
-          }
-        }
-      }
-    },
-    "Copy terms URL": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Kopiera villkorslänk"
+            "value": "Fortsätt"
           }
         }
       }
@@ -591,6 +600,16 @@
         }
       }
     },
+    "Delete everything with one tap. Export a CSV first if you like.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Radera allt med ett tryck. Exportera en CSV först om du vill."
+          }
+        }
+      }
+    },
     "Delete everything?": {
       "localizations": {
         "sv": {
@@ -601,12 +620,12 @@
         }
       }
     },
-    "Deposits whose text contains the keyword count as this income. Leave empty for income that never reaches this account.": {
+    "Deposits whose text contains it count as this income. Leave empty for income that never reaches this account.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Insättningar vars text innehåller nyckelordet räknas som den här inkomsten. Lämna tomt för inkomst som aldrig når det här kontot."
+            "value": "Insättningar vars text innehåller ordet räknas som den här inkomsten. Lämna tomt för inkomst som aldrig når det här kontot."
           }
         }
       }
@@ -631,12 +650,42 @@
         }
       }
     },
+    "Done": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klar"
+          }
+        }
+      }
+    },
+    "Ended %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slutade %@"
+          }
+        }
+      }
+    },
     "Entertainment": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Nöje"
+          }
+        }
+      }
+    },
+    "Every transaction on this phone, for a spreadsheet.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Varje transaktion på den här telefonen, för ett kalkylark."
           }
         }
       }
@@ -661,6 +710,26 @@
         }
       }
     },
+    "Fetching your transactions from the bank. The next screens fill themselves in from them.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hämtar dina transaktioner från banken. Nästa steg fylls i utifrån dem."
+          }
+        }
+      }
+    },
+    "Fewer categories": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Färre kategorier"
+          }
+        }
+      }
+    },
     "First month it is due": {
       "localizations": {
         "sv": {
@@ -671,22 +740,22 @@
         }
       }
     },
-    "Generate key": {
+    "Found in your transactions. Switch off anything that is not income, and adjust the amounts.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Skapa nyckel"
+            "value": "Hittade i dina transaktioner. Slå av det som inte är inkomst och justera beloppen."
           }
         }
       }
     },
-    "Get started": {
+    "Gone when you say so": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kom igång"
+            "value": "Borta när du säger till"
           }
         }
       }
@@ -721,6 +790,16 @@
         }
       }
     },
+    "History says %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historiken säger %@"
+          }
+        }
+      }
+    },
     "Honest limits": {
       "localizations": {
         "sv": {
@@ -741,6 +820,16 @@
         }
       }
     },
+    "How much to move to savings, worked out from your own bank data. It never leaves your phone.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hur mycket du ska flytta till sparande, uträknat från din egen bankdata. Den lämnar aldrig telefonen."
+          }
+        }
+      }
+    },
     "If you prefer a computer: share the public key to it from the previous step, do this step there, and come back here for step 3.": {
       "localizations": {
         "sv": {
@@ -751,12 +840,12 @@
         }
       }
     },
-    "In the control panel, open your application and choose Activate by linking accounts.": {
+    "Included": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Öppna din applikation i kontrollpanelen och välj Activate by linking accounts."
+            "value": "Medräknad"
           }
         }
       }
@@ -781,6 +870,16 @@
         }
       }
     },
+    "Income and budgets per salary period, not per calendar month.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inkomst och budgetar per löneperiod, inte per kalendermånad."
+          }
+        }
+      }
+    },
     "Income below plan": {
       "localizations": {
         "sv": {
@@ -791,12 +890,12 @@
         }
       }
     },
-    "Income came in below plan. Adjusted: %@": {
+    "Income came in below plan, so the target is lowered from %@.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inkomsten blev lägre än planerat. Justerat: %@"
+            "value": "Inkomsten blev lägre än planerat, så målet sänks från %@."
           }
         }
       }
@@ -811,12 +910,12 @@
         }
       }
     },
-    "Income received minus what you have spent, minus the savings target you already moved.": {
+    "Income received minus what you have spent, minus the savings target you move on payday. Negative means the month is running ahead of the plan.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Mottagen inkomst minus det du har spenderat, minus sparmålet du redan flyttat."
+            "value": "Mottagen inkomst minus det du har spenderat, minus sparmålet du flyttar på lönedagen. Minus betyder att månaden ligger före planen."
           }
         }
       }
@@ -851,6 +950,16 @@
         }
       }
     },
+    "Keyword": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nyckelord"
+          }
+        }
+      }
+    },
     "Keyword rules": {
       "localizations": {
         "sv": {
@@ -871,22 +980,22 @@
         }
       }
     },
-    "Keyword, for example lön": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nyckelord, till exempel lön"
-          }
-        }
-      }
-    },
     "Keywords match whole words, ignoring case. Your rules win over the built-in ones, newest first.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Nyckelord matchar hela ord oavsett stor eller liten bokstav. Dina regler går före de inbyggda, nyaste först."
+          }
+        }
+      }
+    },
+    "Last day today": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sista dagen i dag"
           }
         }
       }
@@ -911,22 +1020,22 @@
         }
       }
     },
+    "left over": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "över"
+          }
+        }
+      }
+    },
     "Left over so far": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Kvar hittills"
-          }
-        }
-      }
-    },
-    "Link every account you want to see here. Accounts you skip stay invisible to the app.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Länka varje konto du vill se här. Konton du hoppar över förblir osynliga för appen."
           }
         }
       }
@@ -951,6 +1060,9 @@
         }
       }
     },
+    "lön": {
+      "shouldTranslate": false
+    },
     "Looks like 7577f15e-45a9-43cd-a1b3-4f5b1d3387f2. It is not secret, but it is yours.": {
       "localizations": {
         "sv": {
@@ -967,6 +1079,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Matchar ”%@”"
+          }
+        }
+      }
+    },
+    "More categories": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fler kategorier"
           }
         }
       }
@@ -991,16 +1113,6 @@
         }
       }
     },
-    "Name it anything, for example Tjugofemte.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Döp den till vad du vill, till exempel Tjugofemte."
-          }
-        }
-      }
-    },
     "Never": {
       "localizations": {
         "sv": {
@@ -1011,7 +1123,7 @@
         }
       }
     },
-    "New income source": {
+    "New income": {
       "localizations": {
         "sv": {
           "stringUnit": {
@@ -1061,12 +1173,22 @@
         }
       }
     },
-    "No budgets yet. Add them under Plan.": {
+    "No budget": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inga budgetar än. Lägg till dem under Plan."
+            "value": "Ingen budget"
+          }
+        }
+      }
+    },
+    "No budgets yet": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inga budgetar än"
           }
         }
       }
@@ -1077,6 +1199,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Inga kopior"
+          }
+        }
+      }
+    },
+    "No income yet": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingen inkomst än"
+          }
+        }
+      }
+    },
+    "No plan yet": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingen plan än"
           }
         }
       }
@@ -1121,12 +1263,22 @@
         }
       }
     },
-    "Not received": {
+    "Not included": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Inte mottagen"
+            "value": "Inte medräknad"
+          }
+        }
+      }
+    },
+    "Not yet · %@ planned": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inte än · %@ planerat"
           }
         }
       }
@@ -1141,6 +1293,16 @@
         }
       }
     },
+    "of %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "av %@"
+          }
+        }
+      }
+    },
     "OK": {
       "localizations": {
         "sv": {
@@ -1151,12 +1313,12 @@
         }
       }
     },
-    "Older transactions are removed automatically. Delete everything closes the bank connection and wipes the key, the settings and every transaction from this phone.": {
+    "Older transactions are removed automatically.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Äldre transaktioner tas bort automatiskt. Radera allt stänger bankkopplingen och tar bort nyckeln, inställningarna och alla transaktioner från telefonen."
+            "value": "Äldre transaktioner tas bort automatiskt."
           }
         }
       }
@@ -1191,12 +1353,22 @@
         }
       }
     },
-    "Open Tjugofemte and reconnect your bank within %lld days to keep seeing new transactions.": {
+    "One number on payday.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Öppna Tjugofemte och anslut banken igen inom %lld dagar för att fortsätta se nya transaktioner."
+            "value": "En siffra på lönedagen."
+          }
+        }
+      }
+    },
+    "Open the control panel, sign in with your email, and fill the form below in this order. Every value is one tap to copy.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öppna kontrollpanelen, logga in med din e-post och fyll i formuläret nedan i den här ordningen. Varje värde kopieras med ett tryck."
           }
         }
       }
@@ -1211,12 +1383,12 @@
         }
       }
     },
-    "Open the control panel, sign in with your email, and fill the form below in this order. Every value is one tap to copy.": {
+    "Open Tjugofemte and reconnect your bank within %lld days to keep seeing new transactions.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Öppna kontrollpanelen, logga in med din e-post och fyll i formuläret nedan i den här ordningen. Varje värde kopieras med ett tryck."
+            "value": "Öppna Tjugofemte och anslut banken igen inom %lld dagar för att fortsätta se nya transaktioner."
           }
         }
       }
@@ -1271,6 +1443,62 @@
         }
       }
     },
+    "Payday": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lönedag"
+          }
+        }
+      }
+    },
+    "Payday %@ · %lld income sources · %lld budgets": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Payday %1$@ · %2$lld income sources · %3$lld budgets"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lönedag %@ · %lld inkomstkällor · %lld budgetar"
+          }
+        }
+      }
+    },
+    "Payday to payday": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lön till lön"
+          }
+        }
+      }
+    },
+    "Per quarter, a third each period": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per kvartal, en tredjedel varje period"
+          }
+        }
+      }
+    },
+    "Per quarter, due %@. A third is set aside each period.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per kvartal, förfaller %@. En tredjedel sätts undan varje period."
+          }
+        }
+      }
+    },
     "Periods": {
       "localizations": {
         "sv": {
@@ -1287,16 +1515,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Personnummer"
-          }
-        }
-      }
-    },
-    "Pick the account your salary lands on. Transfers to your other linked accounts are recognized automatically.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Välj kontot som lönen kommer in på. Överföringar till dina andra länkade konton känns igen automatiskt."
           }
         }
       }
@@ -1321,6 +1539,16 @@
         }
       }
     },
+    "Plan my budget": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planera min budget"
+          }
+        }
+      }
+    },
     "Plan only, not matched to transactions": {
       "localizations": {
         "sv": {
@@ -1341,12 +1569,32 @@
         }
       }
     },
-    "Planned income minus every budget below. This is the amount to move on payday.": {
+    "Planned income minus every budget is the number to move on payday.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Planerad inkomst minus alla budgetar nedan. Det här är beloppet att flytta på lönedagen."
+            "value": "Planerad inkomst minus alla budgetar är beloppet att flytta på lönedagen."
+          }
+        }
+      }
+    },
+    "Planned income minus every budget, fixed when the period starts. Move it on payday and the rest of the month takes care of itself.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planerad inkomst minus alla budgetar, låst när perioden börjar. Flytta det på lönedagen så sköter resten av månaden sig själv."
+          }
+        }
+      }
+    },
+    "Planned income per period": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planerad inkomst per period"
           }
         }
       }
@@ -1371,16 +1619,6 @@
         }
       }
     },
-    "Privacy policy and terms URLs: paste these two.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Länkar till integritetspolicy och villkor: klistra in dessa två."
-          }
-        }
-      }
-    },
     "Private budgeting app": {
       "localizations": {
         "sv": {
@@ -1401,6 +1639,16 @@
         }
       }
     },
+    "Pull down to fetch again. New transactions show up once the bank has booked them.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dra ner för att hämta igen. Nya transaktioner dyker upp när banken har bokfört dem."
+          }
+        }
+      }
+    },
     "Quarterly costs": {
       "localizations": {
         "sv": {
@@ -1411,12 +1659,22 @@
         }
       }
     },
-    "Quarterly costs are spread as a third per period.": {
+    "Received": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Kvartalskostnader fördelas som en tredjedel per period."
+            "value": "Mottaget"
+          }
+        }
+      }
+    },
+    "Reconnect": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anslut igen"
           }
         }
       }
@@ -1431,22 +1689,32 @@
         }
       }
     },
-    "Redirect URL: paste the address below. It is a page in this app's open source repository that only hands the login back to the app.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Redirect URL: klistra in adressen nedan. Det är en sida i appens öppna källkod som bara lämnar tillbaka inloggningen till appen."
-          }
-        }
-      }
-    },
     "Register the app at Enable Banking": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Registrera appen hos Enable Banking"
+          }
+        }
+      }
+    },
+    "Remove this budget": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta bort den här budgeten"
+          }
+        }
+      }
+    },
+    "Remove this income": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ta bort den här inkomsten"
           }
         }
       }
@@ -1481,22 +1749,12 @@
         }
       }
     },
-    "Salary day": {
+    "Salary, a partner's share of the rent, CSN.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Lönedag"
-          }
-        }
-      }
-    },
-    "Salary, a partner's share of the rent, CSN. A keyword lets the app match the real deposit against the plan.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lön, en sambos del av hyran, CSN. Med ett nyckelord kan appen matcha den riktiga insättningen mot planen."
+            "value": "Lön, sambons del av hyran, CSN."
           }
         }
       }
@@ -1531,6 +1789,16 @@
         }
       }
     },
+    "Save plan": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spara planen"
+          }
+        }
+      }
+    },
     "Savings": {
       "localizations": {
         "sv": {
@@ -1551,16 +1819,6 @@
         }
       }
     },
-    "Savings target per period": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sparmål per period"
-          }
-        }
-      }
-    },
     "Search bank": {
       "localizations": {
         "sv": {
@@ -1571,12 +1829,38 @@
         }
       }
     },
+    "Seen %lld times, matches “%@”": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Seen %1$lld times, matches “%2$@”"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sedd %lld gånger, matchar ”%@”"
+          }
+        }
+      }
+    },
     "Session": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Session"
+          }
+        }
+      }
+    },
+    "Set aside": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avsatt"
           }
         }
       }
@@ -1597,6 +1881,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Avsatt för kvartalskostnader"
+          }
+        }
+      }
+    },
+    "Set your income and budgets and this card becomes one number: what to move to savings on payday.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ange din inkomst och dina budgetar så blir det här kortet en siffra: vad du ska flytta till sparande på lönedagen."
           }
         }
       }
@@ -1631,32 +1925,32 @@
         }
       }
     },
-    "Shows three periods of made-up Swedish transactions. Your real data is untouched.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Visar tre perioder med påhittade svenska transaktioner. Din riktiga data rörs inte."
-          }
-        }
-      }
-    },
-    "Sign in with your email, then add a new application in the Production environment, not Sandbox.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Logga in med din e-post och lägg sedan till en ny applikation i miljön Production, inte Sandbox."
-          }
-        }
-      }
-    },
     "Signed requests for your bank list, your accounts and your transactions. Enable Banking is a licensed open banking provider in Finland and relays these to your bank. The requests carry your phone's IP address and the app name, which Enable Banking keeps in its logs for a time it does not publish.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Signerade anrop efter banklistan, dina konton och dina transaktioner. Enable Banking är en licensierad open banking-leverantör i Finland och vidarebefordrar dem till din bank. Anropen innehåller telefonens IP-adress och appens namn, som Enable Banking sparar i sina loggar under en tid de inte publicerar."
+          }
+        }
+      }
+    },
+    "Skip for now": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoppa över nu"
+          }
+        }
+      }
+    },
+    "So far this period": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hittills den här perioden"
           }
         }
       }
@@ -1681,6 +1975,16 @@
         }
       }
     },
+    "Spent": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spenderat"
+          }
+        }
+      }
+    },
     "Spent so far": {
       "localizations": {
         "sv": {
@@ -1691,12 +1995,72 @@
         }
       }
     },
+    "Start my budget": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starta min budget"
+          }
+        }
+      }
+    },
+    "Starts in %lld days": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Börjar om %lld dagar"
+          }
+        }
+      }
+    },
     "Step %lld of %lld": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Steg %lld av %lld"
+          }
+        }
+      }
+    },
+    "Step 1 of 4": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steg 1 av 4"
+          }
+        }
+      }
+    },
+    "Step 2 of 4": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steg 2 av 4"
+          }
+        }
+      }
+    },
+    "Step 3 of 4": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steg 3 av 4"
+          }
+        }
+      }
+    },
+    "Step 4 of 4": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steg 4 av 4"
           }
         }
       }
@@ -1731,6 +2095,26 @@
         }
       }
     },
+    "Suggest from history": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Föreslå från historiken"
+          }
+        }
+      }
+    },
+    "Switching keeps the plan and refetches history for the chosen account.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Byte behåller planen och hämtar historiken för det valda kontot på nytt."
+          }
+        }
+      }
+    },
     "Takeaway & restaurants": {
       "localizations": {
         "sv": {
@@ -1761,26 +2145,6 @@
         }
       }
     },
-    "The Enable Banking session id and your Application ID, in the Keychain, device only.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enable Bankings sessions-id och ditt applikations-ID, i nyckelringen, bara på den här enheten."
-          }
-        }
-      }
-    },
-    "The amount is the quarterly total. A third is set aside each period.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Beloppet är kvartalssumman. En tredjedel avsätts varje period."
-          }
-        }
-      }
-    },
     "The app contains no other network code. iOS App Privacy Report shows every domain it has contacted; try it.": {
       "localizations": {
         "sv": {
@@ -1801,22 +2165,32 @@
         }
       }
     },
-    "The application will show as Restricted and Active. That is the free personal mode.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Applikationen visas som Restricted och Active. Det är det kostnadsfria personliga läget."
-          }
-        }
-      }
-    },
     "The bank is rate limiting requests. Try again in a few hours.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Banken begränsar antalet anrop. Försök igen om några timmar."
+          }
+        }
+      }
+    },
+    "The budgets add up to more than the income. Lower a budget, add income, or start anyway and adjust under Plan.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budgetarna är större än inkomsten. Sänk en budget, lägg till inkomst, eller starta ändå och justera under Plan."
+          }
+        }
+      }
+    },
+    "The Enable Banking session id and your Application ID, in the Keychain, device only.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enable Bankings sessions-id och ditt applikations-ID, i nyckelringen, bara på den här enheten."
           }
         }
       }
@@ -1851,22 +2225,32 @@
         }
       }
     },
-    "The private half was created inside this phone and cannot be exported.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Den privata halvan skapades inuti telefonen och kan inte exporteras."
-          }
-        }
-      }
-    },
     "The private key is protected by the Keychain and your passcode, not by the Secure Enclave, because Enable Banking requires RSA. Enable Banking can see which accounts you access and when. The source code is public so all of this can be checked.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Den privata nyckeln skyddas av nyckelringen och din lösenkod, inte av Secure Enclave, eftersom Enable Banking kräver RSA. Enable Banking kan se vilka konton du hämtar och när. Källkoden är öppen så att allt detta kan kontrolleras."
+          }
+        }
+      }
+    },
+    "The sample covers the last three periods.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exemplet täcker de senaste tre perioderna."
+          }
+        }
+      }
+    },
+    "The savings number is fixed when a period starts. Spend less than a budget and the difference is yours on top.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sparsiffran låses när en period börjar. Spenderar du mindre än en budget är skillnaden din på köpet."
           }
         }
       }
@@ -1901,12 +2285,22 @@
         }
       }
     },
-    "This period started on": {
+    "This period": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Perioden började den"
+            "value": "Den här perioden"
+          }
+        }
+      }
+    },
+    "This period started": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Den här perioden började"
           }
         }
       }
@@ -1917,6 +2311,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Det här tar även bort din riktiga bankdata, inte bara exempeldatan. Det går inte att ångra. Din applikation hos Enable Banking finns kvar i deras kontrollpanel. Radera den där också om du är klar."
+          }
+        }
+      }
+    },
+    "Three periods of made-up Swedish transactions. Your real data is untouched.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tre perioder av påhittade svenska transaktioner. Din riktiga data rörs inte."
           }
         }
       }
@@ -1937,16 +2341,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tjugofemte är en budgetapp utan något företag bakom datan. Det finns ingen server, inget konto, ingen analys, inget annonsverktyg. Din bankhistorik hämtas av din telefon, från din bank, genom en koppling du själv äger."
-          }
-        }
-      }
-    },
-    "Tjugofemte never sees your bank data. You create your own free connection at Enable Banking, and this phone talks to the bank directly. The steps below take about ten minutes.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tjugofemte ser aldrig din bankdata. Du skapar en egen kostnadsfri koppling hos Enable Banking och telefonen pratar direkt med banken. Stegen nedan tar ungefär tio minuter."
           }
         }
       }
@@ -2051,12 +2445,62 @@
         }
       }
     },
+    "Usually %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brukar vara %@"
+          }
+        }
+      }
+    },
     "Version": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Version"
+          }
+        }
+      }
+    },
+    "What comes in each period. Add every source you want to plan with.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det som kommer in varje period. Lägg till varje källa du vill planera med."
+          }
+        }
+      }
+    },
+    "When is payday?": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "När är lönedagen?"
+          }
+        }
+      }
+    },
+    "When it falls on a weekend or holiday, the period starts on the banking day before.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "När den infaller på en helg eller helgdag börjar perioden bankdagen innan."
+          }
+        }
+      }
+    },
+    "When payday is a weekend or holiday, the period starts on the banking day before.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "När lönedagen är en helg eller helgdag börjar perioden bankdagen innan."
           }
         }
       }
@@ -2081,12 +2525,12 @@
         }
       }
     },
-    "Which category?": {
+    "Which words put a transaction in which category.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Vilken kategori?"
+            "value": "Vilka ord som lägger en transaktion i vilken kategori."
           }
         }
       }
@@ -2097,6 +2541,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Med Swedbank och sparbankerna laddar den här bankinloggningen ibland aldrig på en telefon. Om den snurrar i mer än 20 sekunder, gör klart just det här steget på en dator på enablebanking.com/cp. Allt annat stannar på telefonen."
+          }
+        }
+      }
+    },
+    "You register the connection yourself. No company sits in between.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du registrerar kopplingen själv. Inget företag sitter emellan."
+          }
+        }
+      }
+    },
+    "Your bank, your key": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Din bank, din nyckel"
+          }
+        }
+      }
+    },
+    "Your budget runs from one payday to the next, and the savings number is for that day.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Din budget löper från en lönedag till nästa, och sparsiffran gäller den dagen."
+          }
+        }
+      }
+    },
+    "Your budgets": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dina budgetar"
           }
         }
       }
@@ -2121,6 +2605,16 @@
         }
       }
     },
+    "Your income": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Din inkomst"
+          }
+        }
+      }
+    },
     "Your key": {
       "localizations": {
         "sv": {
@@ -2141,6 +2635,16 @@
         }
       }
     },
+    "Your plan": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Din plan"
+          }
+        }
+      }
+    },
     "Your rules": {
       "localizations": {
         "sv": {
@@ -2151,25 +2655,28 @@
         }
       }
     },
-    "Your transactions never leave this phone. Connecting takes about ten minutes the first time.": {
+    "Your salary seems to land at the end of the month.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dina transaktioner lämnar aldrig telefonen. Att ansluta tar ungefär tio minuter första gången."
+            "value": "Din lön verkar komma i slutet av månaden."
           }
         }
       }
     },
-    "per quarter": {
+    "Your salary seems to land on the %@.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "per kvartal"
+            "value": "Din lön verkar komma den %@."
           }
         }
       }
+    },
+    "YYYYMMDDXXXX": {
+      "shouldTranslate": false
     }
   },
   "version": "1.0"
