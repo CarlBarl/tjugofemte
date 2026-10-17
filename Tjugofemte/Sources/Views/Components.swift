@@ -108,9 +108,10 @@ struct AmountBar: View {
     var body: some View {
         GeometryReader { geo in
             let fraction = budget.map { $0 > 0 ? min(1, Double(truncating: (actual / $0) as NSNumber)) : 1 } ?? 0
+            let over = budget.map { actual > $0 } ?? false
             ZStack(alignment: .leading) {
                 Capsule().fill(.quaternary)
-                Capsule().fill(fraction >= 1 ? Color.red : Color.accentColor).frame(width: geo.size.width * fraction)
+                Capsule().fill(over ? Color.red : Color.accentColor).frame(width: geo.size.width * fraction)
             }
         }
         .frame(height: 6)

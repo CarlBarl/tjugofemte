@@ -41,6 +41,8 @@ final class AppModel {
         reload()
         selectedPeriod = settings.periodRule.period(containing: Date()).label
         try? purge()
+        // Screenshots, UI tests and App Review notes: `-demo` opens straight into sample data.
+        if ProcessInfo.processInfo.arguments.contains("-demo") { startDemo() }
     }
 
     var stage: Stage {
