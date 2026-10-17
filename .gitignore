@@ -1,0 +1,11 @@
+.DS_Store
+*.log
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+Packages/*/.build/
+*.pem
+*.key
+.env
