@@ -5,41 +5,50 @@ struct TransactionsView: View {
     @Environment(AppModel.self) private var model
     @State private var editing: Transaction?
 
+    private var inPeriod: [Transaction] { model.transactions.filter { model.period.contains($0.bookingDate) } }
+
     private var grouped: [(Date, [Transaction])] {
-        let inPeriod = model.transactions.filter { model.period.contains($0.bookingDate) }
         let byDay = Dictionary(grouping: inPeriod) { Calendar.stockholm.startOfDay(for: $0.bookingDate) }
-        return byDay.keys.sorted(by: >).map { ($0, byDay[$0]!) }
+        return byDay.keys.sorted(by: >).map { ($0, byDay[$0]!.sorted { $0.counterparty < $1.counterparty }) }
     }
+
+    private var spent: Decimal { inPeriod.filter { categoryKind($0.categoryID) == .spending }.reduce(0) { $0 - $1.amount } }
 
     var body: some View {
         NavigationStack {
-            List {
+            Screen(banner: true) {
+                PeriodHeader(subtitle: inPeriod.isEmpty ? nil : String(localized: "\(inPeriod.count) transactions · \(spent.sek) spent"))
                 if grouped.isEmpty {
-                    ContentUnavailableView("No transactions in this period", systemImage: "tray")
+                    Card {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("No transactions in this period").appFont(size: 16, weight: .semibold).foregroundStyle(Tokens.text)
+                            Text(model.isDemo ? "The sample covers the last three periods." : "Pull down to fetch again. New transactions show up once the bank has booked them.")
+                                .appFont(size: 14).foregroundStyle(Tokens.muted).fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                 }
                 ForEach(grouped, id: \.0) { day, items in
-                    Section(day.formatted(.dateTime.weekday(.wide).day().month(.wide))) {
-                        ForEach(items) { t in
-                            Button { editing = t } label: { row(t) }.tint(.primary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        SectionLabel(text: "\(day.formatted(.dateTime.weekday(.wide).day().month(.wide)))")
+                        RowCard {
+                            ForEach(items) { t in
+                                Button { editing = t } label: { row(t).contentShape(Rectangle()) }.buttonStyle(.plain)
+                                if t.id != items.last?.id { Hairline() }
+                            }
                         }
                     }
                 }
             }
-            .navigationTitle(PeriodText.title(model.selectedPeriod))
             .refreshable { await model.refresh() }
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $editing) { CategoryPicker(transaction: $0) }
         }
     }
 
     private func row(_ t: Transaction) -> some View {
-        HStack {
-            Image(systemName: CategoryInfo.symbol(t.categoryID)).foregroundStyle(.secondary).frame(width: 24)
-            VStack(alignment: .leading) {
-                Text(t.counterparty).lineLimit(1)
-                Text(CategoryInfo.name(t.categoryID)).font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-            Text(t.amount.sekExact).monospacedDigit().foregroundStyle(t.amount > 0 ? .green : .primary)
+        Row(title: t.counterparty, caption: CategoryInfo.name(t.categoryID), symbol: CategoryInfo.symbol(t.categoryID)) {
+            Text(t.amount.sekExact).font(Tokens.numberFont(size: 16, weight: .semibold))
+                .foregroundStyle(t.amount > 0 ? Tokens.accent : Tokens.text)
         }
     }
 }
@@ -52,30 +61,36 @@ struct CategoryPicker: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    Toggle("Always put \(transaction.counterparty) here", isOn: $always)
-                } footer: {
-                    Text("Creates a keyword rule you can edit under Settings.")
+            Screen {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(transaction.counterparty).appFont(size: 22, weight: .bold, rounded: true).foregroundStyle(Tokens.text)
+                    Text("\(transaction.amount.sekExact) · \(transaction.bookingDate.formatted(.dateTime.day().month(.wide)))").appFont(size: 15).foregroundStyle(Tokens.muted)
                 }
-                Section {
+                RowCard {
+                    Row(title: String(localized: "Always put it here"), caption: String(localized: "Creates a keyword rule you can edit under Settings.")) {
+                        Toggle("", isOn: $always).labelsHidden().tint(Tokens.accent)
+                    }
+                }
+                RowCard {
                     ForEach(CategoryInfo.all, id: \.self) { id in
                         Button {
                             model.setCategory(transaction, to: id, always: always)
                             dismiss()
                         } label: {
-                            HStack {
-                                Label(CategoryInfo.name(id), systemImage: CategoryInfo.symbol(id))
-                                Spacer()
-                                if id == transaction.categoryID { Image(systemName: "checkmark") }
+                            Row(title: CategoryInfo.name(id), symbol: CategoryInfo.symbol(id)) {
+                                if id == transaction.categoryID { Image(systemName: "checkmark").appFont(size: 15, weight: .semibold).foregroundStyle(Tokens.accent) }
                             }
+                            .contentShape(Rectangle())
                         }
-                        .tint(.primary)
+                        .buttonStyle(.plain)
+                        if id != CategoryInfo.all.last { Hairline() }
                     }
                 }
             }
-            .navigationTitle(transaction.amount.sekExact)
+            .navigationTitle("Category")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
         }
+        .tint(Tokens.accent)
     }
 }

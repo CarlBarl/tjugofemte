@@ -65,8 +65,10 @@ import BudgetCore
     @Test func settingsHoldThePeriodRuleAndRetention() throws {
         #expect(try store.settings().periodRule == PeriodRule(startDay: 25))
         #expect(try store.settings().retention == RetentionPolicy(months: 3))
+        #expect(try store.settings().planDone == false)
         var s = try store.settings()
         s.startDay = 27
+        s.planDone = true
         s.periodOverrides = [PeriodLabel(year: 2026, month: 12): day(2026, 11, 20)]
         s.retention = RetentionPolicy(months: 12)
         s.selectedAccountUID = "acc-1"
@@ -84,6 +86,7 @@ import BudgetCore
         #expect(back.ownAccountIDs == ["SE4550000000058398257466", "832791234567890"])
         #expect(back.authorizedAccounts.map(\.uid) == ["acc-1", "acc-2"])
         #expect(back.authorizedAccounts[1].subtitle == "•••• 0402")
+        #expect(back.planDone == true)
     }
 
     @Test func wipeEmptiesEveryTable() throws {

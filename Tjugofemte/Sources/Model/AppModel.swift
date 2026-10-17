@@ -53,6 +53,11 @@ final class AppModel {
         return .ready
     }
 
+    /// Demo counts as set up. A real install is set up once an account is chosen and the plan setup has run or been skipped;
+    /// until then the app opens in the start flow.
+    var isSetUp: Bool { isDemo || (stage == .ready && settings.planDone) }
+    var hasPlan: Bool { !budgets.isEmpty || !incomeSources.isEmpty }
+
     var periodRule: PeriodRule { settings.periodRule }
     var period: PayPeriod { periodRule.period(labeled: selectedPeriod) }
 
@@ -332,6 +337,27 @@ final class AppModel {
     func deleteBudget(categoryID: String) { do { try store.deleteBudget(categoryID: categoryID); reload() } catch { errorMessage = error.localizedDescription } }
     func saveIncomeSource(_ source: IncomeSource) { do { try store.saveIncomeSource(source); reload() } catch { errorMessage = error.localizedDescription } }
     func deleteIncomeSource(id: String) { do { try store.deleteIncomeSource(id: id); reload() } catch { errorMessage = error.localizedDescription } }
+
+    // MARK: Plan setup
+
+    func incomeSuggestions(rule: PeriodRule) -> [IncomeSuggestion] { PlanSuggestions.incomes(transactions: transactions, rule: rule) }
+    func budgetSuggestions(rule: PeriodRule) -> BudgetSuggestions { PlanSuggestions.budgets(transactions: transactions, rule: rule) }
+    func paydayGuess() -> Int? { PlanSuggestions.payday(transactions: transactions, rule: periodRule) }
+
+    /// The setup writes the whole plan at once; sources and budgets left out of it are removed.
+    func applyPlan(startDay: Int, incomes: [IncomeSource], budgets newBudgets: [Budget]) {
+        do {
+            for s in incomeSources where !incomes.contains { $0.id == s.id } { try store.deleteIncomeSource(id: s.id) }
+            for b in budgets where !newBudgets.contains { $0.categoryID == b.categoryID } { try store.deleteBudget(categoryID: b.categoryID) }
+            for s in incomes { try store.saveIncomeSource(s) }
+            for b in newBudgets { try store.saveBudget(b) }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        updateSettings { $0.startDay = startDay; $0.planDone = true }
+    }
+
+    func skipPlan() { updateSettings { $0.planDone = true } }
 
     func updateSettings(_ change: (inout Settings) -> Void) {
         var s = settings

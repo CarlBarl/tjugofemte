@@ -3,169 +3,227 @@ import BudgetCore
 
 struct OverviewView: View {
     @Environment(AppModel.self) private var model
-    @State private var showTargetMath = false
-    @State private var showLeftOverMath = false
+    @State private var explaining: ExplanationSheet.Content?
+    @State private var planning = false
+    @State private var reconnecting = false
 
     var body: some View {
         NavigationStack {
-            List {
-                if model.stage != .ready { setupSection }
-                if model.needsReauth { reauthSection }
-                periodHeader
-                targetSection
-                categoriesSection
-                if !model.summary.quarterly.isEmpty { quarterlySection }
-                if !model.summary.incomes.isEmpty || model.summary.otherIncome != 0 { incomeSection }
+            Screen(banner: true) {
+                PeriodHeader(subtitle: PeriodText.status(model.period))
+                if model.needsReauth {
+                    Banner(message: "Bank access has expired.", systemImage: "exclamationmark.triangle", tint: Tokens.over,
+                           action: ("Reconnect", { reconnecting = true }))
+                }
+                if model.hasPlan { heroCard } else { planCard }
+                soFarCard
+                if !model.summary.categories.isEmpty { budgetsCard }
+                if !model.summary.quarterly.isEmpty { quarterlyCard }
+                if !model.summary.incomes.isEmpty || model.summary.otherIncome != 0 { incomeCard }
             }
-            .navigationTitle("Tjugofemte")
             .refreshable { await model.refresh() }
-            .toolbar {
-                if model.isBusy { ToolbarItem(placement: .topBarTrailing) { ProgressView() } }
-            }
+            .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(isPresented: $reconnecting) { BankPickerView() }
+            .sheet(item: $explaining) { ExplanationSheet(content: $0) }
+            .sheet(isPresented: $planning) { PlanSetupView(mode: .revise) }
         }
     }
 
-    private var setupSection: some View {
-        Section {
-            if model.stage == .needsAccount {
-                NavigationLink { AccountPickerView() } label: {
-                    Label("Choose account", systemImage: "creditcard")
-                }
-            } else {
-                NavigationLink { OnboardingView() } label: {
-                    Label("Connect your bank", systemImage: "building.columns")
-                }
-            }
-            Button { model.startDemo() } label: {
-                Label("Try with sample data", systemImage: "sparkles")
-            }
-        } header: {
-            Text("Get started")
-        } footer: {
-            Text("Your transactions never leave this phone. Connecting takes about ten minutes the first time.")
-        }
-    }
+    // MARK: Cards
 
-    private var reauthSection: some View {
-        Section {
-            NavigationLink { BankPickerView() } label: {
-                Label("Bank access has expired. Reconnect", systemImage: "exclamationmark.triangle")
-            }
-        }
-    }
-
-    private var periodHeader: some View {
-        Section {
-            HStack {
-                Button { model.selectedPeriod = model.selectedPeriod.previous } label: { Image(systemName: "chevron.left") }
-                Spacer()
-                VStack {
-                    Text(PeriodText.title(model.selectedPeriod)).font(.headline)
-                    Text(PeriodText.range(model.period)).font(.caption).foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button { model.selectedPeriod = model.selectedPeriod.next } label: { Image(systemName: "chevron.right") }
-            }
-            .buttonStyle(.borderless)
-        }
-    }
-
-    private var targetSection: some View {
+    private var heroCard: some View {
         let s = model.summary
-        return Section {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Move to savings on payday").font(.subheadline).foregroundStyle(.secondary)
-                Text(s.savingsTarget.value.sek).font(.system(.largeTitle, design: .rounded, weight: .bold)).monospacedDigit()
-                if let adjusted = s.adjustedSavingsTarget {
-                    Text("Income came in below plan. Adjusted: \(adjusted.value.sek)").font(.footnote).foregroundStyle(.orange)
+        let shown = s.adjustedSavingsTarget ?? s.savingsTarget
+        return Card {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 6) {
+                    SectionLabel(text: "Move to savings on payday")
+                    Text(shown.value.sek).font(Tokens.numberFont(size: 44)).foregroundStyle(shown.value < 0 ? Tokens.over : Tokens.accent)
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                    if s.adjustedSavingsTarget != nil {
+                        Text("Income came in below plan, so the target is lowered from \(s.savingsTarget.value.sek).")
+                            .appFont(size: 13).foregroundStyle(Tokens.over).fixedSize(horizontal: false, vertical: true)
+                    }
                 }
-                DisclosureGroup("How is this calculated?", isExpanded: $showTargetMath) {
-                    ExplanationView(explained: s.adjustedSavingsTarget ?? s.savingsTarget).padding(.top, 4)
+                HStack(spacing: 12) {
+                    StatTile(label: "Planned income", value: term(s.savingsTarget, .plannedIncome).sek)
+                    StatTile(label: "Budgets", value: (-term(s.savingsTarget, .categoryBudgets)).sek)
+                    if term(s.savingsTarget, .quarterlySetAside) != 0 {
+                        StatTile(label: "Set aside", value: (-term(s.savingsTarget, .quarterlySetAside)).sek)
+                    }
                 }
-                .font(.footnote)
+                TextAction(title: "How is this calculated?") {
+                    explaining = .init(title: "Move to savings on payday", explained: shown,
+                                       note: "Planned income minus every budget, fixed when the period starts. Move it on payday and the rest of the month takes care of itself.")
+                }
+                .padding(.top, -6)
             }
-            .padding(.vertical, 4)
-
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text("Left over so far")
-                    Spacer()
-                    Text(s.leftOverSoFar.value.sek).monospacedDigit().foregroundStyle(s.leftOverSoFar.value < 0 ? .red : .primary)
-                }
-                DisclosureGroup("How is this calculated?", isExpanded: $showLeftOverMath) {
-                    ExplanationView(explained: s.leftOverSoFar).padding(.top, 4)
-                }
-                .font(.footnote)
-            }
-        } footer: {
-            Text("Income received minus what you have spent, minus the savings target you already moved.")
         }
     }
 
-    private var categoriesSection: some View {
-        Section("Budget vs actual") {
-            if model.summary.categories.isEmpty {
-                Text("No budgets yet. Add them under Plan.").foregroundStyle(.secondary)
+    private var planCard: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionLabel(text: "No plan yet")
+                Text("Set your income and budgets and this card becomes one number: what to move to savings on payday.")
+                    .appFont(size: 15).foregroundStyle(Tokens.body).fixedSize(horizontal: false, vertical: true)
+                BigButton(title: "Plan my budget") { planning = true }
             }
-            ForEach(model.summary.categories, id: \.categoryID) { line in
-                categoryRow(line)
+        }
+    }
+
+    private var soFarCard: some View {
+        let s = model.summary
+        let received = term(s.leftOverSoFar, .actualIncome)
+        let spent = -term(s.leftOverSoFar, .actualSpending)
+        return Card {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 6) {
+                    SectionLabel(text: "So far this period")
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(s.leftOverSoFar.value.sek).font(Tokens.numberFont(size: 28)).foregroundStyle(s.leftOverSoFar.value < 0 ? Tokens.over : Tokens.text)
+                        Text("left over").appFont(size: 15).foregroundStyle(Tokens.muted)
+                    }
+                }
+                HStack(spacing: 12) {
+                    StatTile(label: "Received", value: received.sek)
+                    StatTile(label: "Spent", value: spent.sek)
+                    StatTile(label: "Savings target", value: term(s.leftOverSoFar, .savingsTarget) == 0 ? "–" : (-term(s.leftOverSoFar, .savingsTarget)).sek)
+                }
+                TextAction(title: "How is this calculated?") {
+                    explaining = .init(title: "Left over so far", explained: s.leftOverSoFar,
+                                       note: "Income received minus what you have spent, minus the savings target you move on payday. Negative means the month is running ahead of the plan.")
+                }
+                .padding(.top, -6)
+            }
+        }
+    }
+
+    private var budgetsCard: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 14) {
+                SectionLabel(text: "Budgets")
+                ForEach(sortedCategories, id: \.categoryID) { line in
+                    categoryRow(line)
+                    if line.categoryID != sortedCategories.last?.categoryID { Hairline() }
+                }
+            }
+        }
+    }
+
+    private var sortedCategories: [CategoryLine] {
+        model.summary.categories.sorted {
+            switch ($0.budget, $1.budget) {
+            case let (a?, b?): a != b ? a > b : $0.categoryID < $1.categoryID
+            case (.some, .none): true
+            case (.none, .some): false
+            case (.none, .none): $0.actual != $1.actual ? $0.actual > $1.actual : $0.categoryID < $1.categoryID
             }
         }
     }
 
     private func categoryRow(_ line: CategoryLine) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Label(CategoryInfo.name(line.categoryID), systemImage: CategoryInfo.symbol(line.categoryID))
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                CategoryGlyph(symbol: CategoryInfo.symbol(line.categoryID), tint: (line.remaining ?? 0) < 0 ? Tokens.over : Tokens.accent)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(CategoryInfo.name(line.categoryID)).appFont(size: 16, weight: .medium).foregroundStyle(Tokens.text)
+                    Text(remainingText(line)).appFont(size: 13).foregroundStyle((line.remaining ?? 0) < 0 ? Tokens.over : Tokens.dim)
+                }
                 Spacer()
-                Text(amountText(line)).monospacedDigit().font(.subheadline)
-            }
-            AmountBar(actual: line.actual, budget: line.budget)
-            if let remaining = line.remaining {
-                Text(remainingText(remaining)).font(.caption).foregroundStyle(remaining >= 0 ? Color.secondary : Color.red)
-            }
-        }
-        .padding(.vertical, 2)
-    }
-
-    private func amountText(_ line: CategoryLine) -> String {
-        if let budget = line.budget { return "\(line.actual.sek) / \(budget.sek)" }
-        return line.actual.sek
-    }
-
-    private func remainingText(_ remaining: Decimal) -> String {
-        remaining >= 0 ? String(localized: "\(remaining.sek) left") : String(localized: "\((-remaining).sek) over")
-    }
-
-    private var quarterlySection: some View {
-        Section("Quarterly costs") {
-            ForEach(model.summary.quarterly, id: \.categoryID) { line in
-                VStack(alignment: .leading, spacing: 4) {
-                    Label(CategoryInfo.name(line.categoryID), systemImage: CategoryInfo.symbol(line.categoryID))
-                    Text("Set aside \(line.setAsideSoFar.sek) of \(line.quarterlyAmount.sek) so far, paid \(line.paidSoFar.sek) this quarter.")
-                        .font(.caption).foregroundStyle(.secondary)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(line.actual.sek).font(Tokens.numberFont(size: 16, weight: .semibold)).foregroundStyle(Tokens.text)
+                    if let budget = line.budget { Text("of \(budget.sek)").appFont(size: 12).foregroundStyle(Tokens.dim) }
                 }
             }
+            AmountBar(actual: line.actual, budget: line.budget)
         }
     }
 
-    private var incomeSection: some View {
-        Section("Income") {
-            ForEach(model.summary.incomes, id: \.sourceID) { line in
-                HStack {
-                    Text(model.incomeSources.first { $0.id == line.sourceID }?.name ?? line.sourceID)
-                    Spacer()
-                    if let actual = line.actual {
-                        Text(actual == 0 ? String(localized: "Not received") : "\(actual.sek) / \(line.planned.sek)")
-                            .monospacedDigit().foregroundStyle(actual == 0 ? .secondary : .primary)
-                    } else {
-                        Text("\(line.planned.sek) planned").foregroundStyle(.secondary)
+    private func remainingText(_ line: CategoryLine) -> String {
+        guard let remaining = line.remaining else { return String(localized: "No budget") }
+        return remaining >= 0 ? String(localized: "\(remaining.sek) left") : String(localized: "\((-remaining).sek) over")
+    }
+
+    private var quarterlyCard: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 14) {
+                SectionLabel(text: "Quarterly costs")
+                ForEach(model.summary.quarterly, id: \.categoryID) { line in
+                    Row(title: CategoryInfo.name(line.categoryID),
+                        caption: String(localized: "Set aside \(line.setAsideSoFar.sek) of \(line.quarterlyAmount.sek) so far, paid \(line.paidSoFar.sek) this quarter."),
+                        symbol: CategoryInfo.symbol(line.categoryID)) {
+                        Text(line.setAsidePerPeriod.sek).font(Tokens.numberFont(size: 16, weight: .semibold)).foregroundStyle(Tokens.text)
                     }
                 }
             }
-            if model.summary.otherIncome != 0 {
-                HStack { Text("Other income"); Spacer(); Text(model.summary.otherIncome.sek).monospacedDigit() }
+        }
+    }
+
+    private var incomeCard: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 14) {
+                SectionLabel(text: "Income")
+                ForEach(model.summary.incomes, id: \.sourceID) { line in
+                    HStack {
+                        Text(model.incomeSources.first { $0.id == line.sourceID }?.name ?? line.sourceID).appFont(size: 16, weight: .medium).foregroundStyle(Tokens.text)
+                        Spacer()
+                        incomeValue(line)
+                    }
+                }
+                if model.summary.otherIncome != 0 {
+                    HStack {
+                        Text("Other income").appFont(size: 16, weight: .medium).foregroundStyle(Tokens.text)
+                        Spacer()
+                        Text(model.summary.otherIncome.sek).font(Tokens.numberFont(size: 16, weight: .semibold)).foregroundStyle(Tokens.accent)
+                    }
+                }
             }
         }
+    }
+
+    @ViewBuilder private func incomeValue(_ line: IncomeLine) -> some View {
+        if let actual = line.actual {
+            if actual == 0 {
+                Text("Not yet · \(line.planned.sek) planned").appFont(size: 14).foregroundStyle(Tokens.muted)
+            } else {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(actual.sek).font(Tokens.numberFont(size: 16, weight: .semibold)).foregroundStyle(Tokens.accent)
+                    Text("of \(line.planned.sek)").appFont(size: 12).foregroundStyle(Tokens.dim)
+                }
+            }
+        } else {
+            Text("\(line.planned.sek) planned").appFont(size: 14).foregroundStyle(Tokens.muted)
+        }
+    }
+
+    private func term(_ explained: Explained, _ kind: Explained.Kind) -> Decimal {
+        explained.terms.first { $0.kind == kind }?.amount ?? 0
+    }
+}
+
+/// "How is this calculated": the terms, the total, one sentence of why.
+struct ExplanationSheet: View {
+    struct Content: Identifiable {
+        let id = UUID()
+        let title: LocalizedStringKey
+        let explained: Explained
+        let note: LocalizedStringKey
+    }
+
+    @Environment(\.dismiss) private var dismiss
+    let content: Content
+
+    var body: some View {
+        NavigationStack {
+            Screen {
+                Text(content.title).appFont(size: 26, weight: .bold, rounded: true).foregroundStyle(Tokens.text)
+                Card { ExplanationView(explained: content.explained) }
+                Text(content.note).appFont(size: 15).foregroundStyle(Tokens.muted).fixedSize(horizontal: false, vertical: true)
+            }
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .tint(Tokens.accent)
+        .presentationDetents([.medium, .large])
     }
 }

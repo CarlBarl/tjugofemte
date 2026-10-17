@@ -27,6 +27,7 @@ struct DataPageView: View {
                 Text("The private key is protected by the Keychain and your passcode, not by the Secure Enclave, because Enable Banking requires RSA. Enable Banking can see which accounts you access and when. The source code is public so all of this can be checked.")
             }
         }
+        .appList()
         .navigationTitle("Your data")
     }
 

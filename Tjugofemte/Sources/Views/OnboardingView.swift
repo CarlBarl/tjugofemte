@@ -6,14 +6,12 @@ import EnableBankingKit
 struct OnboardingView: View {
     @Environment(AppModel.self) private var model
     @State private var step = 0
+    @State private var choosingBank = false
 
     private let stepCount = 5
 
     var body: some View {
         VStack(spacing: 0) {
-            ProgressView(value: Double(step + 1), total: Double(stepCount))
-                .padding(.horizontal)
-                .padding(.top, 4)
             TabView(selection: $step) {
                 KeyStep().tag(0)
                 RegisterStep().tag(1)
@@ -22,20 +20,30 @@ struct OnboardingView: View {
                 ConnectStep().tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
-            HStack {
-                Button("Back") { withAnimation { step -= 1 } }.disabled(step == 0)
-                Spacer()
-                Text("Step \(step + 1) of \(stepCount)").font(.footnote).foregroundStyle(.secondary)
-                Spacer()
-                Button("Next") { withAnimation { step += 1 } }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(step == stepCount - 1 || !canAdvance)
+            VStack(spacing: 6) {
+                HStack {
+                    Group { if step > 0 { TextAction(title: "Back") { withAnimation(.snappy) { step -= 1 } } } }
+                        .frame(width: 110, alignment: .leading)
+                    Spacer()
+                    StepDots(count: stepCount, current: step)
+                    Spacer()
+                    Text("Step \(step + 1) of \(stepCount)").appFont(size: 13).foregroundStyle(Tokens.dim)
+                        .frame(width: 110, alignment: .trailing)
+                }
+                if step < stepCount - 1 {
+                    BigButton(title: "Next", isEnabled: canAdvance) { withAnimation(.snappy) { step += 1 } }
+                } else {
+                    BigButton(title: "Choose bank", isEnabled: model.stage != .needsKey && model.stage != .needsApplicationID) { choosingBank = true }
+                }
             }
-            .padding()
-            .background(.bar)
+            .padding(.horizontal, Tokens.screenPadding)
+            .padding(.vertical, 12)
+            .background(Tokens.bg)
         }
+        .background(Tokens.bg)
         .navigationTitle("Connect your bank")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(isPresented: $choosingBank) { BankPickerView() }
         .onAppear { step = firstOpenStep }
     }
 
@@ -55,17 +63,19 @@ struct OnboardingView: View {
     }
 }
 
+/// The step's title and one paragraph, above the list rather than inside it.
 private struct StepIntro: View {
     let title: LocalizedStringKey
     let text: LocalizedStringKey
     var body: some View {
-        Section {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title).font(.title2.bold())
-                Text(text).foregroundStyle(.secondary)
-            }
-            .padding(.vertical, 4)
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title).appFont(size: 28, weight: .bold, rounded: true).foregroundStyle(Tokens.text)
+            Text(text).appFont(size: 15).foregroundStyle(Tokens.muted)
         }
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, Tokens.screenPadding)
+        .padding(.top, 8)
     }
 }
 
@@ -111,8 +121,9 @@ private struct KeyStep: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        List {
+        VStack(spacing: 0) {
             StepIntro(title: "Your key", text: "Tjugofemte never sees your bank data. Your phone creates a key, you register it at Enable Banking yourself, and the phone talks to the bank directly. About ten minutes, once.")
+            List {
             Section {
                 if model.hasKey, let pem = model.publicKeyPEM() {
                     Label("Key created inside this phone", systemImage: "checkmark.seal.fill").foregroundStyle(.green)
@@ -132,7 +143,10 @@ private struct KeyStep: View {
             } footer: {
                 Text("The private half never leaves the phone and cannot be exported. The public half is what you hand to Enable Banking in the next step. Sharing it is safe.")
             }
+            }
+            .appList()
         }
+        .background(Tokens.bg)
     }
 }
 
@@ -140,8 +154,9 @@ private struct RegisterStep: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        List {
+        VStack(spacing: 0) {
             StepIntro(title: "Register the app at Enable Banking", text: "Open the control panel, sign in with your email, and fill the form below in this order. Every value is one tap to copy.")
+            List {
             Section {
                 Link(destination: Links.controlPanel) { Label("Open the Enable Banking control panel", systemImage: "safari") }
                 Text("If you prefer a computer: share the public key to it from the previous step, do this step there, and come back here for step 3.")
@@ -161,7 +176,10 @@ private struct RegisterStep: View {
                 }
                 InfoRow(label: "Then", value: "Tap Register")
             }
+            }
+            .appList()
         }
+        .background(Tokens.bg)
     }
 }
 
@@ -170,8 +188,9 @@ private struct ApplicationIDStep: View {
     @State private var typed = ""
 
     var body: some View {
-        List {
+        VStack(spacing: 0) {
             StepIntro(title: "Application ID", text: "After Register, the control panel shows your application with its ID in the heading, next to the name. Copy it and paste it here.")
+            List {
             Section {
                 if let id = model.applicationID {
                     Label(id, systemImage: "checkmark.seal.fill").font(.system(.footnote, design: .monospaced)).foregroundStyle(.green)
@@ -187,14 +206,18 @@ private struct ApplicationIDStep: View {
             } footer: {
                 Text("Looks like 7577f15e-45a9-43cd-a1b3-4f5b1d3387f2. It is not secret, but it is yours.")
             }
+            }
+            .appList()
         }
+        .background(Tokens.bg)
     }
 }
 
 private struct LinkAccountsStep: View {
     var body: some View {
-        List {
+        VStack(spacing: 0) {
             StepIntro(title: "Link your accounts", text: "This is what makes the free personal mode work: Enable Banking only ever returns the accounts you link here.")
+            List {
             Section {
                 InfoRow(label: "1", value: "On your application's page in the control panel, tap “Activate by linking accounts”.")
                 InfoRow(label: "2", value: "Choose Sweden, your bank, and personal. Tap Link.")
@@ -209,7 +232,10 @@ private struct LinkAccountsStep: View {
                 }
                 .font(.footnote)
             }
+            }
+            .appList()
         }
+        .background(Tokens.bg)
     }
 }
 
@@ -217,14 +243,16 @@ private struct ConnectStep: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        List {
+        VStack(spacing: 0) {
             StepIntro(title: "Connect", text: "Last step. Choose your bank, log in with BankID, and pick the account your salary lands on.")
+            List {
             Section {
-                NavigationLink { BankPickerView() } label: { Label("Choose bank", systemImage: "building.columns") }
-                    .disabled(model.stage == .needsKey || model.stage == .needsApplicationID)
-            } footer: {
-                Text("Bank access lasts up to 180 days. The app reminds you before it ends.")
+                Label("Bank access lasts up to 180 days. The app reminds you before it ends.", systemImage: "clock")
+                    .font(.footnote).foregroundStyle(.secondary)
             }
+            }
+            .appList()
         }
+        .background(Tokens.bg)
     }
 }

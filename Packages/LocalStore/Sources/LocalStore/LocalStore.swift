@@ -27,6 +27,8 @@ public struct Settings: Equatable, Sendable {
     /// Identifiers of every account the user authorised, so transfers between them are recognized on later fetches.
     public var ownAccountIDs: Set<String> = []
     public var authorizedAccounts: [AuthorizedAccount] = []
+    /// The guided plan setup has run (or been skipped) once; until then the app opens in it.
+    public var planDone = false
 
     public init() {}
 
@@ -208,6 +210,7 @@ public final class LocalStore: Sendable {
             var s = Settings()
             if let v = raw["start_day"].flatMap(Int.init) { s.startDay = v }
             if let v = raw["retention_months"].flatMap(Int.init) { s.retention = RetentionPolicy(months: v) }
+            s.planDone = raw["plan_done"] == "1"
             s.selectedAccountUID = raw["selected_account_uid"]
             s.bankName = raw["bank_name"]
             s.consentValidUntil = raw["consent_valid_until"].flatMap { Double($0) }.map(Date.init(timeIntervalSince1970:))
@@ -235,6 +238,7 @@ public final class LocalStore: Sendable {
         let pairs: [(String, String?)] = [
             ("start_day", String(s.startDay)),
             ("retention_months", String(s.retention.months)),
+            ("plan_done", s.planDone ? "1" : "0"),
             ("selected_account_uid", s.selectedAccountUID),
             ("bank_name", s.bankName),
             ("consent_valid_until", s.consentValidUntil.map { String($0.timeIntervalSince1970) }),

@@ -35,6 +35,7 @@ struct RulesView: View {
                 .onDelete { offsets in offsets.map { model.rules[$0] }.forEach(model.deleteRule) }
             }
         }
+        .appList()
         .navigationTitle("Keyword rules")
     }
 }

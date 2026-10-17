@@ -14,18 +14,22 @@
 		24CE743BBD2CAEB39246D655 /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA1A775BA4E51292AC5A6687 /* AuthCoordinator.swift */; };
 		2D1B3C28EFFC63A147DDBA48 /* LocalStore in Frameworks */ = {isa = PBXBuildFile; productRef = 73D9DC5C3081A1D5CC32BFB0 /* LocalStore */; };
 		34F916F171B81B961789601E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9E0D7748BB939EC0106F8887 /* Localizable.xcstrings */; };
+		3A788F1727D2D66CCA79F4D4 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F0F82ABCB6AB1F589F2A9E0 /* Components.swift */; };
 		3B5AE5FF2D847056B2117B64 /* EnableBankingKit in Frameworks */ = {isa = PBXBuildFile; productRef = BEEFF995731D5ACB0A5669EE /* EnableBankingKit */; };
 		41982BC630FA9E1BD57FFEB0 /* PlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4002BEE4C453F1223B4076 /* PlanView.swift */; };
+		4A603CAD127DBBFF57A8F223 /* PlanSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7592D05E606C071FBEF92942 /* PlanSetupView.swift */; };
 		5AE31B2CBCB428ED4F2A456B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E1760223BAF826D936A9DF /* OnboardingView.swift */; };
 		5B1B53DF04FF0082ABE0074C /* BankViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2842F7C4A3D3DCD43A04255D /* BankViews.swift */; };
 		724D01E80492B1BA719C6256 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F54943C28D2B21C485DDD70 /* RulesView.swift */; };
 		7268EC1CDF0C7C274D2B6A70 /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE77E8BAC06D0D2DE5803399 /* OverviewView.swift */; };
 		7339B66AA3C8AE822F23B855 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C67FCF3B1D79117015DD7A4 /* DemoData.swift */; };
 		78F10FE3F4CAC8A8C7F70B05 /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7DED7B9B3A6FE6CD7FFE720 /* Links.swift */; };
+		8BD920960C04B1939B431A23 /* StartFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8377CB5A51D711512AAC205 /* StartFlow.swift */; };
 		A0AB9953A5864F5C9BC70D31 /* TjugofemteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9251E7846E548859451A65 /* TjugofemteApp.swift */; };
-		A934EC3E7CCF4B27C1F9047F /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBE5A5E23218EFFD4D4CA74 /* Components.swift */; };
 		C9A95525E46DFAFF5F5FABEC /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85304AD5DD4BED2309CAF6D6 /* RootView.swift */; };
 		D0470D173F307B375922A8C8 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1C268E374B5F4B59F57263 /* TransactionsView.swift */; };
+		D86BB65A038B623B06EA9088 /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC18E455048B9AD580426915 /* Tokens.swift */; };
+		F0D8C1BB987F0846B6B850C9 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE7C653DFD30A13EBD95405 /* Shared.swift */; };
 		F9C82B06A0720BD83611EF15 /* BudgetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5C6AA8E3DF0DF7B964ABB156 /* BudgetCore */; };
 		FFAD0462F767AC70D0C5D257 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FCA31158650BDD105DF36A /* AppModel.swift */; };
 /* End PBXBuildFile section */
@@ -37,6 +41,8 @@
 		3F54943C28D2B21C485DDD70 /* RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesView.swift; sourceTree = "<group>"; };
 		4C67FCF3B1D79117015DD7A4 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		6E9E99AAA2C80B5C7AEA8019 /* Tjugofemte.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Tjugofemte.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6F0F82ABCB6AB1F589F2A9E0 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		7592D05E606C071FBEF92942 /* PlanSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSetupView.swift; sourceTree = "<group>"; };
 		85304AD5DD4BED2309CAF6D6 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		90B882996C671EBCCF6D8593 /* BudgetCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BudgetCore; path = Packages/BudgetCore; sourceTree = SOURCE_ROOT; };
 		9E0D7748BB939EC0106F8887 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -44,13 +50,15 @@
 		AB1C268E374B5F4B59F57263 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		AB9251E7846E548859451A65 /* TjugofemteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TjugofemteApp.swift; sourceTree = "<group>"; };
 		B5E1760223BAF826D936A9DF /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		BC18E455048B9AD580426915 /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
 		C0B525E58CCB2C505C7FB5BE /* EnableBankingKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = EnableBankingKit; path = Packages/EnableBankingKit; sourceTree = SOURCE_ROOT; };
 		C7DED7B9B3A6FE6CD7FFE720 /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
 		C9F5635B3271BFD72529142A /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		CE77E8BAC06D0D2DE5803399 /* OverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewView.swift; sourceTree = "<group>"; };
 		D47E2863D522850AEE18F9DC /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
-		DFBE5A5E23218EFFD4D4CA74 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		E7B5489819F04085D120B677 /* DataPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataPageView.swift; sourceTree = "<group>"; };
+		E8377CB5A51D711512AAC205 /* StartFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartFlow.swift; sourceTree = "<group>"; };
+		EEE7C653DFD30A13EBD95405 /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
 		F020CB272040722CE737675B /* LocalStore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LocalStore; path = Packages/LocalStore; sourceTree = SOURCE_ROOT; };
 		FA1A775BA4E51292AC5A6687 /* AuthCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCoordinator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -73,14 +81,16 @@
 			isa = PBXGroup;
 			children = (
 				2842F7C4A3D3DCD43A04255D /* BankViews.swift */,
-				DFBE5A5E23218EFFD4D4CA74 /* Components.swift */,
 				E7B5489819F04085D120B677 /* DataPageView.swift */,
 				B5E1760223BAF826D936A9DF /* OnboardingView.swift */,
 				CE77E8BAC06D0D2DE5803399 /* OverviewView.swift */,
+				7592D05E606C071FBEF92942 /* PlanSetupView.swift */,
 				0A4002BEE4C453F1223B4076 /* PlanView.swift */,
 				85304AD5DD4BED2309CAF6D6 /* RootView.swift */,
 				3F54943C28D2B21C485DDD70 /* RulesView.swift */,
 				0E112C69A713E85D6674F36B /* SettingsView.swift */,
+				EEE7C653DFD30A13EBD95405 /* Shared.swift */,
+				E8377CB5A51D711512AAC205 /* StartFlow.swift */,
 				AB1C268E374B5F4B59F57263 /* TransactionsView.swift */,
 			);
 			path = Views;
@@ -90,6 +100,7 @@
 			isa = PBXGroup;
 			children = (
 				AB9251E7846E548859451A65 /* TjugofemteApp.swift */,
+				63ACF01B9A58244291E0038C /* Design */,
 				FC0192E182ACFCD85E0E6870 /* Model */,
 				1D00C76944D29FE98BCBD43B /* Views */,
 			);
@@ -122,6 +133,15 @@
 				1E55A506B576020F715579E9 /* Sources */,
 			);
 			path = Tjugofemte;
+			sourceTree = "<group>";
+		};
+		63ACF01B9A58244291E0038C /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				6F0F82ABCB6AB1F589F2A9E0 /* Components.swift */,
+				BC18E455048B9AD580426915 /* Tokens.swift */,
+			);
+			path = Design;
 			sourceTree = "<group>";
 		};
 		CB0D88892C965C7BBEFBB978 /* Products */ = {
@@ -237,7 +257,7 @@
 				FFAD0462F767AC70D0C5D257 /* AppModel.swift in Sources */,
 				24CE743BBD2CAEB39246D655 /* AuthCoordinator.swift in Sources */,
 				5B1B53DF04FF0082ABE0074C /* BankViews.swift in Sources */,
-				A934EC3E7CCF4B27C1F9047F /* Components.swift in Sources */,
+				3A788F1727D2D66CCA79F4D4 /* Components.swift in Sources */,
 				1ED17D2A07DE15AE92AD5C8E /* DataPageView.swift in Sources */,
 				7339B66AA3C8AE822F23B855 /* DemoData.swift in Sources */,
 				05C94837593E52E908030C2C /* Keychain.swift in Sources */,
@@ -245,11 +265,15 @@
 				05BF63E79BE25C08C62F6649 /* Notifications.swift in Sources */,
 				5AE31B2CBCB428ED4F2A456B /* OnboardingView.swift in Sources */,
 				7268EC1CDF0C7C274D2B6A70 /* OverviewView.swift in Sources */,
+				4A603CAD127DBBFF57A8F223 /* PlanSetupView.swift in Sources */,
 				41982BC630FA9E1BD57FFEB0 /* PlanView.swift in Sources */,
 				C9A95525E46DFAFF5F5FABEC /* RootView.swift in Sources */,
 				724D01E80492B1BA719C6256 /* RulesView.swift in Sources */,
 				1E24B8236A7B4E8FFDAFB9F7 /* SettingsView.swift in Sources */,
+				F0D8C1BB987F0846B6B850C9 /* Shared.swift in Sources */,
+				8BD920960C04B1939B431A23 /* StartFlow.swift in Sources */,
 				A0AB9953A5864F5C9BC70D31 /* TjugofemteApp.swift in Sources */,
+				D86BB65A038B623B06EA9088 /* Tokens.swift in Sources */,
 				D0470D173F307B375922A8C8 /* TransactionsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -5,78 +5,126 @@ struct PlanView: View {
     @Environment(AppModel.self) private var model
     @State private var editingSource: IncomeSource?
     @State private var editingBudget: Budget?
-    @State private var addingBudget = false
+    @State private var revising = false
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    HStack {
-                        Text("Savings target per period")
-                        Spacer()
-                        Text(model.summary.savingsTarget.value.sek).bold().monospacedDigit()
-                    }
-                } footer: {
-                    Text("Planned income minus every budget below. This is the amount to move on payday.")
+            Screen(banner: true) {
+                ScreenTitle(label: "Plan", title: String(localized: "Your plan"),
+                            subtitle: String(localized: "Planned income minus every budget is the number to move on payday."))
+                targetCard
+                paydayCard
+                SectionLabel(text: "Income").padding(.top, 8)
+                incomeCard
+                TextAction(title: "Add income", systemImage: "plus") {
+                    editingSource = IncomeSource(id: UUID().uuidString, name: "", plannedAmount: 0, keyword: nil)
                 }
-
-                Section {
-                    ForEach(model.incomeSources) { source in
-                        Button { editingSource = source } label: {
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(source.name)
-                                    Text(source.keyword.map { String(localized: "Matches “\($0)”") } ?? String(localized: "Plan only, not matched to transactions"))
-                                        .font(.caption).foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                Text(source.plannedAmount.sek).monospacedDigit()
-                            }
-                        }
-                        .tint(.primary)
-                    }
-                    .onDelete { offsets in offsets.map { model.incomeSources[$0].id }.forEach(model.deleteIncomeSource) }
-                    Button { editingSource = IncomeSource(id: UUID().uuidString, name: "", plannedAmount: 0, keyword: nil) } label: {
-                        Label("Add income source", systemImage: "plus")
-                    }
-                } header: {
-                    Text("Planned income")
-                } footer: {
-                    Text("Salary, a partner's share of the rent, CSN. A keyword lets the app match the real deposit against the plan.")
-                }
-
-                Section {
-                    ForEach(model.budgets, id: \.categoryID) { budget in
-                        Button { editingBudget = budget } label: {
-                            HStack {
-                                Label(CategoryInfo.name(budget.categoryID), systemImage: CategoryInfo.symbol(budget.categoryID))
-                                Spacer()
-                                VStack(alignment: .trailing) {
-                                    Text(budget.amount.sek).monospacedDigit()
-                                    if case .quarterly = budget.cadence { Text("per quarter").font(.caption).foregroundStyle(.secondary) }
-                                }
-                            }
-                        }
-                        .tint(.primary)
-                    }
-                    .onDelete { offsets in offsets.map { model.budgets[$0].categoryID }.forEach { model.deleteBudget(categoryID: $0) } }
-                    Button { addingBudget = true } label: { Label("Add budget", systemImage: "plus") }
-                        .disabled(availableCategories.isEmpty)
-                } header: {
-                    Text("Budgets")
-                } footer: {
-                    Text("Quarterly costs are spread as a third per period.")
+                SectionLabel(text: "Budgets").padding(.top, 8)
+                budgetsCard
+                HStack(spacing: 20) {
+                    addBudgetMenu
+                    TextAction(title: "Suggest from history", systemImage: "wand.and.stars") { revising = true }
                 }
             }
-            .navigationTitle("Plan")
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $editingSource) { IncomeSourceForm(source: $0) }
             .sheet(item: $editingBudget) { BudgetForm(budget: $0) }
-            .confirmationDialog("Which category?", isPresented: $addingBudget, titleVisibility: .visible) {
-                ForEach(availableCategories, id: \.self) { id in
-                    Button(CategoryInfo.name(id)) { editingBudget = Budget(categoryID: id, amount: 0, cadence: .monthly) }
+            .sheet(isPresented: $revising) { PlanSetupView(mode: .revise) }
+        }
+    }
+
+    private var targetCard: some View {
+        let s = model.summary
+        return Card {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 6) {
+                    SectionLabel(text: "Move to savings on payday")
+                    Text(s.savingsTarget.value.sek).font(Tokens.numberFont(size: 36)).foregroundStyle(s.savingsTarget.value < 0 ? Tokens.over : Tokens.accent)
                 }
+                ExplanationView(explained: s.savingsTarget)
             }
         }
+    }
+
+    private var paydayCard: some View {
+        RowCard {
+            Row(title: String(localized: "Payday"), caption: PeriodText.range(model.period)) {
+                Picker("Payday", selection: Binding(get: { model.settings.startDay }, set: { day in model.updateSettings { $0.startDay = day } })) {
+                    ForEach(1...28, id: \.self) { Text(PeriodText.ordinalDay($0)).tag($0) }
+                }
+                .pickerStyle(.menu)
+                .tint(Tokens.accent)
+            }
+        }
+    }
+
+    private var incomeCard: some View {
+        RowCard {
+            if model.incomeSources.isEmpty {
+                Row(title: String(localized: "No income yet"), caption: String(localized: "Salary, a partner's share of the rent, CSN.")) { EmptyView() }
+            }
+            ForEach(model.incomeSources) { source in
+                Button { editingSource = source } label: {
+                    Row(title: source.name,
+                        caption: source.keyword.map { String(localized: "Matches “\($0)”") } ?? String(localized: "Plan only, not matched to transactions")) {
+                        Text(source.plannedAmount.sek).font(Tokens.numberFont(size: 16, weight: .semibold)).foregroundStyle(Tokens.text)
+                        Chevron()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                if source.id != model.incomeSources.last?.id { Hairline() }
+            }
+        }
+    }
+
+    private var budgetsCard: some View {
+        RowCard {
+            if model.budgets.isEmpty {
+                Row(title: String(localized: "No budgets yet"), caption: String(localized: "Add one per category, or let history suggest them.")) { EmptyView() }
+            }
+            ForEach(sortedBudgets, id: \.categoryID) { budget in
+                Button { editingBudget = budget } label: {
+                    Row(title: CategoryInfo.name(budget.categoryID), caption: cadenceText(budget), symbol: CategoryInfo.symbol(budget.categoryID)) {
+                        Text(budget.amount.sek).font(Tokens.numberFont(size: 16, weight: .semibold)).foregroundStyle(Tokens.text)
+                        Chevron()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                if budget.categoryID != sortedBudgets.last?.categoryID { Hairline() }
+            }
+        }
+    }
+
+    private var sortedBudgets: [Budget] {
+        model.budgets.sorted { ($0.amount, $1.categoryID) > ($1.amount, $0.categoryID) }
+    }
+
+    private func cadenceText(_ budget: Budget) -> String? {
+        if case .quarterly(let month) = budget.cadence {
+            return String(localized: "Per quarter, due \(Calendar.current.shortStandaloneMonthSymbols[month - 1]). A third is set aside each period.")
+        }
+        return nil
+    }
+
+    private var addBudgetMenu: some View {
+        Menu {
+            ForEach(availableCategories, id: \.self) { id in
+                Button { editingBudget = Budget(categoryID: id, amount: 0, cadence: .monthly) } label: {
+                    Label(CategoryInfo.name(id), systemImage: CategoryInfo.symbol(id))
+                }
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "plus")
+                Text("Add budget")
+            }
+            .appFont(size: 15, weight: .semibold)
+            .foregroundStyle(availableCategories.isEmpty ? Tokens.dim : Tokens.accent)
+            .frame(minHeight: Tokens.minimumTapTarget)
+        }
+        .disabled(availableCategories.isEmpty)
     }
 
     private var availableCategories: [String] {
@@ -89,29 +137,43 @@ struct IncomeSourceForm: View {
     @Environment(\.dismiss) private var dismiss
     @State var source: IncomeSource
     @State private var keyword: String
+    private let isNew: Bool
 
     init(source: IncomeSource) {
         _source = State(initialValue: source)
         _keyword = State(initialValue: source.keyword ?? "")
+        isNew = source.name.isEmpty
     }
 
     var body: some View {
         NavigationStack {
-            Form {
-                TextField("Name", text: $source.name)
-                TextField("Amount per period", value: $source.plannedAmount, format: .number).keyboardType(.numberPad)
-                Section {
-                    TextField("Keyword, for example lön", text: $keyword).textInputAutocapitalization(.never)
-                } footer: {
-                    Text("Deposits whose text contains the keyword count as this income. Leave empty for income that never reaches this account.")
+            Screen {
+                RowCard {
+                    Row(title: String(localized: "Name")) { PillTextField(placeholder: "Salary", text: $source.name).frame(width: 170) }
+                    Hairline()
+                    Row(title: String(localized: "Amount per period")) { AmountField(value: $source.plannedAmount) }
+                    Hairline()
+                    Row(title: String(localized: "Keyword"), caption: String(localized: "Deposits whose text contains it count as this income. Leave empty for income that never reaches this account.")) {
+                        PillTextField(placeholder: "lön", text: $keyword).frame(width: 130).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    }
+                }
+                if !isNew {
+                    TextAction(title: "Remove this income", systemImage: "trash", tint: Tokens.over) {
+                        model.deleteIncomeSource(id: source.id)
+                        dismiss()
+                    }
                 }
             }
-            .navigationTitle(source.name.isEmpty ? String(localized: "New income source") : source.name)
+            .keyboardDone()
+            .navigationTitle(isNew ? String(localized: "New income") : source.name)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        source.keyword = keyword.trimmingCharacters(in: .whitespaces).isEmpty ? nil : keyword.trimmingCharacters(in: .whitespaces)
+                        let trimmed = keyword.trimmingCharacters(in: .whitespaces)
+                        source.keyword = trimmed.isEmpty ? nil : trimmed
+                        source.name = source.name.trimmingCharacters(in: .whitespaces)
                         model.saveIncomeSource(source)
                         dismiss()
                     }
@@ -119,6 +181,7 @@ struct IncomeSourceForm: View {
                 }
             }
         }
+        .tint(Tokens.accent)
     }
 }
 
@@ -128,6 +191,7 @@ struct BudgetForm: View {
     @State var budget: Budget
     @State private var quarterly: Bool
     @State private var firstDueMonth: Int
+    private let isNew: Bool
 
     init(budget: Budget) {
         _budget = State(initialValue: budget)
@@ -138,23 +202,42 @@ struct BudgetForm: View {
             _quarterly = State(initialValue: false)
             _firstDueMonth = State(initialValue: 1)
         }
+        isNew = budget.amount == 0
     }
 
     var body: some View {
         NavigationStack {
-            Form {
-                TextField("Amount", value: $budget.amount, format: .number).keyboardType(.numberPad)
-                Toggle("Paid quarterly", isOn: $quarterly)
-                if quarterly {
-                    Picker("First month it is due", selection: $firstDueMonth) {
-                        ForEach(1...12, id: \.self) { month in
-                            Text(Calendar.current.standaloneMonthSymbols[month - 1].capitalized(with: .current)).tag(month)
+            Screen {
+                RowCard {
+                    Row(title: quarterly ? String(localized: "Amount per quarter") : String(localized: "Amount per period"), symbol: CategoryInfo.symbol(budget.categoryID)) {
+                        AmountField(value: $budget.amount)
+                    }
+                    Hairline()
+                    Row(title: String(localized: "Paid quarterly"), caption: String(localized: "A third of the quarterly total is set aside each period.")) {
+                        Toggle("", isOn: $quarterly).labelsHidden().tint(Tokens.accent)
+                    }
+                    if quarterly {
+                        Hairline()
+                        Row(title: String(localized: "First month it is due")) {
+                            Picker("", selection: $firstDueMonth) {
+                                ForEach(1...12, id: \.self) { month in
+                                    Text(Calendar.current.standaloneMonthSymbols[month - 1].capitalized(with: .current)).tag(month)
+                                }
+                            }
+                            .pickerStyle(.menu).tint(Tokens.accent)
                         }
                     }
-                    Text("The amount is the quarterly total. A third is set aside each period.").font(.footnote).foregroundStyle(.secondary)
+                }
+                if !isNew {
+                    TextAction(title: "Remove this budget", systemImage: "trash", tint: Tokens.over) {
+                        model.deleteBudget(categoryID: budget.categoryID)
+                        dismiss()
+                    }
                 }
             }
+            .keyboardDone()
             .navigationTitle(CategoryInfo.name(budget.categoryID))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
@@ -163,8 +246,10 @@ struct BudgetForm: View {
                         model.saveBudget(budget)
                         dismiss()
                     }
+                    .disabled(budget.amount <= 0)
                 }
             }
         }
+        .tint(Tokens.accent)
     }
 }

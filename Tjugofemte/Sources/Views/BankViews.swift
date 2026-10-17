@@ -28,6 +28,7 @@ struct BankPickerView: View {
                 .tint(.primary)
             }
         }
+        .appList()
         .navigationTitle("Choose bank")
         .searchable(text: $query, prompt: "Search bank")
         .overlay { if model.isBusy { ProgressView() } }
@@ -82,6 +83,7 @@ struct AccountPickerView: View {
                 Text("Pick the account your salary lands on. Transfers to your other linked accounts are recognized automatically. You can switch later under Settings without a new BankID login.")
             }
         }
+        .appList()
         .navigationTitle("Which account?")
         .overlay { if model.isBusy && model.settings.authorizedAccounts.isEmpty { ProgressView() } }
         .task { await model.ensureAccountsListed() }

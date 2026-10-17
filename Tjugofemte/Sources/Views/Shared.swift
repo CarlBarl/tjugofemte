@@ -69,23 +69,21 @@ struct ExplanationView: View {
     let explained: Explained
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 10) {
             ForEach(Array(explained.terms.enumerated()), id: \.offset) { _, term in
                 HStack {
-                    Text(label(term.kind))
+                    Text(label(term.kind)).appFont(size: 15).foregroundStyle(Tokens.body)
                     Spacer()
-                    Text(term.amount.sek).monospacedDigit()
+                    Text(term.amount.sek).font(Tokens.numberFont(size: 15, weight: .medium)).foregroundStyle(Tokens.text)
                 }
             }
-            Divider()
+            Hairline()
             HStack {
-                Text("Total").bold()
+                Text("Total").appFont(size: 15, weight: .semibold).foregroundStyle(Tokens.text)
                 Spacer()
-                Text(explained.value.sek).bold().monospacedDigit()
+                Text(explained.value.sek).font(Tokens.numberFont(size: 17)).foregroundStyle(Tokens.accent)
             }
         }
-        .font(.footnote)
-        .foregroundStyle(.secondary)
     }
 
     private func label(_ kind: Explained.Kind) -> String {
@@ -101,37 +99,75 @@ struct ExplanationView: View {
     }
 }
 
-struct AmountBar: View {
-    let actual: Decimal
-    let budget: Decimal?
-
-    var body: some View {
-        GeometryReader { geo in
-            let fraction = budget.map { $0 > 0 ? min(1, Double(truncating: (actual / $0) as NSNumber)) : 1 } ?? 0
-            let over = budget.map { actual > $0 } ?? false
-            ZStack(alignment: .leading) {
-                Capsule().fill(.quaternary)
-                Capsule().fill(over ? Color.red : Color.accentColor).frame(width: geo.size.width * fraction)
-            }
-        }
-        .frame(height: 6)
-    }
-}
-
 struct DemoBanner: View {
     @Environment(AppModel.self) private var model
     var body: some View {
         if model.isDemo {
-            HStack {
+            HStack(spacing: 8) {
                 Image(systemName: "sparkles")
                 Text("Sample data. Nothing here is real.")
                 Spacer()
-                Button("Exit") { model.stopDemo() }
+                Button("Exit") { model.stopDemo() }.foregroundStyle(Tokens.accent).fontWeight(.semibold)
             }
-            .font(.footnote)
-            .padding(.horizontal)
-            .padding(.vertical, 6)
-            .background(.yellow.opacity(0.25))
+            .appFont(size: 13, weight: .medium)
+            .foregroundStyle(Tokens.text)
+            .padding(.horizontal, Tokens.screenPadding)
+            .padding(.vertical, 8)
+            .background(Tokens.ground)
         }
+    }
+}
+
+/// The period, its dates and the arrows to move between periods. Overview and Transactions share it.
+struct PeriodHeader: View {
+    @Environment(AppModel.self) private var model
+    var subtitle: String? = nil
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 6) {
+                SectionLabel(text: "\(PeriodText.range(model.period))")
+                Text(PeriodText.title(model.selectedPeriod)).appFont(size: 30, weight: .bold, rounded: true).foregroundStyle(Tokens.text)
+                if let subtitle { Text(subtitle).appFont(size: 15).foregroundStyle(Tokens.muted) }
+            }
+            Spacer(minLength: 0)
+            if model.isBusy { ProgressView().tint(Tokens.muted).padding(.top, 10) }
+            HStack(spacing: 8) {
+                arrow("chevron.left") { model.selectedPeriod = model.selectedPeriod.previous }
+                arrow("chevron.right") { model.selectedPeriod = model.selectedPeriod.next }
+            }
+        }
+    }
+
+    private func arrow(_ symbol: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol).appFont(size: 14, weight: .semibold).foregroundStyle(Tokens.text)
+                .frame(width: 40, height: 40).background(Tokens.card)
+                .clipShape(Circle()).overlay(Circle().strokeBorder(Tokens.cardBorder, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+extension PeriodText {
+    /// "12 days left", "Ends today", "Starts in 5 days" or "Ended 22 Oct".
+    static func status(_ period: PayPeriod, today: Date = Date()) -> String {
+        let cal = Calendar.stockholm
+        let day = cal.startOfDay(for: today)
+        if day < period.start {
+            let n = cal.dateComponents([.day], from: day, to: period.start).day ?? 0
+            return String(localized: "Starts in \(n) days")
+        }
+        if day > period.end { return String(localized: "Ended \(period.end.formatted(.dateTime.day().month(.abbreviated)))") }
+        let n = (cal.dateComponents([.day], from: day, to: period.end).day ?? 0) + 1
+        return n == 1 ? String(localized: "Last day today") : String(localized: "\(n) days left")
+    }
+
+    static func ordinalDay(_ day: Int) -> String {
+        if day == 1 { return String(localized: "Calendar months") }
+        let f = NumberFormatter()
+        f.numberStyle = .ordinal
+        f.locale = .current
+        return f.string(from: NSNumber(value: day)) ?? "\(day)"
     }
 }
