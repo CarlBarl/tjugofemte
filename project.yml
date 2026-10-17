@@ -1,0 +1,55 @@
+name: Tjugofemte
+options:
+  bundleIdPrefix: com.carlelelid
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+packages:
+  BudgetCore:
+    path: Packages/BudgetCore
+  EnableBankingKit:
+    path: Packages/EnableBankingKit
+  LocalStore:
+    path: Packages/LocalStore
+targets:
+  Tjugofemte:
+    type: application
+    platform: iOS
+    sources:
+      - path: Tjugofemte/Sources
+      - path: Tjugofemte/Resources
+    dependencies:
+      - package: BudgetCore
+      - package: EnableBankingKit
+      - package: LocalStore
+    info:
+      path: Tjugofemte/Info.plist
+      properties:
+        CFBundleDisplayName: Tjugofemte
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, sv]
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        CFBundleURLTypes:
+          - CFBundleURLName: com.carlelelid.tjugofemte.callback
+            CFBundleURLSchemes: [tjugofemte]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.carlelelid.tjugofemte
+        PRODUCT_NAME: Tjugofemte
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: Z5B8G3ARJP
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_EMIT_LOC_STRINGS: YES
+schemes:
+  Tjugofemte:
+    build:
+      targets:
+        Tjugofemte: all
+    run:
+      config: Debug

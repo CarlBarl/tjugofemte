@@ -10,6 +10,8 @@ public struct Settings: Equatable, Sendable {
     public var selectedAccountUID: String?
     public var bankName: String?
     public var consentValidUntil: Date?
+    /// Identifiers of every account the user authorised, so transfers between them are recognized on later fetches.
+    public var ownAccountIDs: Set<String> = []
 
     public init() {}
 
@@ -22,7 +24,14 @@ public final class LocalStore: Sendable {
     private let db: DatabaseQueue
 
     public static func inMemory() throws -> LocalStore {
-        try LocalStore(try DatabaseQueue())
+        try LocalStore(try DatabaseQueue(configuration: configuration))
+    }
+
+    /// Deleted rows are zeroed on disk instead of merely unlinked.
+    private static var configuration: Configuration {
+        var c = Configuration()
+        c.prepareDatabase { db in try db.execute(sql: "PRAGMA secure_delete = ON") }
+        return c
     }
 
     public static func open(in directory: URL) throws -> LocalStore {
@@ -34,7 +43,7 @@ public final class LocalStore: Sendable {
         #if os(iOS)
         try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: directory.path)
         #endif
-        return try LocalStore(try DatabaseQueue(path: directory.appendingPathComponent(fileName).path))
+        return try LocalStore(try DatabaseQueue(path: directory.appendingPathComponent(fileName).path, configuration: configuration))
     }
 
     init(_ db: DatabaseQueue) throws {
@@ -121,7 +130,13 @@ public final class LocalStore: Sendable {
 
     @discardableResult
     public func purge(bookedBefore cutoff: Date) throws -> Int {
-        try db.write { db in try TransactionRow.filter(Column("booking_date") < cutoff).deleteAll(db) }
+        let deleted = try db.write { db in try TransactionRow.filter(Column("booking_date") < cutoff).deleteAll(db) }
+        if deleted > 0 { try db.vacuum() }
+        return deleted
+    }
+
+    func secureDeleteEnabled() throws -> Bool {
+        try db.read { db in try Bool.fetchOne(db, sql: "PRAGMA secure_delete") ?? false }
     }
 
     // MARK: Rules
@@ -175,6 +190,9 @@ public final class LocalStore: Sendable {
             s.selectedAccountUID = raw["selected_account_uid"]
             s.bankName = raw["bank_name"]
             s.consentValidUntil = raw["consent_valid_until"].flatMap { Double($0) }.map(Date.init(timeIntervalSince1970:))
+            if let ids = raw["own_account_ids"], let data = ids.data(using: .utf8), let decoded = try? JSONDecoder().decode([String].self, from: data) {
+                s.ownAccountIDs = Set(decoded)
+            }
             if let json = raw["period_overrides"], let data = json.data(using: .utf8),
                let decoded = try? JSONDecoder().decode([String: Double].self, from: data) {
                 for (key, seconds) in decoded {
@@ -197,6 +215,7 @@ public final class LocalStore: Sendable {
             ("bank_name", s.bankName),
             ("consent_valid_until", s.consentValidUntil.map { String($0.timeIntervalSince1970) }),
             ("period_overrides", json),
+            ("own_account_ids", String(decoding: try JSONEncoder().encode(s.ownAccountIDs.sorted()), as: UTF8.self)),
         ]
         try db.write { db in
             for (key, value) in pairs {
@@ -217,6 +236,7 @@ public final class LocalStore: Sendable {
                 try db.execute(sql: "DELETE FROM \(table)")
             }
         }
+        try db.vacuum()
     }
 }
 

@@ -72,6 +72,7 @@ import BudgetCore
         s.selectedAccountUID = "acc-1"
         s.bankName = "Swedbank"
         s.consentValidUntil = day(2027, 4, 15)
+        s.ownAccountIDs = ["SE4550000000058398257466", "832791234567890"]
         try store.saveSettings(s)
         let back = try store.settings()
         #expect(back.periodRule == PeriodRule(startDay: 27, overrides: [PeriodLabel(year: 2026, month: 12): day(2026, 11, 20)]))
@@ -79,6 +80,7 @@ import BudgetCore
         #expect(back.selectedAccountUID == "acc-1")
         #expect(back.bankName == "Swedbank")
         #expect(back.consentValidUntil == day(2027, 4, 15))
+        #expect(back.ownAccountIDs == ["SE4550000000058398257466", "832791234567890"])
     }
 
     @Test func wipeEmptiesEveryTable() throws {
@@ -99,4 +101,33 @@ import BudgetCore
         #expect(values.isExcludedFromBackup == true)
         #expect(FileManager.default.fileExists(atPath: dir.appendingPathComponent("tjugofemte.sqlite").path))
     }
+}
+
+@Suite struct LocalStoreDeletionTests {
+    @Test func deletedRowsAreOverwrittenNotJustUnlinked() throws {
+        let store = try LocalStore.inMemory()
+        #expect(try store.secureDeleteEnabled())
+    }
+
+    @Test func wipeCompactsTheFile() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("tjugofemte-\(UUID().uuidString)")
+        let store = try LocalStore.open(in: dir)
+        let cal = Calendar.stockholm
+        let rows = (0..<2000).map { i in
+            Transaction(dedupKey: "k\(i)", bookingDate: cal.date(from: DateComponents(year: 2026, month: 10, day: 1))!, amount: -1, currency: "SEK",
+                        counterparty: String(repeating: "SECRET MERCHANT ", count: 8), categoryID: "shopping")
+        }
+        try store.insertNew(rows)
+        let file = dir.appendingPathComponent(LocalStore.fileName)
+        let before = try FileManager.default.attributesOfItem(atPath: file.path)[.size] as! Int
+        try store.wipe()
+        let after = try FileManager.default.attributesOfItem(atPath: file.path)[.size] as! Int
+        #expect(after < before / 4)
+        let bytes = try Data(contentsOf: file)
+        #expect(!bytes.range(of: Data("SECRET MERCHANT".utf8)).map { _ in true }.isTrue)
+    }
+}
+
+private extension Optional where Wrapped == Bool {
+    var isTrue: Bool { self == true }
 }
