@@ -24,7 +24,7 @@ public enum CSVExporter {
         return "\"" + field.replacingOccurrences(of: "\"", with: "\"\"") + "\""
     }
 
-    static func isoDay(_ date: Date) -> String {
+    public static func isoDay(_ date: Date) -> String {
         let c = Calendar.stockholm.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
     }

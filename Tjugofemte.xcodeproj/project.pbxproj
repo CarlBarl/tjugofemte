@@ -1,0 +1,475 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		05BF63E79BE25C08C62F6649 /* Notifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47E2863D522850AEE18F9DC /* Notifications.swift */; };
+		05C94837593E52E908030C2C /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F5635B3271BFD72529142A /* Keychain.swift */; };
+		1E24B8236A7B4E8FFDAFB9F7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E112C69A713E85D6674F36B /* SettingsView.swift */; };
+		1ED17D2A07DE15AE92AD5C8E /* DataPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7B5489819F04085D120B677 /* DataPageView.swift */; };
+		24CE743BBD2CAEB39246D655 /* AuthCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA1A775BA4E51292AC5A6687 /* AuthCoordinator.swift */; };
+		2D1B3C28EFFC63A147DDBA48 /* LocalStore in Frameworks */ = {isa = PBXBuildFile; productRef = 73D9DC5C3081A1D5CC32BFB0 /* LocalStore */; };
+		34F916F171B81B961789601E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 9E0D7748BB939EC0106F8887 /* Localizable.xcstrings */; };
+		3B5AE5FF2D847056B2117B64 /* EnableBankingKit in Frameworks */ = {isa = PBXBuildFile; productRef = BEEFF995731D5ACB0A5669EE /* EnableBankingKit */; };
+		41982BC630FA9E1BD57FFEB0 /* PlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4002BEE4C453F1223B4076 /* PlanView.swift */; };
+		5AE31B2CBCB428ED4F2A456B /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E1760223BAF826D936A9DF /* OnboardingView.swift */; };
+		724D01E80492B1BA719C6256 /* RulesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F54943C28D2B21C485DDD70 /* RulesView.swift */; };
+		7268EC1CDF0C7C274D2B6A70 /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE77E8BAC06D0D2DE5803399 /* OverviewView.swift */; };
+		7339B66AA3C8AE822F23B855 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C67FCF3B1D79117015DD7A4 /* DemoData.swift */; };
+		78F10FE3F4CAC8A8C7F70B05 /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7DED7B9B3A6FE6CD7FFE720 /* Links.swift */; };
+		A0AB9953A5864F5C9BC70D31 /* TjugofemteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9251E7846E548859451A65 /* TjugofemteApp.swift */; };
+		A934EC3E7CCF4B27C1F9047F /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFBE5A5E23218EFFD4D4CA74 /* Components.swift */; };
+		C9A95525E46DFAFF5F5FABEC /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85304AD5DD4BED2309CAF6D6 /* RootView.swift */; };
+		D0470D173F307B375922A8C8 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1C268E374B5F4B59F57263 /* TransactionsView.swift */; };
+		F9C82B06A0720BD83611EF15 /* BudgetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5C6AA8E3DF0DF7B964ABB156 /* BudgetCore */; };
+		FFAD0462F767AC70D0C5D257 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FCA31158650BDD105DF36A /* AppModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0A4002BEE4C453F1223B4076 /* PlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanView.swift; sourceTree = "<group>"; };
+		0E112C69A713E85D6674F36B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		3F54943C28D2B21C485DDD70 /* RulesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesView.swift; sourceTree = "<group>"; };
+		4C67FCF3B1D79117015DD7A4 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
+		6E9E99AAA2C80B5C7AEA8019 /* Tjugofemte.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Tjugofemte.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		85304AD5DD4BED2309CAF6D6 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		90B882996C671EBCCF6D8593 /* BudgetCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BudgetCore; path = Packages/BudgetCore; sourceTree = SOURCE_ROOT; };
+		9E0D7748BB939EC0106F8887 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		A7FCA31158650BDD105DF36A /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		AB1C268E374B5F4B59F57263 /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
+		AB9251E7846E548859451A65 /* TjugofemteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TjugofemteApp.swift; sourceTree = "<group>"; };
+		B5E1760223BAF826D936A9DF /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		C0B525E58CCB2C505C7FB5BE /* EnableBankingKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = EnableBankingKit; path = Packages/EnableBankingKit; sourceTree = SOURCE_ROOT; };
+		C7DED7B9B3A6FE6CD7FFE720 /* Links.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Links.swift; sourceTree = "<group>"; };
+		C9F5635B3271BFD72529142A /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
+		CE77E8BAC06D0D2DE5803399 /* OverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewView.swift; sourceTree = "<group>"; };
+		D47E2863D522850AEE18F9DC /* Notifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notifications.swift; sourceTree = "<group>"; };
+		DFBE5A5E23218EFFD4D4CA74 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		E7B5489819F04085D120B677 /* DataPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataPageView.swift; sourceTree = "<group>"; };
+		F020CB272040722CE737675B /* LocalStore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = LocalStore; path = Packages/LocalStore; sourceTree = SOURCE_ROOT; };
+		FA1A775BA4E51292AC5A6687 /* AuthCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthCoordinator.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7FC90A9988F206554E119B76 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F9C82B06A0720BD83611EF15 /* BudgetCore in Frameworks */,
+				3B5AE5FF2D847056B2117B64 /* EnableBankingKit in Frameworks */,
+				2D1B3C28EFFC63A147DDBA48 /* LocalStore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1D00C76944D29FE98BCBD43B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				DFBE5A5E23218EFFD4D4CA74 /* Components.swift */,
+				E7B5489819F04085D120B677 /* DataPageView.swift */,
+				B5E1760223BAF826D936A9DF /* OnboardingView.swift */,
+				CE77E8BAC06D0D2DE5803399 /* OverviewView.swift */,
+				0A4002BEE4C453F1223B4076 /* PlanView.swift */,
+				85304AD5DD4BED2309CAF6D6 /* RootView.swift */,
+				3F54943C28D2B21C485DDD70 /* RulesView.swift */,
+				0E112C69A713E85D6674F36B /* SettingsView.swift */,
+				AB1C268E374B5F4B59F57263 /* TransactionsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		1E55A506B576020F715579E9 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				AB9251E7846E548859451A65 /* TjugofemteApp.swift */,
+				FC0192E182ACFCD85E0E6870 /* Model */,
+				1D00C76944D29FE98BCBD43B /* Views */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		1FD8512EAFC10CB9E7E7E927 = {
+			isa = PBXGroup;
+			children = (
+				2A82257F36EC3F354A2A455C /* Packages */,
+				35FE8F7B98CAE39BAF8F9A51 /* Tjugofemte */,
+				CB0D88892C965C7BBEFBB978 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2A82257F36EC3F354A2A455C /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				90B882996C671EBCCF6D8593 /* BudgetCore */,
+				C0B525E58CCB2C505C7FB5BE /* EnableBankingKit */,
+				F020CB272040722CE737675B /* LocalStore */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		35FE8F7B98CAE39BAF8F9A51 /* Tjugofemte */ = {
+			isa = PBXGroup;
+			children = (
+				FBA06BA15F9F624B883D8F06 /* Resources */,
+				1E55A506B576020F715579E9 /* Sources */,
+			);
+			path = Tjugofemte;
+			sourceTree = "<group>";
+		};
+		CB0D88892C965C7BBEFBB978 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6E9E99AAA2C80B5C7AEA8019 /* Tjugofemte.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FBA06BA15F9F624B883D8F06 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				9E0D7748BB939EC0106F8887 /* Localizable.xcstrings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		FC0192E182ACFCD85E0E6870 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A7FCA31158650BDD105DF36A /* AppModel.swift */,
+				FA1A775BA4E51292AC5A6687 /* AuthCoordinator.swift */,
+				4C67FCF3B1D79117015DD7A4 /* DemoData.swift */,
+				C9F5635B3271BFD72529142A /* Keychain.swift */,
+				C7DED7B9B3A6FE6CD7FFE720 /* Links.swift */,
+				D47E2863D522850AEE18F9DC /* Notifications.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		04ED9F47261FE244C5539E2C /* Tjugofemte */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 86DBD6BF15595424A1253623 /* Build configuration list for PBXNativeTarget "Tjugofemte" */;
+			buildPhases = (
+				697DD9FCAA86FDE1C5632E49 /* Sources */,
+				8D807D1E256F97336B69F439 /* Resources */,
+				7FC90A9988F206554E119B76 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Tjugofemte;
+			packageProductDependencies = (
+				5C6AA8E3DF0DF7B964ABB156 /* BudgetCore */,
+				BEEFF995731D5ACB0A5669EE /* EnableBankingKit */,
+				73D9DC5C3081A1D5CC32BFB0 /* LocalStore */,
+			);
+			productName = Tjugofemte;
+			productReference = 6E9E99AAA2C80B5C7AEA8019 /* Tjugofemte.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EDB7794BCEDD5D8BEA923488 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					04ED9F47261FE244C5539E2C = {
+						DevelopmentTeam = Z5B8G3ARJP;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 964C26203EAC7855C5F929BE /* Build configuration list for PBXProject "Tjugofemte" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				sv,
+			);
+			mainGroup = 1FD8512EAFC10CB9E7E7E927;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D26A8EFA1E1A00015034E03A /* XCLocalSwiftPackageReference "Packages/BudgetCore" */,
+				3F1FAA1857B76A504523F8C2 /* XCLocalSwiftPackageReference "Packages/EnableBankingKit" */,
+				3ECF0AFB85A91940010AF012 /* XCLocalSwiftPackageReference "Packages/LocalStore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = CB0D88892C965C7BBEFBB978 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				04ED9F47261FE244C5539E2C /* Tjugofemte */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8D807D1E256F97336B69F439 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				34F916F171B81B961789601E /* Localizable.xcstrings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		697DD9FCAA86FDE1C5632E49 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FFAD0462F767AC70D0C5D257 /* AppModel.swift in Sources */,
+				24CE743BBD2CAEB39246D655 /* AuthCoordinator.swift in Sources */,
+				A934EC3E7CCF4B27C1F9047F /* Components.swift in Sources */,
+				1ED17D2A07DE15AE92AD5C8E /* DataPageView.swift in Sources */,
+				7339B66AA3C8AE822F23B855 /* DemoData.swift in Sources */,
+				05C94837593E52E908030C2C /* Keychain.swift in Sources */,
+				78F10FE3F4CAC8A8C7F70B05 /* Links.swift in Sources */,
+				05BF63E79BE25C08C62F6649 /* Notifications.swift in Sources */,
+				5AE31B2CBCB428ED4F2A456B /* OnboardingView.swift in Sources */,
+				7268EC1CDF0C7C274D2B6A70 /* OverviewView.swift in Sources */,
+				41982BC630FA9E1BD57FFEB0 /* PlanView.swift in Sources */,
+				C9A95525E46DFAFF5F5FABEC /* RootView.swift in Sources */,
+				724D01E80492B1BA719C6256 /* RulesView.swift in Sources */,
+				1E24B8236A7B4E8FFDAFB9F7 /* SettingsView.swift in Sources */,
+				A0AB9953A5864F5C9BC70D31 /* TjugofemteApp.swift in Sources */,
+				D0470D173F307B375922A8C8 /* TransactionsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		29BED7BDE0627EBAFD1936D8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Z5B8G3ARJP;
+				INFOPLIST_FILE = Tjugofemte/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.carlelelid.tjugofemte;
+				PRODUCT_NAME = Tjugofemte;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		381C196C91B4C9D36E267142 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = Z5B8G3ARJP;
+				INFOPLIST_FILE = Tjugofemte/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.carlelelid.tjugofemte;
+				PRODUCT_NAME = Tjugofemte;
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		6825624435E6359347F3B357 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		93C55AFC7590E13203CA246B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		86DBD6BF15595424A1253623 /* Build configuration list for PBXNativeTarget "Tjugofemte" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				381C196C91B4C9D36E267142 /* Debug */,
+				29BED7BDE0627EBAFD1936D8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		964C26203EAC7855C5F929BE /* Build configuration list for PBXProject "Tjugofemte" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6825624435E6359347F3B357 /* Debug */,
+				93C55AFC7590E13203CA246B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		3ECF0AFB85A91940010AF012 /* XCLocalSwiftPackageReference "Packages/LocalStore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/LocalStore;
+		};
+		3F1FAA1857B76A504523F8C2 /* XCLocalSwiftPackageReference "Packages/EnableBankingKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/EnableBankingKit;
+		};
+		D26A8EFA1E1A00015034E03A /* XCLocalSwiftPackageReference "Packages/BudgetCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BudgetCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5C6AA8E3DF0DF7B964ABB156 /* BudgetCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BudgetCore;
+		};
+		73D9DC5C3081A1D5CC32BFB0 /* LocalStore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = LocalStore;
+		};
+		BEEFF995731D5ACB0A5669EE /* EnableBankingKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = EnableBankingKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = EDB7794BCEDD5D8BEA923488 /* Project object */;
+}

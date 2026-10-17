@@ -24,7 +24,7 @@ final class AuthCoordinator: NSObject, ASWebAuthenticationPresentationContextPro
             let session = ASWebAuthenticationSession(url: url, callbackURLScheme: Self.scheme) { [weak self] callback, error in
                 Task { @MainActor in
                     if let callback { self?.finish(with: callback) }
-                    else if let error as? ASWebAuthenticationSessionError, error.code == .canceledLogin { self?.fail(.cancelled) }
+                    else if let error = error as? ASWebAuthenticationSessionError, error.code == .canceledLogin { self?.fail(.cancelled) }
                     else { self?.fail(.bankError(error?.localizedDescription ?? "unknown")) }
                 }
             }
@@ -35,19 +35,27 @@ final class AuthCoordinator: NSObject, ASWebAuthenticationPresentationContextPro
         }
     }
 
-    /// Second receive path, from `onOpenURL`.
+    /// Second receive path, from `onOpenURL`. A URL that does not carry this flow's state nonce is ignored,
+    /// so another app cannot cancel or spoof a pending login by opening the scheme.
     func handleOpenURL(_ url: URL) {
-        guard url.scheme == Self.scheme else { return }
+        guard url.scheme == Self.scheme, continuation != nil, stateMatches(url) else { return }
         session?.cancel()
         finish(with: url)
     }
 
+    private func stateMatches(_ url: URL) -> Bool {
+        guard let expected = expectedState else { return false }
+        return queryValue(url, "state") == expected
+    }
+
+    private func queryValue(_ url: URL, _ name: String) -> String? {
+        URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == name }?.value
+    }
+
     private func finish(with callback: URL) {
-        let items = URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        func value(_ name: String) -> String? { items.first { $0.name == name }?.value }
-        if let error = value("error") { return fail(.bankError(value("error_description") ?? error)) }
-        guard value("state") == expectedState else { return fail(.stateMismatch) }
-        guard let code = value("code") else { return fail(.noCode) }
+        guard stateMatches(callback) else { return fail(.stateMismatch) }
+        if let error = queryValue(callback, "error") { return fail(.bankError(queryValue(callback, "error_description") ?? error)) }
+        guard let code = queryValue(callback, "code") else { return fail(.noCode) }
         continuation?.resume(returning: code)
         cleanup()
     }

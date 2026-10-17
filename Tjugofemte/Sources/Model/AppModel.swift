@@ -78,7 +78,7 @@ final class AppModel {
         isBusy = true
         defer { isBusy = false }
         do {
-            _ = try await Task.detached(priority: .userInitiated) { try Keychain.generatePrivateKey() }.value
+            try await Task.detached(priority: .userInitiated) { _ = try Keychain.generatePrivateKey() }.value
             hasKey = true
         } catch {
             errorMessage = error.localizedDescription
@@ -277,10 +277,18 @@ final class AppModel {
 
     // MARK: Data
 
+    /// Written with complete file protection; the share sheet deletes it when done, and so does Delete everything.
     func exportCSV() throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("tjugofemte-\(CSVExporter.isoDay(Date())).csv")
-        try CSVExporter.export(transactions).write(to: url, atomically: true, encoding: .utf8)
+        try Data(CSVExporter.export(transactions).utf8).write(to: url, options: [.atomic, .completeFileProtection])
         return url
+    }
+
+    static func removeExports() {
+        let tmp = FileManager.default.temporaryDirectory
+        for name in (try? FileManager.default.contentsOfDirectory(atPath: tmp.path)) ?? [] where name.hasPrefix("tjugofemte-") && name.hasSuffix(".csv") {
+            try? FileManager.default.removeItem(at: tmp.appendingPathComponent(name))
+        }
     }
 
     /// Closes the Enable Banking session first so the bank consent does not linger, then wipes everything local.
@@ -290,6 +298,7 @@ final class AppModel {
         if let sessionID, let client = try? client() { try? await client.deleteSession(sessionID) }
         ConsentReminders.cancel()
         Keychain.wipe()
+        Self.removeExports()
         try? diskStore.wipe()
         demoStore = nil
         hasKey = false
