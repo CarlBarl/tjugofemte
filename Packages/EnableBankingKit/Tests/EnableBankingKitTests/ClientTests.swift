@@ -58,6 +58,7 @@ import Foundation
         let session = try await client(transport).createSession(code: "code-1")
         #expect(transport.calls[0].request.url?.path == "/sessions")
         #expect(session.sessionID == "sess-1")
+        #expect(session.bankName == "Swedbank")
         #expect(session.validUntil == Date(timeIntervalSince1970: 1_807_790_400))  // 2027-04-15T12:00:00Z
         #expect(session.accounts.count == 1)
         #expect(session.accounts[0].uid == "acc-uid-1")

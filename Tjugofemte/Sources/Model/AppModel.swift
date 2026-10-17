@@ -148,21 +148,7 @@ final class AppModel {
             let start = try await client.startAuth(bank: BankRef(name: bank.name, country: bank.country), redirectURL: AuthCoordinator.redirectURL,
                                                    state: state, validUntil: validUntil, authMethod: preferredMethod(for: bank)?.name, psuID: psuID)
             let code = try await auth.authorize(url: start.url, state: state)
-            let session = try await client.createSession(code: code)
-            try Keychain.set(session.sessionID, for: .sessionID)
-            try Keychain.set(nil, for: .authState)
-            sessionID = session.sessionID
-            needsReauth = false
-            var s = settings
-            s.bankName = bank.name
-            s.consentValidUntil = session.validUntil
-            s.ownAccountIDs = Set(session.accounts.flatMap(\.ownAccountIDs))
-            s.selectedAccountUID = nil
-            try store.saveSettings(s)
-            settings = s
-            pendingAccounts = session.accounts
-            await ConsentReminders.schedule(validUntil: session.validUntil)
-            if session.accounts.count == 1 { await chooseAccount(session.accounts[0].uid) }
+            try await completeSession(code: code)
         } catch AuthCoordinator.Failure.cancelled {
             // user closed the browser; nothing to report
         } catch {
@@ -170,8 +156,41 @@ final class AppModel {
         }
     }
 
+    private func completeSession(code: String) async throws {
+        let session = try await client().createSession(code: code)
+        try Keychain.set(session.sessionID, for: .sessionID)
+        try Keychain.set(nil, for: .authState)
+        sessionID = session.sessionID
+        needsReauth = false
+        var s = settings
+        s.bankName = session.bankName
+        s.consentValidUntil = session.validUntil
+        s.ownAccountIDs = Set(session.accounts.flatMap(\.ownAccountIDs))
+        s.selectedAccountUID = nil
+        try store.saveSettings(s)
+        settings = s
+        pendingAccounts = session.accounts
+        await ConsentReminders.schedule(validUntil: session.validUntil)
+        if session.accounts.count == 1 { await chooseAccount(session.accounts[0].uid) }
+    }
+
+    /// Callback via the scene's open-URL path. Warm app: hand it to the running flow. Cold start (iOS killed
+    /// the app while the user was in BankID): the nonce persisted before the flow started decides whether
+    /// the URL is ours; anything else is ignored.
     func handleOpenURL(_ url: URL) {
-        auth.handleOpenURL(url)
+        if auth.hasPendingFlow {
+            auth.handleOpenURL(url)
+            return
+        }
+        guard url.scheme == AuthCoordinator.scheme, let expected = Keychain.string(.authState),
+              let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+              items.first(where: { $0.name == "state" })?.value == expected,
+              let code = items.first(where: { $0.name == "code" })?.value else { return }
+        Task {
+            isBusy = true
+            defer { isBusy = false }
+            do { try await completeSession(code: code) } catch { errorMessage = describe(error) }
+        }
     }
 
     func chooseAccount(_ uid: String) async {

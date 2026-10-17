@@ -1491,22 +1491,22 @@
         }
       }
     },
-    "This cannot be undone. Your Enable Banking application stays in their control panel; delete it there too if you are done.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Det här går inte att ångra. Din applikation hos Enable Banking finns kvar i deras kontrollpanel. Radera den där också om du är klar."
-          }
-        }
-      }
-    },
     "This period started on": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Perioden började den"
+          }
+        }
+      }
+    },
+    "This removes your real bank data too, not only the sample. It cannot be undone. Your Enable Banking application stays in their control panel; delete it there too if you are done.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det här tar även bort din riktiga bankdata, inte bara exempeldatan. Det går inte att ångra. Din applikation hos Enable Banking finns kvar i deras kontrollpanel. Radera den där också om du är klar."
           }
         }
       }

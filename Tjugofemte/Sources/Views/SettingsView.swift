@@ -27,6 +27,14 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .confirmationDialog("Delete everything?", isPresented: $confirmDelete, titleVisibility: .visible) {
+                Button("Delete everything", role: .destructive) { Task { await model.deleteEverything() } }
+            } message: {
+                Text("This removes your real bank data too, not only the sample. It cannot be undone. Your Enable Banking application stays in their control panel; delete it there too if you are done.")
+            }
+            .sheet(item: $csvURL) { url in
+                ShareSheet(url: url)
+            }
         }
     }
 
@@ -74,21 +82,15 @@ struct SettingsView: View {
             Picker("Keep history", selection: Binding(get: { model.settings.retention.months }, set: { m in model.updateSettings { $0.retention = RetentionPolicy(months: m) } })) {
                 ForEach(RetentionPolicy.options, id: \.months) { Text("\($0.months) months").tag($0.months) }
             }
-            Button { csvURL = try? model.exportCSV() } label: { Label("Export CSV", systemImage: "square.and.arrow.up") }
+            Button {
+                do { csvURL = try model.exportCSV() } catch { model.errorMessage = error.localizedDescription }
+            } label: { Label("Export CSV", systemImage: "square.and.arrow.up") }
                 .disabled(model.transactions.isEmpty)
             Button(role: .destructive) { confirmDelete = true } label: { Label("Delete everything", systemImage: "trash") }
         } header: {
             Text("Your data")
         } footer: {
             Text("Older transactions are removed automatically. Delete everything closes the bank connection and wipes the key, the settings and every transaction from this phone.")
-        }
-        .confirmationDialog("Delete everything?", isPresented: $confirmDelete, titleVisibility: .visible) {
-            Button("Delete everything", role: .destructive) { Task { await model.deleteEverything() } }
-        } message: {
-            Text("This cannot be undone. Your Enable Banking application stays in their control panel; delete it there too if you are done.")
-        }
-        .sheet(item: $csvURL) { url in
-            ShareSheet(url: url)
         }
     }
 }

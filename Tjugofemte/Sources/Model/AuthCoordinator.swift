@@ -16,6 +16,8 @@ final class AuthCoordinator: NSObject, ASWebAuthenticationPresentationContextPro
     private var continuation: CheckedContinuation<String, Error>?
     private var expectedState: String?
 
+    var hasPendingFlow: Bool { continuation != nil }
+
     /// Returns the authorisation code once the user is back.
     func authorize(url: URL, state: String) async throws -> String {
         expectedState = state

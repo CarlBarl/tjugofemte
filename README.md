@@ -26,7 +26,7 @@ xcodegen generate
 open Tjugofemte.xcodeproj
 ```
 
-Run the `Tjugofemte` scheme on a simulator or your phone. The `-demo` launch argument opens straight into sample data.
+Change `DEVELOPMENT_TEAM` in `project.yml` to your own team before generating. Run the `Tjugofemte` scheme on a simulator or your phone. The `-demo` launch argument opens straight into sample data.
 
 Fast test loop, per package:
 

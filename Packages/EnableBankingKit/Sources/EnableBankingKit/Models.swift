@@ -55,6 +55,7 @@ public struct BankAccount: Equatable, Sendable {
 
 public struct BankSession: Equatable, Sendable {
     public let sessionID: String
+    public let bankName: String
     public let validUntil: Date
     public let accounts: [BankAccount]
 }
@@ -157,7 +158,8 @@ enum Wire {
         let sessionID: String
         let access: Access
         let accounts: [Account]
-        enum CodingKeys: String, CodingKey { case sessionID = "session_id", access, accounts }
+        let aspsp: BankRef
+        enum CodingKeys: String, CodingKey { case sessionID = "session_id", access, accounts, aspsp }
 
         func session() throws -> BankSession {
             guard let until = ISO8601DateFormatter().date(from: access.validUntil) else { throw ClientError.decoding("valid_until \(access.validUntil)") }
@@ -166,7 +168,7 @@ enum Wire {
                 if let primary = a.accountID?.normalized { ids.insert(primary) }
                 return BankAccount(uid: a.uid, name: a.name, product: a.product, currency: a.currency, ownAccountIDs: ids)
             }
-            return BankSession(sessionID: sessionID, validUntil: until, accounts: accounts)
+            return BankSession(sessionID: sessionID, bankName: aspsp.name, validUntil: until, accounts: accounts)
         }
     }
 
