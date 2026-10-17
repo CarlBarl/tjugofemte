@@ -100,3 +100,32 @@ Carl's two-minute control panel test, before step 4: in the production environme
 - Swedbank transaction id stability is unknown. The fingerprint fallback covers it; the day-apart fetch test confirms.
 - Store review: Apple guideline on highly regulated fields may ask for a legal entity as publisher (from memory, verify). Demo mode plus review notes and the open source link are the mitigation.
 - Expo-style over-the-air updates do not exist here, so no phone-home. Apple's own crash reporting is user opt-in and outside the app.
+
+## Refinement pass (2026-10-17 evening): Sabel's recipe
+
+Carl: "amazing UI, amazing setup, super easy to use, powerful but not complicated, setup guides the user to plan a budget, set income. Take inspiration from Sabel, as simple, so people actually use it." Sabel (repo `decide`, `App/Decide/Design/Tokens.swift`, `Components.swift`, `Screens/StartFlow.swift`) is dark only, warm near-black, one accent, cards with a 6 % hairline and 16 pt radius, big rounded monospaced numbers, uppercase letter-spaced section labels, one 56 pt button per screen, a full-screen start flow until the app has something to show, and numbers prefilled for the user to confirm rather than type.
+
+### What changes
+
+1. **Design tokens and components** (`Tjugofemte/Sources/Design/`). Dark only, like Sabel. Tjugofemte's own palette: ink `#111413`, card `#1a1f1c`, accent mint `#9fd6b2`, text `#edf0ec`, muted `#a4aca6`, dim `#8e968f`, pill `#252b27`, on-accent `#0f1412`, over-budget coral `#e9967f`. Components: `Card`, `SectionLabel`, `BigButton`, `AmountField` (pill, number pad, Done toolbar), `StatTile`, `Row`. Nothing in a screen writes a literal color.
+2. **Start flow before the tabs.** `RootView` shows `StartFlow` until the app is set up (demo, or bank connected and plan done). Welcome screen: the promise in one line, "Connect my bank" (big) and "Try with sample data". The bank wizard stays (five steps, restyled). Then, new, the **plan setup**, prefilled from the fetched transactions:
+   - **Payday**: suggested from the biggest recurring deposit's latest day of month; the period dates shown underneath.
+   - **Income**: detected recurring deposits (grouped by counterparty, median per period, ≥ 1 000 kr), each with name, amount and keyword, switchable off; "Add income" for plan-only sources.
+   - **Budgets**: one row per spending category seen in the last three complete periods, prefilled with the average rounded up to 50 kr, "based on N periods"; categories with no history under "More".
+   - **Summary**: income − budgets = savings target, in words, and one button: "Start my budget". Skip is allowed; the Overview then shows a "Plan your budget" card.
+   Quarterly cadence stays in the Plan tab editor; the setup keeps every budget monthly.
+3. **Overview**: period strip with chevrons, hero card with the savings target as the one big number and "How?" opening the explanation sheet, a "So far" card with left over, received, spent and days left, then budget rows with bars, then income. Reauth as a banner card.
+4. **Plan, Settings, Transactions** restyled with the same cards and rows; Plan gets "Suggest from history" which reruns the setup.
+5. **BudgetCore `PlanSuggestions`** (pure, tested first): `incomes`, `budgets`, `payday`, `roundUp`.
+6. `Settings.planDone` in LocalStore so an existing install (Carl's) is taken through the plan setup once.
+
+### Why this, not that
+
+- Dark only: one palette to get right, and it is the look Carl already uses daily. A light theme can be added through the tokens later.
+- Prefill over wizard questions: the bank data is already on the phone; asking the user to type what the app can see is the kind of friction that makes people stop using a budget app.
+- Four tabs kept: Overview is the daily screen, Plan is where the numbers live, Transactions is the proof, Settings holds the bank and the data controls. Merging Plan into Settings would hide the one thing people need to adjust.
+- Suggestions use complete periods only, median for income and mean for spending: income is one deposit per period and a missing one would halve a mean; spending varies and the mean is what a budget should cover.
+
+### Verification
+
+Package tests for `PlanSuggestions`; simulator run of a fresh install (welcome → demo → plan setup prefilled from demo data → overview), of an existing install that lands in plan setup, and of Swedish; allowlist lint; install on Carl's phone.
