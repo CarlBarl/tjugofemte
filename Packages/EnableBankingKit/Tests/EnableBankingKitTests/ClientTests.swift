@@ -27,12 +27,13 @@ import Foundation
 
     @Test func decodesBanksWithConsentLimitAndAuthApproaches() async throws {
         let banks = try await client(StubTransport([(200, aspspsJSON)])).aspsps(country: "SE")
-        #expect(banks.count == 1)
+        #expect(banks.count == 2)
+        #expect(banks[1].authMethods?[0].name == nil)   // real responses omit optional fields
         #expect(banks[0].name == "Swedbank")
         #expect(banks[0].maximumConsentValidity == 15_552_000)
         #expect(banks[0].requiredPSUHeaders == ["Psu-Ip-Address"])
-        #expect(banks[0].authMethods.map(\.approach) == ["DECOUPLED", "REDIRECT"])
-        #expect(banks[0].authMethods[0].requiredCredentials == ["ssn"])
+        #expect(banks[0].authMethods?.map(\.approach) == ["DECOUPLED", "REDIRECT"])
+        #expect(banks[0].authMethods?[0].requiredCredentials == ["ssn"])
     }
 
     @Test func startAuthPostsTheDocumentedBody() async throws {

@@ -24,7 +24,9 @@ let aspspsJSON = """
 "required_psu_headers":["Psu-Ip-Address"],"psu_types":["personal","business"],
 "auth_methods":[{"approach":"DECOUPLED","name":"BankID","psu_type":"personal","hidden_method":false,
 "credentials":[{"name":"ssn","title":"Personnummer","required":true}]},
-{"approach":"REDIRECT","name":"BankID web","psu_type":"personal","hidden_method":false,"credentials":[]}]}]}
+{"approach":"REDIRECT","name":"BankID web","psu_type":"personal","hidden_method":false,"credentials":[]}]},
+{"name":"Roslagens Sparbank","country":"SE","beta":false,"maximum_consent_validity":15552000,
+"auth_methods":[{"approach":"DECOUPLED","psu_type":"personal"}]}]}
 """
 
 let sessionJSON = """

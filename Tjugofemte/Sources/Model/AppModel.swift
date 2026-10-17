@@ -133,7 +133,7 @@ final class AppModel {
     }
 
     private func preferredMethod(for bank: Bank) -> AuthMethod? {
-        let personal = bank.authMethods.filter { $0.psuType == nil || $0.psuType == "personal" }
+        let personal = (bank.authMethods ?? []).filter { $0.psuType == nil || $0.psuType == "personal" }
         return personal.first { $0.approach == "REDIRECT" } ?? personal.first
     }
 
@@ -144,7 +144,7 @@ final class AppModel {
             let client = try client()
             let state = UUID().uuidString
             try Keychain.set(state, for: .authState)
-            let validUntil = Date().addingTimeInterval(TimeInterval(bank.maximumConsentValidity) - 120)
+            let validUntil = Date().addingTimeInterval(TimeInterval(bank.maximumConsentValidity ?? 90 * 24 * 3600) - 120)
             let start = try await client.startAuth(bank: BankRef(name: bank.name, country: bank.country), redirectURL: AuthCoordinator.redirectURL,
                                                    state: state, validUntil: validUntil, authMethod: preferredMethod(for: bank)?.name, psuID: psuID)
             let code = try await auth.authorize(url: start.url, state: state)

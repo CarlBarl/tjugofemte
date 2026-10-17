@@ -11,8 +11,8 @@ public struct AuthMethod: Decodable, Equatable, Sendable {
         public let name: String
         public let required: Bool?
     }
-    public let approach: String
-    public let name: String
+    public let approach: String?
+    public let name: String?
     public let psuType: String?
     public let credentials: [Credential]?
 
@@ -26,9 +26,9 @@ public struct Bank: Decodable, Equatable, Sendable {
     public let country: String
     public let beta: Bool?
     /// Seconds. The bank's ceiling for `valid_until`.
-    public let maximumConsentValidity: Int
+    public let maximumConsentValidity: Int?
     public let requiredPSUHeaders: [String]?
-    public let authMethods: [AuthMethod]
+    public let authMethods: [AuthMethod]?
 
     enum CodingKeys: String, CodingKey {
         case name, country, beta
