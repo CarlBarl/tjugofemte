@@ -1251,6 +1251,16 @@
         }
       }
     },
+    "Search bank": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sök bank"
+          }
+        }
+      }
+    },
     "Session": {
       "localizations": {
         "sv": {

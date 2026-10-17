@@ -83,13 +83,19 @@ struct BankPickerView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var askingSSN: Bank?
     @State private var ssn = ""
+    @State private var query = ""
+
+    private var shownBanks: [Bank] {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        return q.isEmpty ? model.banks : model.banks.filter { $0.name.localizedCaseInsensitiveContains(q) }
+    }
 
     var body: some View {
         List {
             if model.banks.isEmpty && !model.isBusy {
                 Text("No banks loaded yet. Pull to retry.").foregroundStyle(.secondary)
             }
-            ForEach(model.banks, id: \.name) { bank in
+            ForEach(shownBanks, id: \.name) { bank in
                 Button { start(bank) } label: {
                     HStack {
                         Text(bank.name)
@@ -100,6 +106,7 @@ struct BankPickerView: View {
             }
         }
         .navigationTitle("Choose bank")
+        .searchable(text: $query, prompt: "Search bank")
         .overlay { if model.isBusy { ProgressView() } }
         .task { if model.banks.isEmpty { await model.loadBanks() } }
         .refreshable { await model.loadBanks() }
