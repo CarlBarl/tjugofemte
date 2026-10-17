@@ -1131,12 +1131,12 @@
         }
       }
     },
-    "Redirect URL: paste the address below.": {
+    "Redirect URL: paste the address below. It is a page in this app's open source repository that only hands the login back to the app.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Redirect URL: klistra in adressen nedan."
+            "value": "Redirect URL: klistra in adressen nedan. Det är en sida i appens öppna källkod som bara lämnar tillbaka inloggningen till appen."
           }
         }
       }

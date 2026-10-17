@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Tjugofemte</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 48px 24px; text-align: center; color: #111; background: #f5f5f7; }
+  a.button { display: inline-block; margin-top: 24px; padding: 14px 24px; border-radius: 12px; background: #0a84ff; color: #fff; text-decoration: none; font-weight: 600; }
+  p { color: #555; max-width: 32em; margin: 12px auto; }
+</style>
+</head>
+<body>
+<h1>Tjugofemte</h1>
+<p id="sv">Tillbaka till appen …</p>
+<p id="en">Returning to the app …</p>
+<a class="button" id="open" href="tjugofemte://callback">Öppna Tjugofemte / Open Tjugofemte</a>
+<p>Den här sidan sparar ingenting. Koden i adressen är engångs och går bara till appen på din telefon.<br>
+This page stores nothing. The code in the address is single-use and only goes to the app on your phone.</p>
+<script>
+  // Enable Banking can only redirect to https. This page hands the one-time code to the app and does nothing else.
+  var target = "tjugofemte://callback" + window.location.search;
+  document.getElementById("open").setAttribute("href", target);
+  window.location.replace(target);
+</script>
+</body>
+</html>

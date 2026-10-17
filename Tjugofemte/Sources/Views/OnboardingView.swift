@@ -31,7 +31,7 @@ struct OnboardingView: View {
                 Link(destination: Links.controlPanel) { Label("Open the Enable Banking control panel", systemImage: "safari") }
                 step("Sign in with your email, then add a new application in the Production environment, not Sandbox.")
                 step("Name it anything, for example Tjugofemte.")
-                step("Redirect URL: paste the address below.")
+                step("Redirect URL: paste the address below. It is a page in this app's open source repository that only hands the login back to the app.")
                 copyButton("Copy redirect URL", AuthCoordinator.redirectURL.absoluteString)
                 step("Choose to provide your own public key and paste the key from step 1.")
                 step("Privacy policy and terms URLs: paste these two.")

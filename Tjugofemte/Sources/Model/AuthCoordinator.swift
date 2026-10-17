@@ -8,7 +8,9 @@ import UIKit
 @MainActor
 final class AuthCoordinator: NSObject, ASWebAuthenticationPresentationContextProviding {
     static let scheme = "tjugofemte"
-    static let redirectURL = URL(string: "tjugofemte://callback")!
+    /// Enable Banking only accepts https redirect URLs (verified in the control panel, 2026-10-17). The static page
+    /// at this address bounces to `tjugofemte://callback` with the same query, which the auth session intercepts.
+    static let redirectURL = URL(string: "https://carlbarl.github.io/tjugofemte/callback/")!
 
     enum Failure: Error, Equatable { case cancelled, stateMismatch, bankError(String), noCode }
 
