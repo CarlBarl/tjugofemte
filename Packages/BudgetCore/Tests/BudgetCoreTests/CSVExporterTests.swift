@@ -23,3 +23,16 @@ import Foundation
         #expect(csv.contains("\"Café \"\"Söder\"\", Stockholm\""))
     }
 }
+
+@Suite struct CSVFormulaInjectionTests {
+    @Test func textStartingWithFormulaTriggerIsNeutralized() {
+        let txs = [Transaction(dedupKey: "a", bookingDate: d(2026, 10, 1), amount: -1, currency: "SEK", counterparty: "=HYPERLINK(\"http://x\")", categoryID: "+cmd")]
+        let csv = CSVExporter.export(txs)
+        #expect(csv.contains("\"'=HYPERLINK(\"\"http://x\"\")\",\"'+cmd\""))
+    }
+
+    @Test func negativeAmountsAreNotTouched() {
+        let txs = [Transaction(dedupKey: "a", bookingDate: d(2026, 10, 1), amount: -120.5, currency: "SEK", counterparty: "ICA", categoryID: "groceries")]
+        #expect(CSVExporter.export(txs).contains(",-120.5,"))
+    }
+}
