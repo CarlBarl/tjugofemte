@@ -28,6 +28,8 @@ public enum ClientError: Error, Equatable {
     case rateLimited
     case http(status: Int, code: String?, message: String?)
     case decoding(String)
+    /// The start date was before the bank's history window; `earliest` is the first day it allows.
+    case wrongPeriod(earliest: Date)
 }
 
 /// Headers that tell the bank the user is present. Sent all together or not at all (Enable Banking FAQ).
@@ -104,7 +106,16 @@ public actor EnableBankingClient {
 
     /// Booked transactions from `from` onwards, following continuation keys. Empty pages with a key are
     /// normal for Swedbank history older than 90 days, so paging stops only when the key is gone.
-    public func transactions(accountUID: String, from: Date) async throws -> [TransactionRecord] {
+    /// A start before the bank's window is retried once from the earliest day the bank names.
+    public func transactions(accountUID: String, from: Date) async throws -> FetchedTransactions {
+        do {
+            return FetchedTransactions(records: try await pages(accountUID: accountUID, from: from), from: from)
+        } catch ClientError.wrongPeriod(let earliest) where earliest > from {
+            return FetchedTransactions(records: try await pages(accountUID: accountUID, from: earliest), from: earliest)
+        }
+    }
+
+    private func pages(accountUID: String, from: Date) async throws -> [TransactionRecord] {
         var records: [TransactionRecord] = []
         var continuation: String?
         for _ in 0..<1000 {  // ponytail: hard stop instead of trusting the bank to end the chain
@@ -166,10 +177,11 @@ public actor EnableBankingClient {
         let (data, response) = try await transport.send(request)
         guard (200..<300).contains(response.statusCode) else {
             let error = try? JSONDecoder().decode(Wire.ErrorBody.self, from: data)
-            switch error?.code {
+            switch error?.reason {
             case "EXPIRED_SESSION", "CLOSED_SESSION": throw ClientError.sessionExpired
             case "ASPSP_RATE_LIMIT_EXCEEDED": throw ClientError.rateLimited
-            default: throw ClientError.http(status: response.statusCode, code: error?.code, message: error?.message)
+            case "WRONG_TRANSACTIONS_PERIOD" where error?.earliestDay != nil: throw ClientError.wrongPeriod(earliest: error!.earliestDay!)
+            default: throw ClientError.http(status: response.statusCode, code: error?.reason, message: error?.message)
             }
         }
         do { return try JSONDecoder().decode(T.self, from: data) }

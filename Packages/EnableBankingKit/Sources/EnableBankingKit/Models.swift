@@ -76,6 +76,12 @@ public struct BankSession: Equatable, Sendable {
 }
 
 /// The six fields kept from a bank transaction. Everything else in the payload is never decoded.
+/// What a fetch returned, and the start it actually used after any retry inside the bank's window.
+public struct FetchedTransactions: Sendable {
+    public let records: [TransactionRecord]
+    public let from: Date
+}
+
 public struct TransactionRecord: Equatable, Sendable {
     public let transactionID: String?
     public let entryReference: String?
@@ -192,5 +198,33 @@ enum Wire {
     }
 
     struct Banks: Decodable { let aspsps: [Bank] }
-    struct ErrorBody: Decodable { let code: String?; let message: String? }
+    /// `{"code": 422, "message": "...", "error": "WRONG_TRANSACTIONS_PERIOD", "detail": {"date_from": "2026-07-25"}}` as
+    /// Enable Banking sends it (seen 2026-10-23). `code` is a number there; a string `code` is still read as the reason.
+    struct ErrorBody: Decodable {
+        struct Detail: Decodable {
+            let dateFrom: String?
+            enum CodingKeys: String, CodingKey { case dateFrom = "date_from" }
+        }
+        let error: String?
+        let message: String?
+        let code: String?
+        let detail: Detail?
+        enum CodingKeys: String, CodingKey { case error, message, code, detail }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            error = try? c.decode(String.self, forKey: .error)
+            message = try? c.decode(String.self, forKey: .message)
+            code = try? c.decode(String.self, forKey: .code)
+            detail = try? c.decode(Detail.self, forKey: .detail)
+        }
+
+        var reason: String? { error ?? code }
+
+        var earliestDay: Date? {
+            let parts = (detail?.dateFrom ?? "").split(separator: "-").compactMap { Int($0) }
+            guard parts.count == 3 else { return nil }
+            return Wire.stockholm.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
+        }
+    }
 }
