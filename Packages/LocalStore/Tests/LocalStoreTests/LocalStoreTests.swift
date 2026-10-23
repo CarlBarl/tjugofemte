@@ -20,6 +20,34 @@ import BudgetCore
         #expect(try store.allTransactions().map(\.dedupKey) == ["b", "a"])  // newest first
     }
 
+    @Test func aFetchReplacesUntouchedRowsInItsWindowOnly() throws {
+        _ = try store.insertNew([tx("old", day(2026, 7, 22), -30, "BEFORE WINDOW", "transfer"),
+                                 tx("a", day(2026, 10, 1), -245, "SPAR AURLAND", "transfer"),
+                                 tx("b", day(2026, 10, 2), -89, "OLD", "shopping")])
+        try store.setCategory("b", to: "takeaway")
+        // The fixed decoder gives new text, so the fingerprint key of "a" changes to "a2".
+        let inserted = try store.replaceUnlocked(bookedOnOrAfter: day(2026, 7, 25), with: [
+            tx("a2", day(2026, 10, 1), -245, "SPAR AURLAND", "groceries"),
+            tx("b", day(2026, 10, 2), -89, "PRESSBYRAN", "shopping"),
+            tx("c", day(2026, 10, 3), -50, "ICA", "groceries")])
+        #expect(inserted == 2)
+        let byKey = Dictionary(uniqueKeysWithValues: try store.allTransactions().map { ($0.dedupKey, "\($0.counterparty)|\($0.categoryID)") })
+        #expect(Set(byKey.keys) == ["old", "a2", "b", "c"])          // no duplicate of the 245 kr purchase
+        #expect(byKey["old"] == "BEFORE WINDOW|transfer")            // outside the window: untouched
+        #expect(byKey["a2"] == "SPAR AURLAND|groceries")
+        #expect(byKey["b"] == "OLD|takeaway")                        // locked: neither text nor category changes
+        #expect(byKey["c"] == "ICA|groceries")
+    }
+
+    @Test func fullFetchPendingDefaultsToTrueAndRoundTrips() throws {
+        #expect(Settings().fullFetchPending)
+        #expect(try store.settings().fullFetchPending)
+        var s = try store.settings()
+        s.fullFetchPending = false
+        try store.saveSettings(s)
+        #expect(try store.settings().fullFetchPending == false)
+    }
+
     @Test func manualCategorySticksWhenRulesChange() throws {
         _ = try store.insertNew([tx("a", day(2026, 10, 1), -10, "ICA", "groceries"), tx("b", day(2026, 10, 2), -20, "ICA", "groceries"),
                                  tx("c", day(2026, 10, 3), -2000, "Avanza", "transfer")])
