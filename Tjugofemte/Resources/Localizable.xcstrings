@@ -2175,6 +2175,16 @@
         }
       }
     },
+    "The bank only shares the last 90 days.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Banken delar bara de senaste 90 dagarna."
+          }
+        }
+      }
+    },
     "The budgets add up to more than the income. Lower a budget, add income, or start anyway and adjust under Plan.": {
       "localizations": {
         "sv": {

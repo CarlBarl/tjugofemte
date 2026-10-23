@@ -271,16 +271,24 @@ final class AppModel {
         do {
             let cutoff = settings.retention.cutoff(today: Date())
             let overlap = transactions.first.map { Calendar.stockholm.date(byAdding: .day, value: -7, to: $0.bookingDate)! }
-            let from = max(cutoff, overlap ?? cutoff)
-            let records = try await client().transactions(accountUID: uid, from: from).records
+            let from = settings.fullFetchPending ? cutoff : max(cutoff, overlap ?? cutoff)
+            let fetched = try await client().transactions(accountUID: uid, from: from)
             let categorizer = Categorizer(userRules: rules, ownAccountIDs: settings.ownAccountIDs)
-            let fresh = records.map { r in
+            let fresh = fetched.records.map { r in
                 Transaction(dedupKey: DedupKey.make(transactionID: r.transactionID, entryReference: r.entryReference, bookingDate: r.bookingDate,
                                                     amount: r.amount, currency: r.currency, counterparty: r.counterparty),
                             bookingDate: r.bookingDate, amount: r.amount, currency: r.currency, counterparty: r.counterparty,
                             categoryID: categorizer.categorize(text: r.counterparty, amount: r.amount, counterpartyAccountID: r.counterpartyAccountID))
             }
-            try store.insertNew(fresh)
+            // An empty answer for a window that holds rows is more likely a bank hiccup than every booking reversed.
+            if !fresh.isEmpty || !transactions.contains(where: { $0.bookingDate >= fetched.from }) {
+                try store.replaceUnlocked(bookedOnOrAfter: fetched.from, with: fresh)
+            }
+            if settings.fullFetchPending {
+                var s = settings
+                s.fullFetchPending = false
+                try store.saveSettings(s)
+            }
             try purge()
             reload()
         } catch ClientError.sessionExpired {
@@ -297,6 +305,7 @@ final class AppModel {
     private func describe(_ error: Error) -> String {
         switch error {
         case ClientError.rateLimited: String(localized: "The bank is rate limiting requests. Try again in a few hours.")
+        case ClientError.wrongPeriod: String(localized: "The bank only shares the last 90 days.")
         case ClientError.http(let status, let code, let message): "\(message ?? "HTTP \(status)")\(code.map { " (\($0))" } ?? "")"
         case ClientError.decoding(let detail): String(localized: "Unexpected response from Enable Banking: \(detail)")
         case AuthCoordinator.Failure.bankError(let text): text

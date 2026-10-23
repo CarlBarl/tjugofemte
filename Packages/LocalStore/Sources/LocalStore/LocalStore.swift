@@ -29,6 +29,9 @@ public struct Settings: Equatable, Sendable {
     public var authorizedAccounts: [AuthorizedAccount] = []
     /// The guided plan setup has run (or been skipped) once; until then the app opens in it.
     public var planDone = false
+    /// The next fetch reaches back to the retention cutoff instead of a week before the newest row. True until one
+    /// such fetch has succeeded, so installs that stored rows with an older decoder repair themselves.
+    public var fullFetchPending = true
 
     public init() {}
 
@@ -145,6 +148,22 @@ public final class LocalStore: Sendable {
         }
     }
 
+    /// Replaces the rows in a fetched window that the user has not touched: text and categories from an older
+    /// decoder cannot survive, and a booking whose fingerprint key changed with its text is not duplicated.
+    /// Rows the user categorized by hand stay, and a fetched row with the same key does not replace them.
+    @discardableResult
+    public func replaceUnlocked(bookedOnOrAfter from: Date, with transactions: [Transaction]) throws -> Int {
+        try db.write { db in
+            try TransactionRow.filter(Column("category_locked") == false && Column("booking_date") >= from).deleteAll(db)
+            var inserted = 0
+            for t in transactions {
+                try TransactionRow(t).insert(db, onConflict: .ignore)
+                inserted += db.changesCount
+            }
+            return inserted
+        }
+    }
+
     /// Used when switching to another account: its history must not mix with the previous one.
     public func deleteAllTransactions() throws {
         try db.write { db in _ = try TransactionRow.deleteAll(db) }
@@ -211,6 +230,7 @@ public final class LocalStore: Sendable {
             if let v = raw["start_day"].flatMap(Int.init) { s.startDay = v }
             if let v = raw["retention_months"].flatMap(Int.init) { s.retention = RetentionPolicy(months: v) }
             s.planDone = raw["plan_done"] == "1"
+            s.fullFetchPending = raw["full_fetch_pending"] != "0"
             s.selectedAccountUID = raw["selected_account_uid"]
             s.bankName = raw["bank_name"]
             s.consentValidUntil = raw["consent_valid_until"].flatMap { Double($0) }.map(Date.init(timeIntervalSince1970:))
@@ -239,6 +259,7 @@ public final class LocalStore: Sendable {
             ("start_day", String(s.startDay)),
             ("retention_months", String(s.retention.months)),
             ("plan_done", s.planDone ? "1" : "0"),
+            ("full_fetch_pending", s.fullFetchPending ? "1" : "0"),
             ("selected_account_uid", s.selectedAccountUID),
             ("bank_name", s.bankName),
             ("consent_valid_until", s.consentValidUntil.map { String($0.timeIntervalSince1970) }),
