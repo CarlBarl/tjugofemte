@@ -271,7 +271,8 @@ final class AppModel {
         do {
             let cutoff = settings.retention.cutoff(today: Date())
             let overlap = transactions.first.map { Calendar.stockholm.date(byAdding: .day, value: -7, to: $0.bookingDate)! }
-            let from = settings.fullFetchPending ? cutoff : max(cutoff, overlap ?? cutoff)
+            let fullFetch = settings.fullFetchPending
+            let from = fullFetch ? cutoff : max(cutoff, overlap ?? cutoff)
             let fetched = try await client().transactions(accountUID: uid, from: from)
             let categorizer = Categorizer(userRules: rules, ownAccountIDs: settings.ownAccountIDs)
             let fresh = fetched.records.map { r in
@@ -280,15 +281,7 @@ final class AppModel {
                             bookingDate: r.bookingDate, amount: r.amount, currency: r.currency, counterparty: r.counterparty,
                             categoryID: categorizer.categorize(text: r.counterparty, amount: r.amount, counterpartyAccountID: r.counterpartyAccountID))
             }
-            // An empty answer for a window that holds rows is more likely a bank hiccup than every booking reversed.
-            if !fresh.isEmpty || !transactions.contains(where: { $0.bookingDate >= fetched.from }) {
-                try store.replaceUnlocked(bookedOnOrAfter: fetched.from, with: fresh)
-            }
-            if settings.fullFetchPending {
-                var s = settings
-                s.fullFetchPending = false
-                try store.saveSettings(s)
-            }
+            try store.storeFetched(fresh, window: fetched.from, completesFullFetch: fullFetch)
             try purge()
             reload()
         } catch ClientError.sessionExpired {

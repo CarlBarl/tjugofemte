@@ -35,7 +35,10 @@ public struct Categorizer: Sendable {
 
     /// Whole-word, case-insensitive match. "ica" matches "ICA NÄRA" and "UBR*", not "Musica".
     static func matches(_ keyword: String, in haystack: String) -> Bool {
-        let needle = NSRegularExpression.escapedPattern(for: normalize(keyword))
+        // An empty keyword would match every gap between two non-letters.
+        let normalized = normalize(keyword)
+        guard !normalized.isEmpty else { return false }
+        let needle = NSRegularExpression.escapedPattern(for: normalized)
         return haystack.range(of: "(?<![\\p{L}\\p{N}])\(needle)(?![\\p{L}\\p{N}])", options: .regularExpression) != nil
     }
 

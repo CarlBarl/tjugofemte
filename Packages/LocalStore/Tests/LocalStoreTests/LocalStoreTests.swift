@@ -20,23 +20,43 @@ import BudgetCore
         #expect(try store.allTransactions().map(\.dedupKey) == ["b", "a"])  // newest first
     }
 
-    @Test func aFetchReplacesUntouchedRowsInItsWindowOnly() throws {
+    @Test func aFetchReplacesTheUntouchedRowsTheBankSentBack() throws {
         _ = try store.insertNew([tx("old", day(2026, 7, 22), -30, "BEFORE WINDOW", "transfer"),
                                  tx("a", day(2026, 10, 1), -245, "SPAR AURLAND", "transfer"),
-                                 tx("b", day(2026, 10, 2), -89, "OLD", "shopping")])
+                                 tx("b", day(2026, 10, 2), -89, "OLD", "shopping"),
+                                 tx("d", day(2026, 10, 4), -12, "NOT SENT BACK", "shopping")])
         try store.setCategory("b", to: "takeaway")
         // The fixed decoder gives new text, so the fingerprint key of "a" changes to "a2".
-        let inserted = try store.replaceUnlocked(bookedOnOrAfter: day(2026, 7, 25), with: [
+        let inserted = try store.storeFetched([
             tx("a2", day(2026, 10, 1), -245, "SPAR AURLAND", "groceries"),
             tx("b", day(2026, 10, 2), -89, "PRESSBYRAN", "shopping"),
-            tx("c", day(2026, 10, 3), -50, "ICA", "groceries")])
+            tx("c", day(2026, 10, 3), -50, "ICA", "groceries")], window: day(2026, 7, 25), completesFullFetch: true)
         #expect(inserted == 2)
         let byKey = Dictionary(uniqueKeysWithValues: try store.allTransactions().map { ($0.dedupKey, "\($0.counterparty)|\($0.categoryID)") })
-        #expect(Set(byKey.keys) == ["old", "a2", "b", "c"])          // no duplicate of the 245 kr purchase
-        #expect(byKey["old"] == "BEFORE WINDOW|transfer")            // outside the window: untouched
+        #expect(Set(byKey.keys) == ["old", "a2", "b", "c", "d"])     // no duplicate of the 245 kr purchase
+        #expect(byKey["old"] == "BEFORE WINDOW|transfer")            // not sent back: untouched
         #expect(byKey["a2"] == "SPAR AURLAND|groceries")
         #expect(byKey["b"] == "OLD|takeaway")                        // locked: neither text nor category changes
         #expect(byKey["c"] == "ICA|groceries")
+        #expect(byKey["d"] == "NOT SENT BACK|shopping")              // in the window but not returned: kept
+        #expect(try store.settings().fullFetchPending == false)
+    }
+
+    @Test func anEmptyAnswerDoesNotCompleteTheFullFetch() throws {
+        _ = try store.insertNew([tx("a", day(2026, 10, 1), -245, "CARL ELELID", "transfer")])
+        try store.storeFetched([], window: day(2026, 7, 25), completesFullFetch: true)
+        #expect(try store.settings().fullFetchPending)
+        #expect(try store.allTransactions().count == 1)
+    }
+
+    @Test func anEmptyAnswerCompletesTheFullFetchWhenNothingIsStored() throws {
+        try store.storeFetched([], window: day(2026, 7, 25), completesFullFetch: true)
+        #expect(try store.settings().fullFetchPending == false)
+    }
+
+    @Test func aNormalPullLeavesTheFullFetchFlagAlone() throws {
+        try store.storeFetched([tx("c", day(2026, 10, 3), -50, "ICA", "groceries")], window: day(2026, 10, 1), completesFullFetch: false)
+        #expect(try store.settings().fullFetchPending)
     }
 
     @Test func fullFetchPendingDefaultsToTrueAndRoundTrips() throws {
