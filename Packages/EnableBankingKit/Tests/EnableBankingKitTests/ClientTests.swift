@@ -69,7 +69,7 @@ import Foundation
 
     @Test func transactionsKeepSixFieldsAndSignByIndicator() async throws {
         let transport = StubTransport([(200, transactionsJSON([icaJSON, salaryJSON, noNamesJSON], next: nil))])
-        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400))
+        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400)).records
         let request = transport.calls[0].request
         #expect(request.url?.path == "/accounts/acc-uid-1/transactions")
         #expect(request.url?.query?.contains("transaction_status=BOOK") == true)
@@ -93,7 +93,7 @@ import Foundation
 
     @Test func cardPurchaseTakesTheMerchantFromTheRemittanceNotTheHoldersName() async throws {
         let transport = StubTransport([(200, transactionsJSON([cardJSON], next: nil))])
-        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400))
+        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400)).records
         #expect(records[0].amount == -245)
         #expect(records[0].counterparty == "SPAR AURLAND")
         #expect(records[0].counterpartyAccountID == nil)
@@ -101,7 +101,7 @@ import Foundation
 
     @Test func missingIndicatorTakesTheDirectionFromTheSign() async throws {
         let transport = StubTransport([(200, transactionsJSON([unsignedIndicatorJSON], next: nil))])
-        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400))
+        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400)).records
         #expect(records[0].amount == -89)
         #expect(records[0].counterparty == "PRESSBYRAN 5521")
         #expect(records[0].counterpartyAccountID == "SE1100000000000000000002")
@@ -109,7 +109,7 @@ import Foundation
 
     @Test func noNameAndNoTextGivesAnEmptyCounterparty() async throws {
         let transport = StubTransport([(200, transactionsJSON([holderOnlyJSON], next: nil))])
-        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400))
+        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400)).records
         #expect(records[0].counterparty == "")
     }
 
@@ -119,7 +119,7 @@ import Foundation
             (200, transactionsJSON([icaJSON], next: "k2")),
             (200, transactionsJSON([salaryJSON], next: nil)),
         ])
-        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400))
+        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400)).records
         #expect(records.count == 2)
         #expect(transport.calls.count == 3)
         #expect(transport.calls[0].request.url?.query?.contains("continuation_key") == false)
@@ -162,5 +162,53 @@ import Foundation
         await #expect(throws: ClientError.rateLimited) {
             _ = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date())
         }
+    }
+
+    @Test func expiredSessionInTheRealShapeBecomesNeedsReauth() async throws {
+        let transport = StubTransport([(401, #"{"code":401,"message":"Session is expired","error":"EXPIRED_SESSION"}"#)])
+        await #expect(throws: ClientError.sessionExpired) {
+            _ = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date())
+        }
+    }
+
+    @Test func rateLimitInTheRealShapeSurfacesAsItsOwnError() async throws {
+        let transport = StubTransport([(429, #"{"code":429,"message":"ASPSP Rate limit exceeded","error":"ASPSP_RATE_LIMIT_EXCEEDED"}"#)])
+        await #expect(throws: ClientError.rateLimited) {
+            _ = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date())
+        }
+    }
+
+    @Test func anUnreadableErrorBodyStillReportsTheStatus() async throws {
+        let transport = StubTransport([(500, "<html>oops</html>")])
+        await #expect(throws: ClientError.http(status: 500, code: nil, message: nil)) {
+            _ = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date())
+        }
+    }
+
+    // Body copied from the 2026-10-23 probe on Roslagens Sparbank.
+    static let wrongPeriodBody = #"{"code":422,"message":"Wrong transactions period requested","detail":{"message":"No valid consent found","date_from":"2026-07-25"},"error":"WRONG_TRANSACTIONS_PERIOD"}"#
+
+    @Test func tooEarlyAStartRetriesOnceFromTheDateTheBankAllows() async throws {
+        let transport = StubTransport([(422, Self.wrongPeriodBody), (200, transactionsJSON([icaJSON], next: nil))])
+        let fetched = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_784_000_000))
+        #expect(fetched.records.count == 1)
+        #expect(transport.calls.count == 2)
+        #expect(transport.calls[1].request.url?.query?.contains("date_from=2026-07-25") == true)
+        #expect(Wire.stockholm.dateComponents([.year, .month, .day], from: fetched.from) == DateComponents(year: 2026, month: 7, day: 25))
+    }
+
+    @Test func wrongPeriodThatWouldNotMoveTheStartIsNotRetried() async throws {
+        let transport = StubTransport([(422, Self.wrongPeriodBody), (200, transactionsJSON([icaJSON], next: nil))])
+        let from = Wire.stockholm.date(from: DateComponents(year: 2026, month: 7, day: 25))!
+        await #expect(throws: ClientError.wrongPeriod(earliest: from)) {
+            _ = try await client(transport).transactions(accountUID: "acc-uid-1", from: from)
+        }
+        #expect(transport.calls.count == 1)
+    }
+
+    @Test func aFetchReportsTheStartItUsed() async throws {
+        let transport = StubTransport([(200, transactionsJSON([icaJSON], next: nil))])
+        let from = Date(timeIntervalSince1970: 1_790_294_400)
+        #expect(try await client(transport).transactions(accountUID: "acc-uid-1", from: from).from == from)
     }
 }

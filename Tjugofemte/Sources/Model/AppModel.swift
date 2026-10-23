@@ -272,7 +272,7 @@ final class AppModel {
             let cutoff = settings.retention.cutoff(today: Date())
             let overlap = transactions.first.map { Calendar.stockholm.date(byAdding: .day, value: -7, to: $0.bookingDate)! }
             let from = max(cutoff, overlap ?? cutoff)
-            let records = try await client().transactions(accountUID: uid, from: from)
+            let records = try await client().transactions(accountUID: uid, from: from).records
             let categorizer = Categorizer(userRules: rules, ownAccountIDs: settings.ownAccountIDs)
             let fresh = records.map { r in
                 Transaction(dedupKey: DedupKey.make(transactionID: r.transactionID, entryReference: r.entryReference, bookingDate: r.bookingDate,
