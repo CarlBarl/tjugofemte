@@ -148,17 +148,28 @@ public final class LocalStore: Sendable {
         }
     }
 
-    /// Replaces the rows in a fetched window that the user has not touched: text and categories from an older
-    /// decoder cannot survive, and a booking whose fingerprint key changed with its text is not duplicated.
-    /// Rows the user categorized by hand stay, and a fetched row with the same key does not replace them.
+    /// Stores a fetch. A row the bank sent back replaces untouched rows booked the same day for the same amount, so
+    /// text and categories from an older decoder cannot survive and a booking whose fingerprint key changed with its
+    /// text is not duplicated. Rows the bank did not send back are kept: which rows a `date_from` returns is the bank's
+    /// rule, not ours. Rows the user categorized by hand stay. A full fetch counts as done only when the bank answered
+    /// with rows, or when nothing is stored from `from` onwards.
     @discardableResult
-    public func replaceUnlocked(bookedOnOrAfter from: Date, with transactions: [Transaction]) throws -> Int {
+    public func storeFetched(_ transactions: [Transaction], window from: Date, completesFullFetch: Bool) throws -> Int {
         try db.write { db in
-            try TransactionRow.filter(Column("category_locked") == false && Column("booking_date") >= from).deleteAll(db)
+            for t in transactions {
+                try TransactionRow.filter(Column("category_locked") == false && Column("booking_date") == t.bookingDate
+                                          && Column("amount") == "\(t.amount)").deleteAll(db)
+            }
             var inserted = 0
             for t in transactions {
                 try TransactionRow(t).insert(db, onConflict: .ignore)
                 inserted += db.changesCount
+            }
+            if completesFullFetch {
+                let stored = try TransactionRow.filter(Column("booking_date") >= from).fetchCount(db)
+                if !transactions.isEmpty || stored == 0 {
+                    try db.execute(sql: "INSERT INTO settings(key, value) VALUES ('full_fetch_pending', '0') ON CONFLICT(key) DO UPDATE SET value = excluded.value")
+                }
             }
             return inserted
         }

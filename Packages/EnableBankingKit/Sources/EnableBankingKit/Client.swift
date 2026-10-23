@@ -180,7 +180,10 @@ public actor EnableBankingClient {
             switch error?.reason {
             case "EXPIRED_SESSION", "CLOSED_SESSION": throw ClientError.sessionExpired
             case "ASPSP_RATE_LIMIT_EXCEEDED": throw ClientError.rateLimited
-            case "WRONG_TRANSACTIONS_PERIOD" where error?.earliestDay != nil: throw ClientError.wrongPeriod(earliest: error!.earliestDay!)
+            case "WRONG_TRANSACTIONS_PERIOD":
+                // Without the bank's own date, fall back to the 90 days PSD2 lets a bank share without a new login.
+                let fallback = Wire.stockholm.date(byAdding: .day, value: -89, to: Wire.stockholm.startOfDay(for: Date()))!
+                throw ClientError.wrongPeriod(earliest: error?.earliestDay ?? fallback)
             default: throw ClientError.http(status: response.statusCode, code: error?.reason, message: error?.message)
             }
         }

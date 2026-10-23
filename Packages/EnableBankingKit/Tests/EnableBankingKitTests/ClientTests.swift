@@ -211,4 +211,21 @@ import Foundation
         let from = Date(timeIntervalSince1970: 1_790_294_400)
         #expect(try await client(transport).transactions(accountUID: "acc-uid-1", from: from).from == from)
     }
+
+    @Test func wrongPeriodWithoutADateRetriesFromEightyNineDaysBack() async throws {
+        let body = #"{"code":422,"message":"Wrong transactions period requested","error":"WRONG_TRANSACTIONS_PERIOD"}"#
+        let transport = StubTransport([(422, body), (200, transactionsJSON([icaJSON], next: nil))])
+        let fetched = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_700_000_000))
+        let expected = EnableBankingClient.civilDay(Wire.stockholm.date(byAdding: .day, value: -89, to: Date())!)
+        #expect(fetched.records.count == 1)
+        #expect(transport.calls[1].request.url?.query?.contains("date_from=\(expected)") == true)
+    }
+
+    @Test func aSecondWrongPeriodAfterTheRetryIsThrown() async throws {
+        let transport = StubTransport([(422, Self.wrongPeriodBody), (422, Self.wrongPeriodBody)])
+        await #expect(throws: ClientError.self) {
+            _ = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_700_000_000))
+        }
+        #expect(transport.calls.count == 2)
+    }
 }

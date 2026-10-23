@@ -10,6 +10,12 @@ import Foundation
         #expect(categorizer.categorize(text: "Musica AB", amount: -120) != DefaultCategory.groceries.rawValue)
     }
 
+    @Test func anEmptyKeywordMatchesNothing() {
+        #expect(!Categorizer.matches("", in: Categorizer.normalize("SWISH - ANNA")))
+        #expect(!Categorizer.matches("  ", in: Categorizer.normalize("AB, STHLM")))
+        #expect(Categorizer(userRules: [KeywordRule(keyword: "", categoryID: "rent")], ownAccountIDs: []).categorize(text: "ICA NÄRA", amount: -50) == "groceries")
+    }
+
     @Test func swedishLettersMatch() {
         #expect(categorizer.categorize(text: "LÄNSFÖRSÄKRINGAR SAK", amount: -300) == DefaultCategory.insurance.rawValue)
     }
