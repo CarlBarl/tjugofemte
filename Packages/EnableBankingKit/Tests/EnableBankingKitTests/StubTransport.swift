@@ -62,3 +62,21 @@ let noNamesJSON = """
 "credit_debit_indicator":"DBIT","transaction_amount":{"currency":"SEK","amount":"-49"},
 "remittance_information":["Swish skickad","Anna"]}
 """
+
+/// Roslagens Sparbank card purchase as measured on 2026-10-23: no creditor, the holder as debtor, merchant only in remittance.
+let cardJSON = """
+{"entry_reference":"ref-card","booking_date":"2026-10-20","credit_debit_indicator":"DBIT",
+"transaction_amount":{"amount":"245.00","currency":"SEK"},
+"debtor":{"name":"CARL ELELID"},"debtor_account":{"iban":"SE4580000000000000000001"},"remittance_information":["SPAR AURLAND"]}
+"""
+
+let unsignedIndicatorJSON = """
+{"entry_reference":"ref-nil","booking_date":"2026-10-21","transaction_amount":{"amount":"-89.00","currency":"SEK"},
+"creditor":{"name":"PRESSBYRAN 5521"},"creditor_account":{"iban":"SE1100000000000000000002"},
+"debtor":{"name":"CARL ELELID"},"debtor_account":{"iban":"SE4580000000000000000001"}}
+"""
+
+let holderOnlyJSON = """
+{"entry_reference":"ref-holder","booking_date":"2026-10-22","credit_debit_indicator":"DBIT",
+"transaction_amount":{"amount":"30.00","currency":"SEK"},"debtor":{"name":"CARL ELELID"}}
+"""
