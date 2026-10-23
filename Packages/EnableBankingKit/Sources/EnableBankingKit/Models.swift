@@ -136,16 +136,18 @@ enum Wire {
             guard parts.count == 3, let date = stockholm.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2])) else {
                 throw ClientError.decoding("booking_date \(bookingDate)")
             }
-            let isDebit = creditDebitIndicator == "DBIT"
+            // Without an indicator the sign says which way the money went.
+            let isDebit = creditDebitIndicator == "DBIT" || (creditDebitIndicator == nil && value < 0)
             let magnitude = value < 0 ? -value : value
             let amount: Decimal = switch creditDebitIndicator {
             case "DBIT": -magnitude
             case "CRDT": magnitude
             default: value
             }
-            let other = isDebit ? creditor : debtor
-            let name = other?.name ?? (isDebit ? debtor : creditor)?.name
-            let text = name ?? (remittanceInformation ?? []).joined(separator: " ")
+            // Only the other party's name. Swedbank-group card purchases leave out the creditor and name the
+            // account holder as debtor; the merchant is then only in the remittance text.
+            let name = (isDebit ? creditor : debtor)?.name?.trimmingCharacters(in: .whitespaces)
+            let text = name.flatMap { $0.isEmpty ? nil : $0 } ?? (remittanceInformation ?? []).joined(separator: " ")
             return TransactionRecord(transactionID: transactionID, entryReference: entryReference, bookingDate: date, amount: amount,
                                      currency: transactionAmount.currency, counterparty: text,
                                      counterpartyAccountID: (isDebit ? creditorAccount : debtorAccount)?.normalized)

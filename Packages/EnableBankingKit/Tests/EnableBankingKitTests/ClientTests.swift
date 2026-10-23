@@ -91,6 +91,28 @@ import Foundation
         #expect(records[2].counterpartyAccountID == nil)
     }
 
+    @Test func cardPurchaseTakesTheMerchantFromTheRemittanceNotTheHoldersName() async throws {
+        let transport = StubTransport([(200, transactionsJSON([cardJSON], next: nil))])
+        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400))
+        #expect(records[0].amount == -245)
+        #expect(records[0].counterparty == "SPAR AURLAND")
+        #expect(records[0].counterpartyAccountID == nil)
+    }
+
+    @Test func missingIndicatorTakesTheDirectionFromTheSign() async throws {
+        let transport = StubTransport([(200, transactionsJSON([unsignedIndicatorJSON], next: nil))])
+        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400))
+        #expect(records[0].amount == -89)
+        #expect(records[0].counterparty == "PRESSBYRAN 5521")
+        #expect(records[0].counterpartyAccountID == "SE1100000000000000000002")
+    }
+
+    @Test func noNameAndNoTextGivesAnEmptyCounterparty() async throws {
+        let transport = StubTransport([(200, transactionsJSON([holderOnlyJSON], next: nil))])
+        let records = try await client(transport).transactions(accountUID: "acc-uid-1", from: Date(timeIntervalSince1970: 1_790_294_400))
+        #expect(records[0].counterparty == "")
+    }
+
     @Test func pagingFollowsContinuationKeyAndToleratesEmptyPages() async throws {
         let transport = StubTransport([
             (200, transactionsJSON([], next: "k1")),           // Swedbank quirk for older history
