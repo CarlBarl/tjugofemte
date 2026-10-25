@@ -55,6 +55,13 @@ import Foundation
         #expect(moved.keepingToday(PeriodLabel(year: 2026, month: 12), from: rule, today: d(2026, 10, 22)) == PeriodLabel(year: 2026, month: 12))
     }
 
+    @Test func newPaydayShowsTodaysPeriod() {
+        // On 26 Oct, payday 25 says November (from 23 Oct) and payday 27 says October (November starts Tue 27 Oct).
+        let payday27 = PeriodRule(startDay: 27)
+        #expect(payday27.keepingToday(PeriodLabel(year: 2026, month: 11), from: rule, today: d(2026, 10, 26)) == PeriodLabel(year: 2026, month: 10))
+        #expect(payday27.keepingToday(PeriodLabel(year: 2026, month: 9), from: rule, today: d(2026, 10, 26)) == PeriodLabel(year: 2026, month: 10))
+    }
+
     @Test func labelsStepAcrossYears() {
         #expect(PeriodLabel(year: 2026, month: 12).next == PeriodLabel(year: 2027, month: 1))
         #expect(PeriodLabel(year: 2027, month: 1).previous == PeriodLabel(year: 2026, month: 12))

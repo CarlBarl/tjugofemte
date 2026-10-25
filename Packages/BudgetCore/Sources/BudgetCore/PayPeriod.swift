@@ -61,9 +61,10 @@ public struct PeriodRule: Equatable, Sendable {
     }
 
     /// The period to show after the boundaries moved from `old` to this rule. Someone on today's period stays on today's,
-    /// so a salary that just arrived opens its period; someone who went to another period stays there.
+    /// so a salary that just arrived opens its period; someone who went to another period stays there. A new payday
+    /// changes what every label covers, so it shows today's period.
     public func keepingToday(_ selected: PeriodLabel, from old: PeriodRule, today: Date = Date()) -> PeriodLabel {
-        selected == old.period(containing: today).label ? period(containing: today).label : selected
+        startDay != old.startDay || selected == old.period(containing: today).label ? period(containing: today).label : selected
     }
 
     private func start(of label: PeriodLabel) -> Date {

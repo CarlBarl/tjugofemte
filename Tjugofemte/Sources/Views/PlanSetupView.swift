@@ -41,7 +41,10 @@ struct PlanSetupView: View {
     }
 
     private let stepCount = 4
-    private var rule: PeriodRule { model.periodRule(startDay: startDay) }
+    private var rule: PeriodRule {
+        .resolved(startDay: startDay, manual: model.settings.periodOverrides, transactions: model.transactions,
+                  incomeSources: incomes.filter(\.included).map { IncomeSource(id: $0.id, name: $0.name, plannedAmount: $0.amount, keyword: $0.keyword) })
+    }
     private var plannedIncome: Decimal { incomes.filter(\.included).reduce(0) { $0 + $1.amount } }
     /// Per period: a quarterly budget counts a third.
     private var budgetTotal: Decimal { budgets.reduce(0) { $0 + $1.perPeriod } }
