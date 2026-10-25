@@ -32,6 +32,19 @@ public struct Settings: Equatable, Sendable {
     /// The next fetch reaches back to the retention cutoff instead of a week before the newest row. True until one
     /// such fetch has succeeded, so installs that stored rows with an older decoder repair themselves.
     public var fullFetchPending = true
+    /// The savings goal and hearts from the Goal screen; nil until the user has set a goal.
+    public var goal: GoalPreferences?
+    /// The user's need and want flips. They point at the current account's spending, so an account switch clears them.
+    public var groups = CategoryGroups()
+    /// The goal setup has run once; until then an upgraded install shows the "Set a savings goal" card.
+    public var goalSetupDone = false
+    /// The user has answered how long to keep history on the phone.
+    public var retentionAsked = false
+    /// The period whose "Adjust plan?" nudge the user dismissed.
+    public var nudgeDismissed: PeriodLabel?
+    /// The categorizer generation the stored rows were last recategorized with, so an upgrade that changes the rules
+    /// recategorizes once.
+    public var categorizerVersion = 0
 
     public init() {}
 }
@@ -53,6 +66,11 @@ public final class LocalStore: Sendable {
     }
 
     public static func open(in directory: URL) throws -> LocalStore {
+        try open(in: directory, upTo: nil)
+    }
+
+    /// `upTo` stops at an older migration, so a test can build the file an older version left behind.
+    static func open(in directory: URL, upTo migration: String?) throws -> LocalStore {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         var dir = directory
         var values = URLResourceValues()
@@ -61,10 +79,10 @@ public final class LocalStore: Sendable {
         #if os(iOS)
         try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: directory.path)
         #endif
-        return try LocalStore(try DatabaseQueue(path: directory.appendingPathComponent(fileName).path, configuration: configuration))
+        return try LocalStore(try DatabaseQueue(path: directory.appendingPathComponent(fileName).path, configuration: configuration), upTo: migration)
     }
 
-    init(_ db: DatabaseQueue) throws {
+    init(_ db: DatabaseQueue, upTo migration: String? = nil) throws {
         self.db = db
         var migrator = DatabaseMigrator()
         migrator.registerMigration("v1") { db in
@@ -99,7 +117,11 @@ public final class LocalStore: Sendable {
                 t.column("value", .text).notNull()
             }
         }
-        try migrator.migrate(db)
+        // Savings is no longer spending: the target is what goes to savings, so a budget on it would set the same money aside twice.
+        migrator.registerMigration("v2") { db in
+            try db.execute(sql: "DELETE FROM budgets WHERE category_id = 'savings'")
+        }
+        if let migration { try migrator.migrate(db, upTo: migration) } else { try migrator.migrate(db) }
     }
 
     // MARK: Transactions
@@ -257,6 +279,18 @@ public final class LocalStore: Sendable {
                     s.periodOverrides[PeriodLabel(year: parts[0], month: parts[1])] = Date(timeIntervalSince1970: seconds)
                 }
             }
+            if let json = raw["goal_preferences"], let data = json.data(using: .utf8), let decoded = try? JSONDecoder().decode(GoalPreferences.self, from: data) {
+                s.goal = decoded
+            }
+            if let json = raw["group_overrides"], let data = json.data(using: .utf8), let decoded = try? JSONDecoder().decode(CategoryGroups.self, from: data) {
+                s.groups = decoded
+            }
+            s.goalSetupDone = raw["goal_setup_done"] == "1"
+            s.retentionAsked = raw["retention_asked"] == "1"
+            if let parts = raw["nudge_dismissed"]?.split(separator: "-").compactMap({ Int($0) }), parts.count == 2 {
+                s.nudgeDismissed = PeriodLabel(year: parts[0], month: parts[1])
+            }
+            if let v = raw["categorizer_version"].flatMap(Int.init) { s.categorizerVersion = v }
             return s
         }
     }
@@ -275,6 +309,12 @@ public final class LocalStore: Sendable {
             ("period_overrides", json),
             ("own_account_ids", String(decoding: try JSONEncoder().encode(s.ownAccountIDs.sorted()), as: UTF8.self)),
             ("authorized_accounts", String(decoding: try JSONEncoder().encode(s.authorizedAccounts), as: UTF8.self)),
+            ("goal_preferences", try s.goal.map { String(decoding: try JSONEncoder().encode($0), as: UTF8.self) }),
+            ("group_overrides", String(decoding: try JSONEncoder().encode(s.groups), as: UTF8.self)),
+            ("goal_setup_done", s.goalSetupDone ? "1" : "0"),
+            ("retention_asked", s.retentionAsked ? "1" : "0"),
+            ("nudge_dismissed", s.nudgeDismissed.map { "\($0.year)-\($0.month)" }),
+            ("categorizer_version", String(s.categorizerVersion)),
         ]
         try db.write { db in
             for (key, value) in pairs {

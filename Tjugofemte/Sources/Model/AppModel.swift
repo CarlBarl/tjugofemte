@@ -41,10 +41,26 @@ final class AppModel {
         selectedPeriod = PeriodLabel(year: 2000, month: 1)
         reload()
         selectedPeriod = periodRule.period(containing: Date()).label
+        // Rows stored before Unsorted existed fell back to shopping; the rules run over them once more.
+        if settings.categorizerVersion < Self.categorizerVersion {
+            do {
+                try recategorize()
+                updateSettings { $0.categorizerVersion = Self.categorizerVersion }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
+        // An install that already keeps 12 months or more has nothing to gain from the history prompt, so it is never shown.
+        if !settings.retentionAsked && settings.retention.months >= Self.promptedRetention { updateSettings { $0.retentionAsked = true } }
         try? purge()
-        // Screenshots, UI tests and App Review notes: `-demo` opens straight into sample data.
-        if ProcessInfo.processInfo.arguments.contains("-demo") { startDemo() }
+        // Screenshots, UI tests and App Review notes: `-demo` opens straight into sample data, `-demo-upgrade` into
+        // sample data from before the goal setup.
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-demo") || arguments.contains("-demo-upgrade") { startDemo() }
     }
+
+    /// Raised when the categorizer's fallback or default rules change, so stored rows are recategorized on the next launch.
+    private static let categorizerVersion = 2
 
     var stage: Stage {
         if isDemo { return .ready }
@@ -228,6 +244,10 @@ final class AppModel {
             try store.deleteAllTransactions()
             var s = settings
             s.selectedAccountUID = uid
+            s.goal = nil
+            s.groups = CategoryGroups()
+            s.goalSetupDone = false
+            s.nudgeDismissed = nil
             try store.saveSettings(s)
             settings = s
             reload()
@@ -343,7 +363,20 @@ final class AppModel {
         try store.recategorizeUnlocked { text, amount in categorizer.categorize(text: text, amount: amount) }
     }
 
-    func saveBudget(_ budget: Budget) { do { try store.saveBudget(budget); reload() } catch { errorMessage = error.localizedDescription } }
+    /// A want budget edited here counts as hearted at that amount on the Goal screen.
+    func saveBudget(_ budget: Budget) {
+        do {
+            try store.saveBudget(budget)
+            if let goal = settings.goal {
+                var s = settings
+                s.goal = GoalSetup.edited(budget, groups: settings.groups, prefs: goal)
+                try store.saveSettings(s)
+            }
+            reload()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
     func deleteBudget(categoryID: String) { do { try store.deleteBudget(categoryID: categoryID); reload() } catch { errorMessage = error.localizedDescription } }
     func saveIncomeSource(_ source: IncomeSource) { do { try store.saveIncomeSource(source); reload() } catch { errorMessage = error.localizedDescription } }
     func deleteIncomeSource(id: String) { do { try store.deleteIncomeSource(id: id); reload() } catch { errorMessage = error.localizedDescription } }
@@ -351,8 +384,12 @@ final class AppModel {
     // MARK: Plan setup
 
     func incomeSuggestions(rule: PeriodRule) -> [IncomeSuggestion] { PlanSuggestions.incomes(transactions: transactions, rule: rule) }
-    func budgetSuggestions(rule: PeriodRule) -> BudgetSuggestions { PlanSuggestions.budgets(transactions: transactions, rule: rule) }
     func paydayGuess() -> Int? { PlanSuggestions.payday(transactions: transactions, rule: periodRule) }
+
+    /// The periods for a payday and income sources the setup has not saved yet, resolved as `reload` resolves the saved ones.
+    func periodRule(startDay: Int, incomes: [IncomeSource]) -> PeriodRule {
+        .resolved(startDay: startDay, manual: settings.periodOverrides, transactions: transactions, incomeSources: incomes)
+    }
 
     /// The setup writes the whole plan at once; sources and budgets left out of it are removed.
     func applyPlan(startDay: Int, incomes: [IncomeSource], budgets newBudgets: [Budget]) {
@@ -368,6 +405,91 @@ final class AppModel {
     }
 
     func skipPlan() { updateSettings { $0.planDone = true } }
+
+    func analysis() -> SpendingAnalysis { analysis(rule: periodRule, incomes: incomeSources) }
+
+    /// The setup's steps 3 to 6 pass the payday and income sources it has not saved yet.
+    func analysis(rule: PeriodRule, incomes: [IncomeSource]) -> SpendingAnalysis {
+        SpendingAnalysis.analyze(transactions: transactions, rule: rule, groups: settings.groups, incomeSources: incomes)
+    }
+
+    func sortCandidates() -> [SortCandidate] { SortStep.candidates(transactions: transactions) }
+    func sortedShare() -> Decimal { SortStep.sortedShare(transactions: transactions) }
+
+    /// Files the merchant from now on. The candidates and the share are read again from the recategorized rows.
+    func file(_ candidate: SortCandidate, as categoryID: String) { addRule(KeywordRule(keyword: candidate.keyword, categoryID: categoryID)) }
+
+    func recurringCharges() -> [RecurringCharge] { RecurringDetector.detect(transactions: transactions) }
+
+    func goalInput(plannedIncome: Decimal) -> GoalInput { goalInput(plannedIncome: plannedIncome, rule: periodRule) }
+
+    /// With the setup's payday when it is not saved yet.
+    func goalInput(plannedIncome: Decimal, rule: PeriodRule) -> GoalInput {
+        GoalSetup.input(plannedIncome: plannedIncome, transactions: transactions, rule: rule, budgets: planningBudgets(rule: rule), groups: settings.groups)
+    }
+
+    /// Writes the goal's budgets the way `applyPlan` writes a plan, then keeps the goal and hearts.
+    func applyGoalPlan(startDay: Int, incomes: [IncomeSource], input: GoalInput, prefs: GoalPreferences) {
+        let existing = planningBudgets(rule: periodRule(startDay: startDay, incomes: incomes))
+        applyPlan(startDay: startDay, incomes: incomes, budgets: GoalSetup.budgets(input: input, prefs: prefs, existing: existing))
+        updateSettings { $0.goal = prefs; $0.goalSetupDone = true }
+    }
+
+    /// The stored budgets, and a quarterly one for each need the transactions show is paid once a quarter and has none,
+    /// so a first run plans CSN at a third each period rather than its payments averaged over every period.
+    private func planningBudgets(rule: PeriodRule) -> [Budget] {
+        budgets + GoalSetup.quarterlyNeeds(transactions: transactions, rule: rule, groups: settings.groups, budgets: budgets)
+    }
+
+    /// "Keep up to 12 months on this phone?" before the setup and the upgrade card: only while the phone keeps less.
+    var asksRetention: Bool { !settings.retentionAsked && settings.retention.months < Self.promptedRetention }
+    private static let promptedRetention = 12
+
+    /// The answer to "Keep up to 12 months on this phone?". It never shortens the history, which only Settings does. A
+    /// longer history needs one fetch back to the new cutoff, because a normal refresh starts a week before the newest
+    /// stored row.
+    func chooseRetention(months: Int) {
+        let kept = max(months, settings.retention.months)
+        let longer = kept > settings.retention.months
+        updateSettings {
+            $0.retention = RetentionPolicy(months: kept)
+            $0.retentionAsked = true
+            if longer { $0.fullFetchPending = true }
+        }
+        Task { await refresh() }
+    }
+
+    /// Overview's "Set a savings goal", for installs set up before the goal setup existed.
+    var showsGoalCard: Bool { isSetUp && !settings.goalSetupDone }
+
+    /// Overview's "Adjust plan?": the last complete period, the one before today's, ended more than 5 % of planned income
+    /// in the red. At most once per period, today's, whichever period the screen shows.
+    var showsNudge: Bool {
+        guard settings.goalSetupDone, settings.nudgeDismissed != periodRule.period(containing: Date()).label else { return false }
+        return GoalNudge.shouldShow(lastComplete: lastCompleteSummary, plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount },
+                                    budgets: budgets, transactions: transactions)
+    }
+
+    func dismissNudge() { updateSettings { $0.nudgeDismissed = periodRule.period(containing: Date()).label } }
+
+    /// "Takeaway went 1 210 kr over" on the nudge: the budget the last complete period overran the most.
+    var lastPeriodOverrun: CategoryLine? { GoalNudge.biggestOverrun(lastComplete: lastCompleteSummary) }
+
+    /// Overview's "last period 13 %": the last complete period's savings rate alone, rounded down as the Goal screen's
+    /// "Now" is. nil when the phone does not hold all of that period, or it had no income.
+    var lastPeriodPercent: Int? {
+        let last = SpendingAnalysis.analyze(transactions: transactions, rule: periodRule, groups: settings.groups, incomeSources: incomeSources, maxPeriods: 1)
+        guard last.periods == 1, var value = last.savingsRate.map({ $0 * 100 }) else { return nil }
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &value, 0, .down)
+        return NSDecimalNumber(decimal: rounded).intValue
+    }
+
+    /// The period before today's, the last one that is over.
+    private var lastCompleteSummary: PeriodSummary {
+        let last = periodRule.period(labeled: periodRule.period(containing: Date()).label.previous)
+        return BudgetMath.summarize(period: last, rule: periodRule, transactions: transactions, budgets: budgets, incomeSources: incomeSources)
+    }
 
     func updateSettings(_ change: (inout Settings) -> Void) {
         var s = settings
@@ -431,15 +553,26 @@ final class AppModel {
         do {
             let demo = try LocalStore.inMemory()
             let rule = PeriodRule(startDay: 25)
+            // `-demo-upgrade` opens as an install from before the goal setup: the old budgets and the "Set a savings goal" card.
+            let upgrade = ProcessInfo.processInfo.arguments.contains("-demo-upgrade")
+            for r in DemoData.rules { try demo.addRule(r) }
             try demo.insertNew(DemoData.transactions(rule: rule))
-            for b in DemoData.budgets { try demo.saveBudget(b) }
+            for b in upgrade ? DemoData.budgets : DemoData.quarterlyBudgets { try demo.saveBudget(b) }
             for s in DemoData.incomeSources { try demo.saveIncomeSource(s) }
             var s = try demo.settings()
             s.bankName = "Demo"
+            // Twelve periods of history: the default three months would purge most of it on the first settings change.
+            s.retention = RetentionPolicy(months: 12)
             try demo.saveSettings(s)
             demoStore = demo
             reload()
             selectedPeriod = periodRule.period(containing: Date()).label
+            // `-demo` opens finished: the goal setup has run at its default goal.
+            if !upgrade {
+                let input = goalInput(plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount })
+                applyGoalPlan(startDay: rule.startDay, incomes: incomeSources, input: input,
+                              prefs: GoalSetup.defaultPreferences(input: input, currentRate: analysis().savingsRate))
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

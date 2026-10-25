@@ -30,7 +30,7 @@ public struct Categorizer: Sendable {
         for rule in userRules + Self.defaultRules where Self.matches(rule.keyword, in: haystack) {
             return rule.categoryID
         }
-        return amount > 0 ? DefaultCategory.income.rawValue : DefaultCategory.shopping.rawValue
+        return amount > 0 ? DefaultCategory.income.rawValue : DefaultCategory.unsorted.rawValue
     }
 
     /// Whole-word, case-insensitive match. "ica" matches "ICA NÄRA" and "UBR*", not "Musica".

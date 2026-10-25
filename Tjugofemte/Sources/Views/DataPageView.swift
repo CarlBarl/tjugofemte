@@ -8,10 +8,11 @@ struct DataPageView: View {
                 Text("Tjugofemte is a budgeting app with no company behind the data. There is no server, no account, no analytics, no advertising kit. Your bank history is downloaded by your phone, from your bank, through a connection you own.")
             }
             Section("On this phone") {
-                row("Transactions", "Date, amount, currency, counterparty text and category. Nothing else from the bank's response is kept. Stored in an encrypted SQLite database protected by iOS Data Protection, excluded from iCloud and computer backups, and trimmed to the history length you choose.")
+                row("Transactions", "Date, amount, currency, counterparty text and category. Nothing else from the bank's response is kept. Stored in an encrypted SQLite database protected by iOS Data Protection, excluded from iCloud and computer backups, and kept only as long as you choose, 3 to 24 months. Anything older is deleted.")
                 row("Your key", "An RSA key created inside this phone's Keychain. It signs every request to Enable Banking. It never existed as a file, is never backed up, and cannot move to another phone.")
                 row("Session", "The Enable Banking session id and your Application ID, in the Keychain, device only.")
-                row("Plan", "Budgets, income sources, keyword rules and settings, in the same local database.")
+                row("Plan", "Budgets, income sources, keyword rules, your savings goal, the wants you hearted, which categories count as needs, and settings, in the same local database.")
+                row("Calculations", "Your savings rate, what you usually spend and your recurring charges are worked out on this phone from the stored transactions, each time a screen shows them. None of it is stored separately or sent anywhere.")
             }
             Section("Leaves this phone") {
                 row("To api.enablebanking.com", "Signed requests for your bank list, your accounts and your transactions. Enable Banking is a licensed open banking provider in Finland and relays these to your bank. The requests carry your phone's IP address and the app name, which Enable Banking keeps in its logs for a time it does not publish.")

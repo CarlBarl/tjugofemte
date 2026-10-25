@@ -29,6 +29,11 @@ enum Tokens {
     /// An accent-tinted ground for a banner that needs attention without alarm.
     static let ground = Color(light: 0xe1efe7, dark: 0x24332b)
     static let separator = Color(light: 0x000000, dark: 0xffffff).opacity(0.06)
+    /// The 50/30/20 groups: needs, wants, savings. On bars and dots only, never on a label or a number, and always
+    /// next to a legend, so the split reads without telling the colors apart.
+    static let groupNeed = Color(light: 0x3b74c4, dark: 0x5b8fd4)
+    static let groupWant = Color(light: 0xc0661f, dark: 0xc97c3c)
+    static let groupSaving = Color(light: 0x2a8f62, dark: 0x3fa577)
 
     static let cardRadius: CGFloat = 16
     static let fieldRadius: CGFloat = 10

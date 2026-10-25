@@ -45,38 +45,6 @@ import Foundation
         #expect(incomes.map(\.amount) == [Decimal(30_000)])
     }
 
-    @Test func budgetsAverageCompletePeriodsAndRoundUpToFifty() {
-        let txs = [
-            tx(start(8), 34_200, "Lön", "income"),
-            tx(day(8, 2), -11_500, "Hyra", "rent"), tx(day(9, 2), -11_500, "Hyra", "rent"),
-            tx(day(8, 4), -2_110, "ICA", "groceries"), tx(day(9, 4), -2_290, "ICA", "groceries"),
-            tx(day(8, 6), -40, "Apoteket", "health"),             // 20 kr average: too small to budget
-            tx(day(10, 3), -800, "Foodora", "takeaway"),           // current period only
-        ]
-        let result = PlanSuggestions.budgets(transactions: txs, rule: rule, today: today)
-        #expect(result.completePeriods == 2)
-        #expect(result.lines.map(\.categoryID) == ["rent", "groceries"])
-        #expect(result.lines.map(\.amount) == [Decimal(11_500), Decimal(2_200)])
-    }
-
-    @Test func partiallyCoveredOldestPeriodIsIgnored() {
-        // Data starts mid-August: the August period is only half covered and would understate spending.
-        let txs = [
-            tx(day(8, 15), -1_000, "ICA", "groceries"),
-            tx(day(9, 4), -2_000, "ICA", "groceries"),
-        ]
-        let result = PlanSuggestions.budgets(transactions: txs, rule: rule, today: today)
-        #expect(result.completePeriods == 1)
-        #expect(result.lines.map(\.amount) == [Decimal(2_000)])
-    }
-
-    @Test func currentPeriodIsUsedWhenNoPeriodIsComplete() {
-        let txs = [tx(day(10, 2), -1_234, "ICA", "groceries")]
-        let result = PlanSuggestions.budgets(transactions: txs, rule: rule, today: today)
-        #expect(result.completePeriods == 0)
-        #expect(result.lines.map(\.amount) == [Decimal(1_250)])
-    }
-
     @Test func paydayIsTheLatestDepositDayOfTheMainIncome() {
         // 25 Sep 2026 is a Friday; 25 Oct is a Sunday so that salary lands on Friday 23 Oct.
         let txs = [

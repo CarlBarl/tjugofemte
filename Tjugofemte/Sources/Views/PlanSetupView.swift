@@ -1,8 +1,9 @@
 import SwiftUI
 import BudgetCore
 
-/// Payday, income, budgets, summary: four screens, the numbers prefilled from the transactions already on the phone
-/// so the user confirms rather than types. First run writes the plan and marks setup done; revise replaces the plan.
+/// Payday, income, sort, your money, goal, summary: six screens, everything drawn from the transactions already on the
+/// phone, so the user picks a savings goal rather than types budgets. First run writes the plan and marks setup done;
+/// revise replaces the plan.
 struct PlanSetupView: View {
     enum Mode { case firstRun, revise }
 
@@ -10,14 +11,18 @@ struct PlanSetupView: View {
     @Environment(\.dismiss) private var dismiss
     let mode: Mode
 
-    @State private var step = 0
+    @State private var step: Int
     @State private var startDay = 25
     @State private var paydayGuess: Int?
     @State private var incomes: [DraftIncome] = []
-    @State private var budgets: [DraftBudget] = []
-    @State private var completePeriods = 0
-    @State private var showMore = false
+    /// Seeded the first time the Goal step opens; after that only its slider and "Settle" move the goal.
+    @State private var prefs: GoalPreferences?
     @State private var seededFromData = false
+
+    init(mode: Mode, startStep: Int = 0) {
+        self.mode = mode
+        _step = State(initialValue: startStep)
+    }
 
     struct DraftIncome: Identifiable {
         let id: String
@@ -28,27 +33,23 @@ struct PlanSetupView: View {
         var periodsSeen = 0
     }
 
-    struct DraftBudget: Identifiable {
-        var id: String { categoryID }
-        let categoryID: String
-        var amount: Decimal
-        /// What history says, when it says anything.
-        var suggested: Decimal?
-        var existing: Budget?
-        var isMain: Bool { suggested != nil || existing != nil }
-        var isQuarterly: Bool { if case .quarterly = existing?.cadence { return true } else { return false } }
-        var perPeriod: Decimal { isQuarterly ? amount / 3 : amount }
+    /// Steps 2 and 3, where the upgrade card starts: Income when the install has no income yet, else Sort.
+    static let incomeStep = 1
+    static let sortStep = 2
+    private let stepCount = 6
+    private let moneyStep = 3
+    private let goalStep = 4
+    private var rule: PeriodRule { model.periodRule(startDay: startDay, incomes: draftSources) }
+    /// What step 2 totals: the rows that will be saved, so an included row without a name does not count.
+    private var plannedIncome: Decimal { draftSources.reduce(0) { $0 + $1.plannedAmount } }
+    /// The sources as they will be saved; steps 3 to 6 plan with these before they are.
+    private var draftSources: [IncomeSource] {
+        incomes
+            .filter { $0.included && !$0.name.trimmingCharacters(in: .whitespaces).isEmpty && $0.amount > 0 }
+            .map { IncomeSource(id: $0.id, name: $0.name.trimmingCharacters(in: .whitespaces), plannedAmount: $0.amount, keyword: $0.keyword) }
     }
-
-    private let stepCount = 4
-    private var rule: PeriodRule {
-        .resolved(startDay: startDay, manual: model.settings.periodOverrides, transactions: model.transactions,
-                  incomeSources: incomes.filter(\.included).map { IncomeSource(id: $0.id, name: $0.name, plannedAmount: $0.amount, keyword: $0.keyword) })
-    }
-    private var plannedIncome: Decimal { incomes.filter(\.included).reduce(0) { $0 + $1.amount } }
-    /// Per period: a quarterly budget counts a third.
-    private var budgetTotal: Decimal { budgets.reduce(0) { $0 + $1.perPeriod } }
-    private var target: Decimal { plannedIncome - budgetTotal }
+    private var goalInput: GoalInput { model.goalInput(plannedIncome: draftSources.reduce(0) { $0 + $1.plannedAmount }, rule: rule) }
+    private var currentRate: Decimal? { model.analysis(rule: rule, incomes: draftSources).savingsRate }
     private var hasData: Bool { !model.transactions.isEmpty }
     private var fetching: Bool { model.isBusy && !hasData }
 
@@ -57,8 +58,10 @@ struct PlanSetupView: View {
             Group {
                 switch step {
                 case 0: paydayStep
-                case 1: incomeStep
-                case 2: budgetStep
+                case Self.incomeStep: incomeStepView
+                case Self.sortStep: SortStepView()
+                case moneyStep: YourMoneyView(rule: rule, incomes: draftSources)
+                case goalStep: goalStepView
                 default: summaryStep
                 }
             }
@@ -76,7 +79,7 @@ struct PlanSetupView: View {
 
     private var paydayStep: some View {
         Screen {
-            ScreenTitle(label: "Step 1 of 4", title: String(localized: "When is payday?"),
+            ScreenTitle(label: "Step 1 of 6", title: String(localized: "When is payday?"),
                         subtitle: String(localized: "Your budget runs from one payday to the next, and the savings number is for that day."))
             if fetching {
                 Card {
@@ -96,7 +99,7 @@ struct PlanSetupView: View {
                     .tint(Tokens.accent)
                 }
                 Hairline()
-                Row(title: String(localized: "This period"), caption: String(localized: "When payday is a weekend or holiday, the period starts on the banking day before.")) {
+                Row(title: String(localized: "This period"), caption: String(localized: "The period starts the day your salary arrives. Until it has, it starts on the banking day before payday when payday falls on a weekend or holiday.")) {
                     Text(PeriodText.range(rule.period(containing: Date()))).appFont(size: 15, weight: .medium).foregroundStyle(Tokens.text)
                 }
             }
@@ -110,9 +113,9 @@ struct PlanSetupView: View {
             : String(localized: "Your salary seems to land on the \(PeriodText.ordinalDay(paydayGuess)).")
     }
 
-    private var incomeStep: some View {
+    private var incomeStepView: some View {
         Screen {
-            ScreenTitle(label: "Step 2 of 4", title: String(localized: "Your income"),
+            ScreenTitle(label: "Step 2 of 6", title: String(localized: "Your income"),
                         subtitle: incomes.contains { $0.periodsSeen > 0 }
                             ? String(localized: "Found in your transactions. Switch off anything that is not income, and adjust the amounts.")
                             : String(localized: "What comes in each period. Add every source you want to plan with."))
@@ -135,54 +138,23 @@ struct PlanSetupView: View {
         }
     }
 
-    private var budgetStep: some View {
-        let main = budgets.indices.filter { budgets[$0].isMain }
-        let more = budgets.indices.filter { !budgets[$0].isMain }
+    private var goalStepView: some View {
+        let input = goalInput
         return Screen {
-            ScreenTitle(label: "Step 3 of 4", title: String(localized: "Your budgets"), subtitle: budgetBasis)
-            if !main.isEmpty {
-                RowCard {
-                    ForEach(main, id: \.self) { i in
-                        BudgetDraftRow(row: $budgets[i])
-                        if i != main.last { Hairline() }
-                    }
-                }
-            }
-            if !more.isEmpty {
-                TextAction(title: showMore ? "Fewer categories" : "More categories", systemImage: showMore ? "chevron.up" : "chevron.down") {
-                    withAnimation(.snappy) { showMore.toggle() }
-                }
-                if showMore || main.isEmpty {
-                    RowCard {
-                        ForEach(more, id: \.self) { i in
-                            BudgetDraftRow(row: $budgets[i])
-                            if i != more.last { Hairline() }
-                        }
-                    }
-                }
-            }
-            Card {
-                HStack {
-                    Text("Budgets per period").appFont(size: 15, weight: .medium).foregroundStyle(Tokens.body)
-                    Spacer()
-                    Text(budgetTotal.sek).font(Tokens.numberFont(size: 17)).foregroundStyle(Tokens.text)
-                }
-            }
+            ScreenTitle(label: "Step 5 of 6", title: String(localized: "How much do you want to save?"),
+                        subtitle: String(localized: "Pick a goal. Your budgets follow from it, trimmed from the wants you care least about."))
+            GoalView(input: input, prefs: Binding(get: { prefs ?? seededGoal(input) }, set: { prefs = $0 }), currentRate: currentRate)
         }
-    }
-
-    private var budgetBasis: String {
-        if completePeriods > 0 {
-            return String(localized: "Averages from your last \(completePeriods) complete periods, rounded up to 50 kr. Change what you like. 0 means no budget.")
-        }
-        return hasData
-            ? String(localized: "Based on this period so far, rounded up. Change what you like. 0 means no budget.")
-            : String(localized: "An amount per category and period. 0 means no budget.")
     }
 
     private var summaryStep: some View {
-        Screen {
-            ScreenTitle(label: "Step 4 of 4", title: String(localized: "Your plan"),
+        let input = goalInput
+        let goal = prefs ?? seededGoal(input)
+        let plan = GoalPlanner.plan(input, goal)
+        let target = plan.plannedSavings
+        let changes = biggestChanges(input, plan)
+        return Screen {
+            ScreenTitle(label: "Step 6 of 6", title: String(localized: "Your plan"),
                         subtitle: String(localized: "The savings number is fixed when a period starts. Spend less than a budget and the difference is yours on top."))
             Card {
                 VStack(alignment: .leading, spacing: 14) {
@@ -190,29 +162,78 @@ struct PlanSetupView: View {
                         SectionLabel(text: "Move to savings on payday")
                         Text(target.sek).font(Tokens.numberFont(size: 44)).foregroundStyle(target < 0 ? Tokens.over : Tokens.accent)
                             .lineLimit(1).minimumScaleFactor(0.6)
+                        Text(goalLine(plan, goal)).appFont(size: 14).foregroundStyle(Tokens.body).fixedSize(horizontal: false, vertical: true)
                     }
                     Hairline()
-                    summaryLine("Planned income", plannedIncome, kind: .plain)
-                    summaryLine("Budgets", -budgetTotal, kind: .plain)
-                    summaryLine("Savings target", target, kind: .total)
+                    summaryLine(String(localized: "Planned income"), input.plannedIncome, kind: .plain)
+                    summaryLine(String(localized: "Needs, at your budget or usual"), -input.needs.values.reduce(0, +), kind: .plain)
+                    summaryLine(wantsLabel(input, plan), -plan.wantsTotal, kind: .plain)
+                    summaryLine(String(localized: "Savings target"), target, kind: .total)
                 }
             }
             if target < 0 {
                 Banner(message: "The budgets add up to more than the income. Lower a budget, add income, or start anyway and adjust under Plan.",
                        systemImage: "exclamationmark.triangle", tint: Tokens.over)
             }
-            Text(summaryCaption).appFont(size: 14).foregroundStyle(Tokens.dim)
+            if !changes.isEmpty {
+                Card {
+                    VStack(alignment: .leading, spacing: 10) {
+                        SectionLabel(text: "Biggest changes")
+                        ForEach(changes, id: \.id) { change in
+                            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                                Text(CategoryInfo.name(change.id)).appFont(size: 15).foregroundStyle(Tokens.body)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Spacer(minLength: 8)
+                                Text("\(change.usual.formatted(.number.precision(.fractionLength(0)))) to \(change.budget.sek)")
+                                    .font(Tokens.numberFont(size: 15, weight: .regular)).foregroundStyle(Tokens.body).lineLimit(1).fixedSize()
+                            }
+                        }
+                    }
+                }
+            }
+            // A budget for every need and every want, as `applyGoalPlan` writes them.
+            Text(summaryCaption(budgets: input.needs.count + plan.budgets.count)).appFont(size: 14).foregroundStyle(Tokens.dim)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private var summaryCaption: String {
-        let n = budgets.filter { $0.amount > 0 }.count
-        let m = incomes.filter { $0.included && $0.amount > 0 }.count
-        return String(localized: "Payday \(PeriodText.ordinalDay(startDay).lowercased()) · \(m) income sources · \(n) budgets")
+    /// "Your goal is 20 % of income. You saved 8 % before." The current rate rounds down, as on the Goal step.
+    private func goalLine(_ plan: GoalPlan, _ goal: GoalPreferences) -> String {
+        var line = String(localized: "Your goal is \(GoalView.percent(goal.goalPercent)) of income.")
+        if plan.outOfReach { line += " " + String(localized: "This plan saves \(plan.shortfall.sek) less than that each month.") }
+        if let currentRate { line += " " + String(localized: "You saved \(currentRate.percentText(rounding: .down)) before.") }
+        return line
+    }
+
+    private func wantsLabel(_ input: GoalInput, _ plan: GoalPlan) -> String {
+        let usual = input.wants.reduce(Decimal(0)) { $0 + $1.usual }
+        if plan.wantsTotal < usual { return String(localized: "Wants, trimmed from \(usual.sek)") }
+        if plan.wantsTotal > usual { return String(localized: "Wants, usually \(usual.sek)") }
+        return String(localized: "Wants, at your usual")
+    }
+
+    /// The three wants whose budget moved furthest from their usual, biggest first.
+    private func biggestChanges(_ input: GoalInput, _ plan: GoalPlan) -> [(id: String, usual: Decimal, budget: Decimal)] {
+        input.wants
+            .compactMap { w -> (id: String, usual: Decimal, budget: Decimal)? in
+                guard let budget = plan.budgets[w.categoryID], budget != w.usual else { return nil }
+                return (w.categoryID, w.usual, budget)
+            }
+            .sorted { (abs($0.budget - $0.usual), $1.id) > (abs($1.budget - $1.usual), $0.id) }
+            .prefix(3)
+            .map { $0 }
+    }
+
+    private func summaryCaption(budgets n: Int) -> String {
+        let payday = startDay == 1 ? String(localized: "Calendar months") : String(localized: "Payday the \(PeriodText.ordinalDay(startDay))")
+        let m = draftSources.count
+        let sources = m == 1 ? String(localized: "1 income source") : String(localized: "\(m) income sources")
+        let budgets = n == 1 ? String(localized: "1 budget") : String(localized: "\(n) budgets")
+        return String(localized: "\(payday), \(sources), \(budgets). Change any of it later under Plan.")
     }
 
     private enum LineKind { case plain, total }
-    private func summaryLine(_ label: LocalizedStringKey, _ amount: Decimal, kind: LineKind) -> some View {
+    private func summaryLine(_ label: String, _ amount: Decimal, kind: LineKind) -> some View {
         HStack {
             Text(label).appFont(size: 15, weight: kind == .total ? .semibold : .regular).foregroundStyle(kind == .total ? Tokens.text : Tokens.body)
             Spacer()
@@ -226,7 +247,7 @@ struct PlanSetupView: View {
         VStack(spacing: 6) {
             HStack {
                 Group {
-                    if step > 0 { TextAction(title: "Back") { withAnimation(.snappy) { step -= 1 } } }
+                    if step > 0 { TextAction(title: "Back") { go(to: step - 1) } }
                 }
                 .frame(width: 110, alignment: .leading)
                 Spacer()
@@ -235,11 +256,13 @@ struct PlanSetupView: View {
                 Group {
                     if mode == .revise { TextAction(title: "Cancel", tint: Tokens.muted) { dismiss() } }
                     else if step == 0 { TextAction(title: "Skip for now", tint: Tokens.muted) { model.skipPlan() } }
+                    // Sorting is optional: the rest stays in Unsorted.
+                    else if step == Self.sortStep { TextAction(title: "Skip", tint: Tokens.muted) { go(to: step + 1) } }
                 }
                 .frame(width: 110, alignment: .trailing)
             }
-            BigButton(title: step < stepCount - 1 ? "Next" : (mode == .firstRun ? "Start my budget" : "Save plan")) {
-                if step < stepCount - 1 { withAnimation(.snappy) { step += 1 } } else { apply() }
+            BigButton(title: nextTitle) {
+                if step < stepCount - 1 { go(to: step + 1) } else { apply() }
             }
         }
         .padding(.horizontal, Tokens.screenPadding)
@@ -247,7 +270,25 @@ struct PlanSetupView: View {
         .background(Tokens.bg)
     }
 
+    private var nextTitle: LocalizedStringKey {
+        switch step {
+        case moneyStep: "Set my goal"
+        case stepCount - 1: mode == .firstRun ? "Start my budget" : "Save plan"
+        default: "Next"
+        }
+    }
+
+    private func go(to next: Int) {
+        if next == goalStep && prefs == nil { prefs = seededGoal(goalInput) }
+        withAnimation(.snappy) { step = next }
+    }
+
     // MARK: Seeding and saving
+
+    /// The saved goal when there is one, else 20 % or the current rate, capped at what is reachable.
+    private func seededGoal(_ input: GoalInput) -> GoalPreferences {
+        model.settings.goal ?? GoalSetup.defaultPreferences(input: input, currentRate: currentRate)
+    }
 
     private func seed() {
         paydayGuess = model.paydayGuess()
@@ -271,26 +312,34 @@ struct PlanSetupView: View {
         }
         if rows.isEmpty { rows = [DraftIncome(id: UUID().uuidString, name: String(localized: "Salary"), amount: 0, keyword: "lön")] }
         incomes = rows
-
-        let suggestion = model.budgetSuggestions(rule: rule)
-        completePeriods = suggestion.completePeriods
-        budgets = CategoryInfo.spending.map { id in
-            let suggested = suggestion.lines.first { $0.categoryID == id }?.amount
-            let existing = model.budgets.first { $0.categoryID == id }
-            return DraftBudget(categoryID: id, amount: existing?.amount ?? suggested ?? 0, suggested: suggested, existing: existing)
-        }
-        .sorted { ($0.amount, $1.categoryID) > ($1.amount, $0.categoryID) }
     }
 
     private func apply() {
-        let sources = incomes
-            .filter { $0.included && !$0.name.trimmingCharacters(in: .whitespaces).isEmpty && $0.amount > 0 }
-            .map { IncomeSource(id: $0.id, name: $0.name.trimmingCharacters(in: .whitespaces), plannedAmount: $0.amount, keyword: $0.keyword) }
-        let plan = budgets
-            .filter { $0.amount > 0 }
-            .map { Budget(categoryID: $0.categoryID, amount: $0.amount, cadence: $0.existing?.cadence ?? .monthly) }
-        model.applyPlan(startDay: startDay, incomes: sources, budgets: plan)
+        let input = goalInput
+        model.applyGoalPlan(startDay: startDay, incomes: draftSources, input: input, prefs: prefs ?? seededGoal(input))
         if mode == .revise { dismiss() }
+    }
+}
+
+/// "Set a savings goal" for an install set up before the goal setup existed: how much history to keep, when that was
+/// never asked and the phone keeps less than 12 months, then the setup from step 3, Sort, with payday and income one
+/// Back away. An install without income (the old setup skipped at its first step) starts at step 2, Income, since the
+/// goal is a share of it. Never forced: the sheet can be closed at any step, and the old budgets keep working until the
+/// goal is saved.
+struct GoalUpgradeFlow: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        Group {
+            if !model.asksRetention {
+                PlanSetupView(mode: .revise, startStep: model.incomeSources.isEmpty ? PlanSetupView.incomeStep : PlanSetupView.sortStep)
+            } else {
+                RetentionPromptView { model.chooseRetention(months: $0) }
+            }
+        }
+        // Room under the grab indicator, which these full screens otherwise start right at.
+        .safeAreaPadding(.top, 12)
+        .presentationDragIndicator(.visible)
     }
 }
 
@@ -322,24 +371,5 @@ private struct IncomeDraftRow: View {
         if row.periodsSeen > 0 { return String(localized: "Seen \(row.periodsSeen) times, matches “\(row.keyword ?? "")”") }
         if let keyword = row.keyword { return String(localized: "Matches “\(keyword)”") }
         return String(localized: "Plan only, not matched to transactions")
-    }
-}
-
-private struct BudgetDraftRow: View {
-    @Binding var row: PlanSetupView.DraftBudget
-
-    var body: some View {
-        Row(title: CategoryInfo.name(row.categoryID), caption: caption, symbol: CategoryInfo.symbol(row.categoryID)) {
-            AmountField(value: $row.amount)
-        }
-    }
-
-    private var caption: String? {
-        if row.isQuarterly { return String(localized: "Per quarter, a third each period") }
-        if let suggested = row.suggested, let existing = row.existing, existing.amount != suggested {
-            return String(localized: "History says \(suggested.sek)")
-        }
-        if let suggested = row.suggested { return String(localized: "Usually \(suggested.sek)") }
-        return nil
     }
 }

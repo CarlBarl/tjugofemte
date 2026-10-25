@@ -6,6 +6,7 @@ struct PlanView: View {
     @State private var editingSource: IncomeSource?
     @State private var editingBudget: Budget?
     @State private var revising = false
+    @State private var upgrading = false
 
     var body: some View {
         NavigationStack {
@@ -23,14 +24,18 @@ struct PlanView: View {
                 budgetsCard
                 HStack(spacing: 20) {
                     addBudgetMenu
-                    TextAction(title: "Suggest from history", systemImage: "wand.and.stars") { revising = true }
+                    // Before the goal setup has run there is no saved goal to show, so this starts it, as Overview's card does.
+                    TextAction(title: "Suggest from history", systemImage: "wand.and.stars") {
+                        if model.showsGoalCard { upgrading = true } else { revising = true }
+                    }
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
             .statusBarInk()
             .sheet(item: $editingSource) { IncomeSourceForm(source: $0) }
             .sheet(item: $editingBudget) { BudgetForm(budget: $0) }
-            .sheet(isPresented: $revising) { PlanSetupView(mode: .revise) }
+            .sheet(isPresented: $revising) { GoalSheet() }
+            .sheet(isPresented: $upgrading) { GoalUpgradeFlow() }
         }
     }
 
@@ -130,6 +135,50 @@ struct PlanView: View {
 
     private var availableCategories: [String] {
         CategoryInfo.spending.filter { id in !model.budgets.contains { $0.categoryID == id } }
+    }
+}
+
+/// The Goal screen over the saved plan, from Plan's "Suggest from history" and Overview's "Adjust plan". It shows the
+/// budgets as saved until the user moves something, and Save, which writes the goal's budgets, waits for that move.
+struct GoalSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    @State private var prefs: GoalPreferences?
+    @State private var moved = false
+
+    var body: some View {
+        let input = model.goalInput(plannedIncome: model.incomeSources.reduce(0) { $0 + $1.plannedAmount })
+        let rate = model.analysis().savingsRate
+        NavigationStack {
+            Screen {
+                ScreenTitle(label: "Plan", title: String(localized: "How much do you want to save?"),
+                            subtitle: String(localized: "Pick a goal. Your budgets follow from it, trimmed from the wants you care least about."))
+                GoalView(input: input, prefs: Binding(get: { prefs ?? seeded(input, rate) }, set: { prefs = $0 }), currentRate: rate,
+                         savedBudgets: GoalSetup.perPeriod(model.budgets), onMove: { moved = true })
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { save(input, rate) }.disabled(!moved)
+                }
+            }
+        }
+        .tint(Tokens.accent)
+        .presentationDetents([.large])
+        .presentationDragIndicator(.visible)
+    }
+
+    /// The goal and hearts as saved, which include any want budget edited by hand since.
+    private func seeded(_ input: GoalInput, _ rate: Decimal?) -> GoalPreferences {
+        model.settings.goal ?? GoalSetup.defaultPreferences(input: input, currentRate: rate)
+    }
+
+    private func save(_ input: GoalInput, _ rate: Decimal?) {
+        model.applyGoalPlan(startDay: model.settings.startDay, incomes: model.incomeSources, input: input, prefs: prefs ?? seeded(input, rate))
+        // A new plan answers "Adjust plan?" for this period.
+        if model.showsNudge { model.dismissNudge() }
+        dismiss()
     }
 }
 

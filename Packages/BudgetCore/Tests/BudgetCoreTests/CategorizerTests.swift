@@ -52,12 +52,17 @@ import Foundation
 
     @Test func unmatchedFallsBackOnSign() {
         #expect(categorizer.categorize(text: "Okänd betalning", amount: 1234) == DefaultCategory.income.rawValue)
-        #expect(categorizer.categorize(text: "Okänd betalning", amount: -1234) == DefaultCategory.shopping.rawValue)
+        #expect(categorizer.categorize(text: "Okänd betalning", amount: -1234) == DefaultCategory.unsorted.rawValue)
+    }
+
+    @Test func moneyOutThatMatchesNoRuleIsUnsorted() {
+        #expect(Categorizer(userRules: [], ownAccountIDs: []).categorize(text: "SUSHI YAMA", amount: -120) == "unsorted")
+        #expect(DefaultCategory.unsorted.kind == .spending)
     }
 
     @Test func transferAndIncomeAreNotSpending() {
         #expect(DefaultCategory.transfer.kind == .transfer)
         #expect(DefaultCategory.income.kind == .income)
-        #expect(DefaultCategory.savings.kind == .spending)
+        #expect(DefaultCategory.savings.kind == .saving)
     }
 }
