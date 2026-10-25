@@ -1915,12 +1915,12 @@
         }
       }
     },
-    "Shopping & other": {
+    "Shopping": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Shopping och övrigt"
+            "value": "Shopping"
           }
         }
       }
@@ -2451,6 +2451,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Oväntat svar från Enable Banking: %@"
+          }
+        }
+      }
+    },
+    "Unsorted": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Osorterat"
           }
         }
       }

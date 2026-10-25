@@ -20,7 +20,8 @@ enum CategoryInfo {
         case .transport: String(localized: "Transport")
         case .entertainment: String(localized: "Entertainment")
         case .health: String(localized: "Health")
-        case .shopping: String(localized: "Shopping & other")
+        case .shopping: String(localized: "Shopping")
+        case .unsorted: String(localized: "Unsorted")
         case .savings: String(localized: "Savings")
         case .income: String(localized: "Income & deposits")
         case .transfer: String(localized: "Transfer, own accounts")
@@ -42,6 +43,7 @@ enum CategoryInfo {
         case .entertainment: "ticket"
         case .health: "cross.case"
         case .shopping: "bag"
+        case .unsorted: "questionmark.circle"
         case .savings: "banknote"
         case .income: "arrow.down.circle"
         case .transfer: "arrow.left.arrow.right"

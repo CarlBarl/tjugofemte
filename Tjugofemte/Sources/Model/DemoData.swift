@@ -59,7 +59,6 @@ enum DemoData {
         Budget(categoryID: DefaultCategory.transport.rawValue, amount: 1_200, cadence: .monthly),
         Budget(categoryID: DefaultCategory.gym.rawValue, amount: 449, cadence: .monthly),
         Budget(categoryID: DefaultCategory.insurance.rawValue, amount: 312, cadence: .monthly),
-        Budget(categoryID: DefaultCategory.savings.rawValue, amount: 2_000, cadence: .monthly),
         Budget(categoryID: DefaultCategory.studentLoan.rawValue, amount: 3_000, cadence: .quarterly(firstDueMonth: 2)),
     ]
 

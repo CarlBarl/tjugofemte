@@ -193,6 +193,16 @@ import BudgetCore
         #expect(values.isExcludedFromBackup == true)
         #expect(FileManager.default.fileExists(atPath: dir.appendingPathComponent("tjugofemte.sqlite").path))
     }
+
+    @Test func upgradeRemovesTheSavingsBudget() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("tjugofemte-\(UUID().uuidString)")
+        do {
+            let v1 = try LocalStore.open(in: dir, upTo: "v1")
+            try v1.saveBudget(Budget(categoryID: "savings", amount: 2_000, cadence: .monthly))
+            try v1.saveBudget(Budget(categoryID: "rent", amount: 11_500, cadence: .monthly))
+        }
+        #expect(try LocalStore.open(in: dir).budgets() == [Budget(categoryID: "rent", amount: 11_500, cadence: .monthly)])
+    }
 }
 
 @Suite struct LocalStoreDeletionTests {

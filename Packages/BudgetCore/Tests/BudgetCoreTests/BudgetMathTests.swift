@@ -86,6 +86,17 @@ import Foundation
         #expect(s.leftOverSoFar.terms.map(\.kind) == [.actualIncome, .actualSpending, .savingsTarget])
     }
 
+    @Test func savingsTransfersAreNeitherSpendingNorIncome() {
+        let salaryIn = tx("1", d(2026, 9, 25), 35_000, "Lön", "income")
+        let toSavings = tx("2", d(2026, 10, 1), -2_000, "Avanza Bank", "savings")
+        let without = BudgetMath.summarize(period: october, rule: rule, transactions: [salaryIn], budgets: budgets, incomeSources: [salary])
+        let with = BudgetMath.summarize(period: october, rule: rule, transactions: [salaryIn, toSavings], budgets: budgets, incomeSources: [salary])
+        #expect(with.leftOverSoFar.terms.first { $0.kind == .actualSpending }?.amount == 0)
+        #expect(!with.categories.contains { $0.categoryID == "savings" })
+        #expect(with.leftOverSoFar == without.leftOverSoFar)
+        #expect(with.otherIncome == without.otherIncome)
+    }
+
     @Test func quarterlyLineAccruesAcrossThreePeriodsAndIsNotACategoryLine() {
         let txs = [tx("1", d(2026, 11, 2), -3_000, "CSN", "studentLoan")]
         let oct = BudgetMath.summarize(period: october, rule: rule, transactions: txs, budgets: budgets, incomeSources: [])

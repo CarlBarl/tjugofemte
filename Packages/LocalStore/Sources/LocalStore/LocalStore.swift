@@ -53,6 +53,11 @@ public final class LocalStore: Sendable {
     }
 
     public static func open(in directory: URL) throws -> LocalStore {
+        try open(in: directory, upTo: nil)
+    }
+
+    /// `upTo` stops at an older migration, so a test can build the file an older version left behind.
+    static func open(in directory: URL, upTo migration: String?) throws -> LocalStore {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         var dir = directory
         var values = URLResourceValues()
@@ -61,10 +66,10 @@ public final class LocalStore: Sendable {
         #if os(iOS)
         try FileManager.default.setAttributes([.protectionKey: FileProtectionType.complete], ofItemAtPath: directory.path)
         #endif
-        return try LocalStore(try DatabaseQueue(path: directory.appendingPathComponent(fileName).path, configuration: configuration))
+        return try LocalStore(try DatabaseQueue(path: directory.appendingPathComponent(fileName).path, configuration: configuration), upTo: migration)
     }
 
-    init(_ db: DatabaseQueue) throws {
+    init(_ db: DatabaseQueue, upTo migration: String? = nil) throws {
         self.db = db
         var migrator = DatabaseMigrator()
         migrator.registerMigration("v1") { db in
@@ -99,7 +104,11 @@ public final class LocalStore: Sendable {
                 t.column("value", .text).notNull()
             }
         }
-        try migrator.migrate(db)
+        // Savings is no longer spending: the target is what goes to savings, so a budget on it would set the same money aside twice.
+        migrator.registerMigration("v2") { db in
+            try db.execute(sql: "DELETE FROM budgets WHERE category_id = 'savings'")
+        }
+        if let migration { try migrator.migrate(db, upTo: migration) } else { try migrator.migrate(db) }
     }
 
     // MARK: Transactions
