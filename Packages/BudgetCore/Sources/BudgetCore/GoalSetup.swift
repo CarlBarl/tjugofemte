@@ -4,8 +4,9 @@ import Foundation
 /// rows, and a budget edited by hand as a heart.
 public enum GoalSetup {
     /// A need with a budget is planned at that budget, a quarterly one at a third of it; a need without one at its usual.
-    /// Wants are at their usual, fixed when recurring charges make them up, and Unsorted always is. Wants are biggest
-    /// first, as the Goal screen lists them.
+    /// Wants are at their usual, fixed when recurring charges make them up, and Unsorted always is. A want with a budget
+    /// but no usual, such as a gym set before its first charge, is fixed at its budget per period, so a plan keeps it.
+    /// Wants are biggest first, as the Goal screen lists them.
     public static func input(plannedIncome: Decimal, transactions: [Transaction], rule: PeriodRule, budgets: [Budget],
                              groups: CategoryGroups, today: Date = Date()) -> GoalInput {
         var quarterly: [String: Decimal] = [:]
@@ -25,6 +26,9 @@ public enum GoalSetup {
             case .want: wants.append(WantInput(categoryID: id, usual: u.amount, fixed: fixed.contains(id)))
             case .saving, nil: break
             }
+        }
+        for b in budgets where usual[b.categoryID] == nil && groups.group(of: b.categoryID) == .want {
+            wants.append(WantInput(categoryID: b.categoryID, usual: planned(b), fixed: true))
         }
         // Quarterly need budgets are already in `usual` as a third of themselves.
         for b in budgets where b.cadence == .monthly && groups.group(of: b.categoryID) == .need { needs[b.categoryID] = b.amount }
@@ -50,13 +54,20 @@ public enum GoalSetup {
     }
 
     /// A need keeps its budget as it was, amount and cadence; a need without one gets its usual, monthly. Each want gets
-    /// its planned budget, monthly. Sorted by category, as the store returns them.
+    /// its planned budget, monthly, except a want budgeted quarterly: kept as it was when the plan leaves it at its third,
+    /// else three times the plan rounded up to 50 kr, due in the same month. Sorted by category, as the store returns them.
     public static func budgets(input: GoalInput, prefs: GoalPreferences, existing: [Budget]) -> [Budget] {
         let plan = GoalPlanner.plan(input, prefs)
         let needs = input.needs.map { id, amount -> Budget in
             existing.first { $0.categoryID == id } ?? Budget(categoryID: id, amount: amount, cadence: .monthly)
         }
-        let wants = plan.budgets.map { Budget(categoryID: $0.key, amount: $0.value, cadence: .monthly) }
+        let wants = plan.budgets.map { id, amount -> Budget in
+            guard let old = existing.first(where: { $0.categoryID == id }), old.cadence != .monthly else {
+                return Budget(categoryID: id, amount: amount, cadence: .monthly)
+            }
+            let third = PlanSuggestions.roundUp(amount, to: GoalPlanner.budgetStep)
+            return third == planned(old) ? old : Budget(categoryID: id, amount: third * 3, cadence: old.cadence)
+        }
         return (needs + wants).sorted { $0.categoryID < $1.categoryID }
     }
 
@@ -74,12 +85,18 @@ public enum GoalSetup {
     }
 
     /// A want budget set by hand in the Plan tab counts as hearted at that amount, a third of it each period when it is
-    /// quarterly. Any other budget leaves the preferences alone.
+    /// quarterly, on the planner's 50 kr grid. Any other budget leaves the preferences alone.
     public static func edited(_ budget: Budget, groups: CategoryGroups, prefs: GoalPreferences) -> GoalPreferences {
         guard groups.group(of: budget.categoryID) == .want else { return prefs }
         var next = prefs
         next.hearted.insert(budget.categoryID)
-        next.amounts[budget.categoryID] = budget.cadence == .monthly ? budget.amount : budget.amount / 3
+        next.amounts[budget.categoryID] = planned(budget)
         return next
+    }
+
+    /// A budget per period as the planner counts it: a quarterly one at a third rounded up to 50 kr, as `Usual` plans a
+    /// quarterly need.
+    static func planned(_ budget: Budget) -> Decimal {
+        budget.cadence == .monthly ? budget.amount : PlanSuggestions.roundUp(budget.amount / 3, to: GoalPlanner.budgetStep)
     }
 }

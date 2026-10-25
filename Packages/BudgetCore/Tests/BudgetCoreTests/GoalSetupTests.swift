@@ -141,6 +141,51 @@ import Foundation
         #expect(flipped.hearted.contains("groceries")); #expect(flipped.amounts["groceries"] == 4_000)
     }
 
+    @Test func aWantBudgetWithNoUsualIsPlannedAtItFixedAndWrittenBack() {
+        // Gym set by hand at 450 before its first charge; Shopping at 200 with one 30 kr purchase, under the 50 kr a usual needs.
+        let txs = history + [tx(day(8, 7), -30, "Lindex", "shopping")]
+        let existing = [Budget(categoryID: "gym", amount: 450, cadence: .monthly), Budget(categoryID: "shopping", amount: 200, cadence: .monthly)]
+        let input = GoalSetup.input(plannedIncome: 34_200, transactions: txs, rule: rule, budgets: existing, groups: CategoryGroups(), today: today)
+        #expect(input.wants == [WantInput(categoryID: "takeaway", usual: 3_600, fixed: false), WantInput(categoryID: "gym", usual: 450, fixed: true),
+                                WantInput(categoryID: "unsorted", usual: 250, fixed: true), WantInput(categoryID: "shopping", usual: 200, fixed: true),
+                                WantInput(categoryID: "streaming", usual: 150, fixed: true)])
+        let prefs = GoalPreferences(goalPercent: 20, hearted: [], amounts: [:])
+        let written = GoalSetup.budgets(input: input, prefs: prefs, existing: existing)
+        #expect(written.first { $0.categoryID == "gym" } == existing[0])
+        #expect(written.first { $0.categoryID == "shopping" } == existing[1])
+        // The Goal sheet over the saved plan counts both: 3 600 + 450 + 250 + 200 + 150.
+        let saved = GoalPlanner.summary(of: GoalSetup.perPeriod(written), input: input, prefs: prefs)
+        #expect(saved.budgets["gym"] == 450); #expect(saved.wantsTotal == 4_650); #expect(saved.plannedSavings == 12_700)
+    }
+
+    @Test func aQuarterlyWantBudgetStaysQuarterly() {
+        // One 900 kr charge in the August period: usually 300, a third of the quarterly budget, which the planner leaves alone at 0 %.
+        let txs = history + [tx(day(8, 7), -900, "Spotify Family", "subscriptions")]
+        let family = Budget(categoryID: "subscriptions", amount: 900, cadence: .quarterly(firstDueMonth: 8))
+        let input = GoalSetup.input(plannedIncome: 34_200, transactions: txs, rule: rule, budgets: [family], groups: CategoryGroups(), today: today)
+        let none = GoalPreferences(goalPercent: 0, hearted: [], amounts: [:])
+        func written(_ prefs: GoalPreferences) -> Budget? {
+            GoalSetup.budgets(input: input, prefs: prefs, existing: [family]).first { $0.categoryID == "subscriptions" }
+        }
+        #expect(written(none) == family)
+        // Lowered to 200 a period: 600 a quarter, due in the same month.
+        #expect(written(GoalPlanner.step("subscriptions", by: -100, input: input, prefs: none))
+                == Budget(categoryID: "subscriptions", amount: 600, cadence: .quarterly(firstDueMonth: 8)))
+        // A minus from a saved plan's exact third, 333.33 for 1 000 a quarter, leaves 233.33: written at 250 a period.
+        #expect(written(GoalPlanner.step("subscriptions", by: -100, from: Decimal(1_000) / 3, input: input, prefs: none))
+                == Budget(categoryID: "subscriptions", amount: 750, cadence: .quarterly(firstDueMonth: 8)))
+    }
+
+    @Test func aQuarterlyWantSetByHandIsHeartedAtItsThirdOnTheGridAndKept() {
+        let hand = Budget(categoryID: "entertainment", amount: 1_000, cadence: .quarterly(firstDueMonth: 2))
+        let prefs = GoalSetup.edited(hand, groups: CategoryGroups(), prefs: GoalPreferences(goalPercent: 20, hearted: [], amounts: [:]))
+        #expect(prefs.amounts["entertainment"] == 350)   // 333.33 rounded up to 50 kr, as a quarterly need's third
+        // No entertainment spending, so it is planned at that third, fixed, and written back as it was.
+        let input = GoalSetup.input(plannedIncome: 34_200, transactions: history, rule: rule, budgets: [hand], groups: CategoryGroups(), today: today)
+        #expect(input.wants.contains(WantInput(categoryID: "entertainment", usual: 350, fixed: true)))
+        #expect(GoalSetup.budgets(input: input, prefs: prefs, existing: [hand]).contains(hand))
+    }
+
     @Test func aSavedPlanIsShownPerPeriod() {
         let saved = GoalSetup.perPeriod([Budget(categoryID: "takeaway", amount: 2_000, cadence: .monthly),
                                          Budget(categoryID: "studentLoan", amount: 4_950, cadence: .quarterly(firstDueMonth: 2))])
