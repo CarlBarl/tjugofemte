@@ -186,6 +186,12 @@ import BudgetCore
 
     @Test func freshSettingsHaveNoGoal() throws { #expect(try store.settings().goal == nil); #expect(try store.settings().goalSetupDone == false) }
 
+    @Test func categorizerVersionStartsAtZeroAndRoundTrips() throws {
+        #expect(try store.settings().categorizerVersion == 0)
+        var s = try store.settings(); s.categorizerVersion = 2; try store.saveSettings(s)
+        #expect(try store.settings().categorizerVersion == 2)
+    }
+
     @Test func wipeEmptiesEveryTable() throws {
         _ = try store.insertNew([tx("a", day(2026, 10, 1), -10, "ICA", "groceries")])
         try store.addRule(KeywordRule(keyword: "ica", categoryID: "groceries"))

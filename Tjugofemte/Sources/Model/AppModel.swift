@@ -41,10 +41,24 @@ final class AppModel {
         selectedPeriod = PeriodLabel(year: 2000, month: 1)
         reload()
         selectedPeriod = periodRule.period(containing: Date()).label
+        // Rows stored before Unsorted existed fell back to shopping; the rules run over them once more.
+        if settings.categorizerVersion < Self.categorizerVersion {
+            do {
+                try recategorize()
+                updateSettings { $0.categorizerVersion = Self.categorizerVersion }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
         try? purge()
-        // Screenshots, UI tests and App Review notes: `-demo` opens straight into sample data.
-        if ProcessInfo.processInfo.arguments.contains("-demo") { startDemo() }
+        // Screenshots, UI tests and App Review notes: `-demo` opens straight into sample data, `-demo-upgrade` into
+        // sample data from before the goal setup.
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-demo") || arguments.contains("-demo-upgrade") { startDemo() }
     }
+
+    /// Raised when the categorizer's fallback or default rules change, so stored rows are recategorized on the next launch.
+    private static let categorizerVersion = 2
 
     var stage: Stage {
         if isDemo { return .ready }
@@ -230,6 +244,8 @@ final class AppModel {
             s.selectedAccountUID = uid
             s.goal = nil
             s.groups = CategoryGroups()
+            s.goalSetupDone = false
+            s.nudgeDismissed = nil
             try store.saveSettings(s)
             settings = s
             reload()
@@ -345,7 +361,20 @@ final class AppModel {
         try store.recategorizeUnlocked { text, amount in categorizer.categorize(text: text, amount: amount) }
     }
 
-    func saveBudget(_ budget: Budget) { do { try store.saveBudget(budget); reload() } catch { errorMessage = error.localizedDescription } }
+    /// A want budget edited here counts as hearted at that amount on the Goal screen.
+    func saveBudget(_ budget: Budget) {
+        do {
+            try store.saveBudget(budget)
+            if let goal = settings.goal {
+                var s = settings
+                s.goal = GoalSetup.edited(budget, groups: settings.groups, prefs: goal)
+                try store.saveSettings(s)
+            }
+            reload()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
     func deleteBudget(categoryID: String) { do { try store.deleteBudget(categoryID: categoryID); reload() } catch { errorMessage = error.localizedDescription } }
     func saveIncomeSource(_ source: IncomeSource) { do { try store.saveIncomeSource(source); reload() } catch { errorMessage = error.localizedDescription } }
     func deleteIncomeSource(id: String) { do { try store.deleteIncomeSource(id: id); reload() } catch { errorMessage = error.localizedDescription } }
@@ -370,6 +399,54 @@ final class AppModel {
     }
 
     func skipPlan() { updateSettings { $0.planDone = true } }
+
+    func analysis() -> SpendingAnalysis {
+        SpendingAnalysis.analyze(transactions: transactions, rule: periodRule, groups: settings.groups, incomeSources: incomeSources)
+    }
+
+    func sortCandidates() -> [SortCandidate] { SortStep.candidates(transactions: transactions) }
+    func sortedShare() -> Decimal { SortStep.sortedShare(transactions: transactions) }
+
+    /// Files the merchant from now on. The candidates and the share are read again from the recategorized rows.
+    func file(_ candidate: SortCandidate, as categoryID: String) { addRule(KeywordRule(keyword: candidate.keyword, categoryID: categoryID)) }
+
+    func recurringCharges() -> [RecurringCharge] { RecurringDetector.detect(transactions: transactions) }
+
+    func goalInput(plannedIncome: Decimal) -> GoalInput {
+        GoalSetup.input(plannedIncome: plannedIncome, transactions: transactions, rule: periodRule, budgets: budgets, groups: settings.groups)
+    }
+
+    /// Writes the goal's budgets the way `applyPlan` writes a plan, then keeps the goal and hearts.
+    func applyGoalPlan(startDay: Int, incomes: [IncomeSource], input: GoalInput, prefs: GoalPreferences) {
+        applyPlan(startDay: startDay, incomes: incomes, budgets: GoalSetup.budgets(input: input, prefs: prefs, existing: budgets))
+        updateSettings { $0.goal = prefs; $0.goalSetupDone = true }
+    }
+
+    /// The answer to "Keep up to 12 months on this phone?". A longer history needs one fetch back to the new cutoff,
+    /// because a normal refresh starts a week before the newest stored row.
+    func chooseRetention(months: Int) {
+        let longer = months > settings.retention.months
+        updateSettings {
+            $0.retention = RetentionPolicy(months: months)
+            $0.retentionAsked = true
+            if longer { $0.fullFetchPending = true }
+        }
+        Task { await refresh() }
+    }
+
+    /// Overview's "Set a savings goal", for installs set up before the goal setup existed.
+    var showsGoalCard: Bool { isSetUp && !settings.goalSetupDone }
+
+    /// Overview's "Adjust plan?": the last complete period, the one before today's, ended more than 5 % of planned income
+    /// in the red. At most once per period.
+    var showsNudge: Bool {
+        guard settings.goalSetupDone, settings.nudgeDismissed != selectedPeriod else { return false }
+        let last = periodRule.period(labeled: periodRule.period(containing: Date()).label.previous)
+        let summary = BudgetMath.summarize(period: last, rule: periodRule, transactions: transactions, budgets: budgets, incomeSources: incomeSources)
+        return GoalNudge.shouldShow(lastComplete: summary, plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount })
+    }
+
+    func dismissNudge() { updateSettings { $0.nudgeDismissed = selectedPeriod } }
 
     func updateSettings(_ change: (inout Settings) -> Void) {
         var s = settings
@@ -433,11 +510,16 @@ final class AppModel {
         do {
             let demo = try LocalStore.inMemory()
             let rule = PeriodRule(startDay: 25)
+            for r in DemoData.rules { try demo.addRule(r) }
             try demo.insertNew(DemoData.transactions(rule: rule))
             for b in DemoData.budgets { try demo.saveBudget(b) }
             for s in DemoData.incomeSources { try demo.saveIncomeSource(s) }
             var s = try demo.settings()
             s.bankName = "Demo"
+            // Twelve periods of history: the default three months would purge most of it on the first settings change.
+            s.retention = RetentionPolicy(months: 12)
+            // `-demo-upgrade` opens as an install from before the goal setup, with the "Set a savings goal" card.
+            s.goalSetupDone = !ProcessInfo.processInfo.arguments.contains("-demo-upgrade")
             try demo.saveSettings(s)
             demoStore = demo
             reload()

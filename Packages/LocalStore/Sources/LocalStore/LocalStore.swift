@@ -42,6 +42,9 @@ public struct Settings: Equatable, Sendable {
     public var retentionAsked = false
     /// The period whose "Adjust plan?" nudge the user dismissed.
     public var nudgeDismissed: PeriodLabel?
+    /// The categorizer generation the stored rows were last recategorized with, so an upgrade that changes the rules
+    /// recategorizes once.
+    public var categorizerVersion = 0
 
     public init() {}
 }
@@ -287,6 +290,7 @@ public final class LocalStore: Sendable {
             if let parts = raw["nudge_dismissed"]?.split(separator: "-").compactMap({ Int($0) }), parts.count == 2 {
                 s.nudgeDismissed = PeriodLabel(year: parts[0], month: parts[1])
             }
+            if let v = raw["categorizer_version"].flatMap(Int.init) { s.categorizerVersion = v }
             return s
         }
     }
@@ -310,6 +314,7 @@ public final class LocalStore: Sendable {
             ("goal_setup_done", s.goalSetupDone ? "1" : "0"),
             ("retention_asked", s.retentionAsked ? "1" : "0"),
             ("nudge_dismissed", s.nudgeDismissed.map { "\($0.year)-\($0.month)" }),
+            ("categorizer_version", String(s.categorizerVersion)),
         ]
         try db.write { db in
             for (key, value) in pairs {
