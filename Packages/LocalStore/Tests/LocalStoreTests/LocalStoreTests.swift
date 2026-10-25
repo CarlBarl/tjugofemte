@@ -42,6 +42,30 @@ import BudgetCore
         #expect(try store.settings().fullFetchPending == false)
     }
 
+    /// Two 51,95 kr coffees booked the same day without a bank reference, keyed the way `AppModel.refresh` keys a fetch.
+    func twoCoffees() -> [Transaction] {
+        let coffee = DedupKey.Item(transactionID: nil, entryReference: nil, bookingDate: day(2026, 10, 17), amount: -51.95, currency: "SEK", counterparty: "ESPRESSO HOUSE")
+        return DedupKey.makeAll([coffee, coffee]).map { tx($0, day(2026, 10, 17), -51.95, "ESPRESSO HOUSE", "takeaway") }
+    }
+
+    @Test func identicalPaymentsWithoutAReferenceAreBothStoredAndARefetchDoesNotMultiplyThem() throws {
+        #expect(try store.storeFetched(twoCoffees(), window: day(2026, 10, 1), completesFullFetch: false) == 2)
+        #expect(try store.allTransactions().count == 2)
+        try store.storeFetched(twoCoffees(), window: day(2026, 10, 1), completesFullFetch: false)
+        #expect(try store.allTransactions().count == 2)
+    }
+
+    @Test func aHandCategorizedRepeatStaysLockedWhenTheFetchIsStoredAgain() throws {
+        let fetch = twoCoffees()
+        try store.storeFetched(fetch, window: day(2026, 10, 1), completesFullFetch: false)
+        try store.setCategory(fetch[0].dedupKey, to: "groceries")
+        try store.storeFetched(fetch, window: day(2026, 10, 1), completesFullFetch: false)
+        let byKey = Dictionary(uniqueKeysWithValues: try store.allTransactions().map { ($0.dedupKey, $0.categoryID) })
+        #expect(byKey.count == 2)
+        #expect(byKey[fetch[0].dedupKey] == "groceries")                   // not replaced by the refetch
+        #expect(try store.recategorizeUnlocked { _, _ in "shopping" } == 1)  // and still locked: only the other one changes
+    }
+
     @Test func anEmptyAnswerDoesNotCompleteTheFullFetch() throws {
         _ = try store.insertNew([tx("a", day(2026, 10, 1), -245, "CARL ELELID", "transfer")])
         try store.storeFetched([], window: day(2026, 7, 25), completesFullFetch: true)
