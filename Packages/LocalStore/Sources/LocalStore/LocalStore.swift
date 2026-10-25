@@ -34,8 +34,6 @@ public struct Settings: Equatable, Sendable {
     public var fullFetchPending = true
 
     public init() {}
-
-    public var periodRule: PeriodRule { PeriodRule(startDay: startDay, overrides: periodOverrides) }
 }
 
 /// SQLite on disk, in a directory excluded from backup, protected by iOS Data Protection (class complete).
