@@ -100,6 +100,19 @@ import Foundation
         #expect(a.topWants[0].perPeriod == 3_600)
     }
 
+    @Test func onePeriodRatesTheLastCompletePeriodAlone() {
+        // September spent 1 400 more on takeaway than July and August, so it saved 1 336 of 34 200.
+        let txs = [7, 8].flatMap { mockupMonth($0) } + mockupMonth(9, takeaway: 5_000)
+        let last = SpendingAnalysis.analyze(transactions: txs, rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today, maxPeriods: 1)
+        #expect(last.periods == 1)
+        #expect(last.savingsRate == Decimal(1_336) / Decimal(34_200))
+        #expect(SpendingAnalysis.analyze(transactions: txs, rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today).periods == 3)
+        // Data from September's second day: no complete period, so the current period so far stands in and says so.
+        let partial = SpendingAnalysis.analyze(transactions: Array(mockupMonth(9).dropFirst()), rule: rule, groups: CategoryGroups(),
+                                               incomeSources: [salary], today: today, maxPeriods: 1)
+        #expect(partial.periods == 0)
+    }
+
     @Test func noIncomeHasNoRate() {
         #expect(SpendingAnalysis.analyze(transactions: [], rule: rule, groups: CategoryGroups(), incomeSources: [], today: today).savingsRate == nil)
     }
@@ -109,6 +122,17 @@ import Foundation
         PeriodSummary(period: rule.period(labeled: PeriodLabel(year: 2026, month: 9)), savingsTarget: Explained([(.plannedIncome, 34_200), (.categoryBudgets, -32_200)]),
                       adjustedSavingsTarget: nil, categories: [], quarterly: [], incomes: [], otherIncome: 0,
                       leftOverSoFar: Explained([(.actualIncome, 34_200), (.actualSpending, -spent), (.savingsTarget, -2_000)]))
+    }
+
+    @Test func theNudgeNamesTheBudgetThatWentFurthestOver() {
+        func line(_ id: String, _ budget: Decimal?, _ actual: Decimal) -> CategoryLine { CategoryLine(categoryID: id, budget: budget, actual: actual) }
+        let s = lastComplete(spent: 0)
+        let over = PeriodSummary(period: s.period, savingsTarget: s.savingsTarget, adjustedSavingsTarget: nil,
+                                 categories: [line("groceries", 4_800, 4_000), line("shopping", 1_600, 1_700), line("takeaway", 1_850, 3_060),
+                                              line("unsorted", nil, 9_000)],
+                                 quarterly: [], incomes: [], otherIncome: 0, leftOverSoFar: s.leftOverSoFar)
+        #expect(GoalNudge.biggestOverrun(lastComplete: over) == line("takeaway", 1_850, 3_060))   // 1 210 over; a line with no budget is never over
+        #expect(GoalNudge.biggestOverrun(lastComplete: s) == nil)
     }
 
     @Test func nudgeFiresBelowMinusFivePercentOfPlannedIncome() {

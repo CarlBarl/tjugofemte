@@ -153,6 +153,22 @@
         }
       }
     },
+    "%@ went %@ over.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ went %2$@ over."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ gick %2$@ över budget."
+          }
+        }
+      }
+    },
     "%@ · %@": {
       "localizations": {
         "en": {
@@ -573,6 +589,16 @@
         }
       }
     },
+    "Adjust plan": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Justera planen"
+          }
+        }
+      }
+    },
     "After Register, the control panel shows your application with its ID in the heading, next to the name. Copy it and paste it here.": {
       "localizations": {
         "sv": {
@@ -971,7 +997,7 @@
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Datum, belopp, valuta, motpartstext och kategori. Inget annat ur bankens svar sparas. Lagras i en krypterad SQLite-databas skyddad av iOS Data Protection, undantagen från iCloud- och datorsäkerhetskopior och rensad till den historik du väljer."
+            "value": "Datum, belopp, valuta, motpartstext och kategori. Inget annat ur bankens svar behålls. Lagras i en krypterad SQLite-databas skyddad av iOS Data Protection, undantagen från iCloud- och datorsäkerhetskopior och rensad till den historik du väljer."
           }
         }
       }
@@ -1182,6 +1208,32 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hittade i dina transaktioner. Slå av det som inte är inkomst och justera beloppen."
+          }
+        }
+      }
+    },
+    "Goal %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mål %@"
+          }
+        }
+      }
+    },
+    "Goal %@, last period %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Goal %1$@, last period %2$@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mål %1$@, förra perioden %2$@"
           }
         }
       }
@@ -1411,7 +1463,7 @@
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spara 12 månader"
+            "value": "Behåll 12 månader"
           }
         }
       }
@@ -1421,7 +1473,7 @@
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spara 3 månader"
+            "value": "Behåll 3 månader"
           }
         }
       }
@@ -1431,7 +1483,7 @@
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spara historik"
+            "value": "Behåll historik"
           }
         }
       }
@@ -1441,7 +1493,17 @@
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Spara upp till 12 månader på telefonen?"
+            "value": "Behåll upp till 12 månader på telefonen?"
+          }
+        }
+      }
+    },
+    "Kept at your budget, or your usual where you have none. The app never trims these.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ligger kvar på din budget, eller på det du brukar spendera där budget saknas. Appen kortar aldrig dessa."
           }
         }
       }
@@ -1512,6 +1574,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sista dagen i dag"
+          }
+        }
+      }
+    },
+    "Last period you saved %@, %lld points under your goal.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Last period you saved %1$@, %2$lld points under your goal."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Förra perioden sparade du %1$@, %2$lld procentenheter under ditt mål."
+          }
+        }
+      }
+    },
+    "Last period you saved %@, 1 point under your goal.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Förra perioden sparade du %@, 1 procentenhet under ditt mål."
+          }
+        }
+      }
+    },
+    "Last period you saved %@.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Förra perioden sparade du %@."
+          }
+        }
+      }
+    },
+    "Last period you spent more than planned.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Förra perioden spenderade du mer än planerat."
           }
         }
       }
@@ -1681,6 +1789,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Behov %@"
+          }
+        }
+      }
+    },
+    "Needs, at your budget or usual": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Behov, din budget eller som vanligt"
           }
         }
       }
@@ -1921,6 +2039,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Inte medräknad"
+          }
+        }
+      }
+    },
+    "Not now": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inte nu"
           }
         }
       }
@@ -2227,6 +2355,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Välj ett mål. Budgetarna följer av det och kortas i de nöjen du bryr dig minst om."
+          }
+        }
+      }
+    },
+    "Pick how much of your income to save, and the app suggests budgets from your history.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välj hur stor del av inkomsten du vill spara, så föreslår appen budgetar utifrån din historik."
+          }
+        }
+      }
+    },
+    "Pick how much of your income to save, and the app suggests budgets from your history. Until then your budgets work as before. Spending the app could not sort sits in Unsorted, which has no budget yet.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välj hur stor del av inkomsten du vill spara, så föreslår appen budgetar utifrån din historik. Till dess fungerar dina budgetar som förut. Det appen inte kunde sortera hamnar i Osorterat, som ännu inte har någon budget."
           }
         }
       }
@@ -2673,6 +2821,16 @@
         }
       }
     },
+    "Set a savings goal": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sätt ett mål för sparandet"
+          }
+        }
+      }
+    },
     "Set aside": {
       "localizations": {
         "sv": {
@@ -2788,7 +2946,7 @@
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Signerade anrop efter banklistan, dina konton och dina transaktioner. Enable Banking är en licensierad open banking-leverantör i Finland och vidarebefordrar dem till din bank. Anropen innehåller telefonens IP-adress och appens namn, som Enable Banking sparar i sina loggar under en tid de inte publicerar."
+            "value": "Signerade anrop efter banklistan, dina konton och dina transaktioner. Enable Banking är en licensierad open banking-leverantör i Finland och vidarebefordrar dem till din bank. Anropen innehåller telefonens IP-adress och appens namn, som Enable Banking lagrar i sina loggar under en tid de inte publicerar."
           }
         }
       }
@@ -3318,7 +3476,7 @@
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Banken behöver det för att starta BankID. Det skickas en gång och sparas aldrig."
+            "value": "Banken behöver det för att starta BankID. Det skickas en gång och lagras aldrig."
           }
         }
       }

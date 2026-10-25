@@ -68,6 +68,11 @@ public enum GoalSetup {
         return prefs
     }
 
+    /// The saved budgets per period, as the Goal screen shows a saved plan: a quarterly budget is a third.
+    public static func perPeriod(_ budgets: [Budget]) -> [String: Decimal] {
+        Dictionary(budgets.map { ($0.categoryID, $0.cadence == .monthly ? $0.amount : $0.amount / 3) }) { $1 }
+    }
+
     /// A want budget set by hand in the Plan tab counts as hearted at that amount, a third of it each period when it is
     /// quarterly. Any other budget leaves the preferences alone.
     public static func edited(_ budget: Budget, groups: CategoryGroups, prefs: GoalPreferences) -> GoalPreferences {

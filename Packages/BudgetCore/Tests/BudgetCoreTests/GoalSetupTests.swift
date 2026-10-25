@@ -140,4 +140,10 @@ import Foundation
         let flipped = GoalSetup.edited(Budget(categoryID: "groceries", amount: 4_000, cadence: .monthly), groups: CategoryGroups(overrides: ["groceries": .want]), prefs: prefs)
         #expect(flipped.hearted.contains("groceries")); #expect(flipped.amounts["groceries"] == 4_000)
     }
+
+    @Test func aSavedPlanIsShownPerPeriod() {
+        let saved = GoalSetup.perPeriod([Budget(categoryID: "takeaway", amount: 2_000, cadence: .monthly),
+                                         Budget(categoryID: "studentLoan", amount: 4_950, cadence: .quarterly(firstDueMonth: 2))])
+        #expect(saved == ["takeaway": 2_000, "studentLoan": 1_650])
+    }
 }

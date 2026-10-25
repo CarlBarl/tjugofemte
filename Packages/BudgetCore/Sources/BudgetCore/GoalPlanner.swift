@@ -124,11 +124,12 @@ public enum GoalPlanner {
                         shortfall: outOfReach ? PlanSuggestions.roundUp(goal - plannedSavings, to: shortfallStep) : 0)
     }
 
-    /// Minus and plus move from the budget on screen. A flexible want is hearted at the result; a fixed want can go down
-    /// but never above its usual, and is never hearted. A category not in the input is left alone.
-    public static func step(_ categoryID: String, by delta: Decimal, input: GoalInput, prefs: GoalPreferences) -> GoalPreferences {
+    /// Minus and plus move from the budget on screen: `shown` when the screen shows something other than the plan, such
+    /// as a saved plan, else the planned budget. A flexible want is hearted at the result; a fixed want can go down but
+    /// never above its usual, and is never hearted. A category not in the input is left alone.
+    public static func step(_ categoryID: String, by delta: Decimal, from shown: Decimal? = nil, input: GoalInput, prefs: GoalPreferences) -> GoalPreferences {
         guard let want = input.wants.first(where: { $0.categoryID == categoryID }),
-              let budget = plan(input, prefs).budgets[categoryID] else { return prefs }
+              let budget = shown ?? plan(input, prefs).budgets[categoryID] else { return prefs }
         let ceiling = want.fixed ? want.usual : budget + maxRaise
         var next = prefs
         next.amounts[categoryID] = max(0, min(ceiling, budget + delta))

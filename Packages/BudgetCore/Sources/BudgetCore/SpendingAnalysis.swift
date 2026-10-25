@@ -33,8 +33,10 @@ public struct SpendingAnalysis: Equatable, Sendable {
     /// The three biggest want categories, biggest first. Unsorted is in `wantsPerPeriod` but never here: it is not a real want.
     public let topWants: [WantTrend]
 
+    /// Up to `maxPeriods` complete periods, the same 12 as `Usual` by default; 1 is the last complete period alone, for
+    /// Overview's "last period 13 %".
     public static func analyze(transactions: [Transaction], rule: PeriodRule, groups: CategoryGroups,
-                               incomeSources: [IncomeSource], today: Date = Date()) -> SpendingAnalysis {
+                               incomeSources: [IncomeSource], today: Date = Date(), maxPeriods: Int = 12) -> SpendingAnalysis {
         var periods = Usual.completePeriods(transactions: transactions, rule: rule, today: today, maxPeriods: maxPeriods)
         let complete = periods.count
         if periods.isEmpty { periods = [rule.period(containing: today)] }
@@ -101,5 +103,12 @@ public enum GoalNudge {
             setAside += max(0, spent - b.amount / 3)
         }
         return lastComplete.leftOverSoFar.value + setAside < -plannedIncome * 5 / 100
+    }
+
+    /// "Takeaway went 1 210 kr over": the monthly budget the period overran by the most kronor. nil when none did.
+    public static func biggestOverrun(lastComplete: PeriodSummary) -> CategoryLine? {
+        lastComplete.categories
+            .filter { ($0.remaining ?? 0) < 0 }
+            .min { ($0.remaining ?? 0, $0.categoryID) < ($1.remaining ?? 0, $1.categoryID) }
     }
 }

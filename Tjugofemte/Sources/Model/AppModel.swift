@@ -458,13 +458,30 @@ final class AppModel {
     /// in the red. At most once per period.
     var showsNudge: Bool {
         guard settings.goalSetupDone, settings.nudgeDismissed != selectedPeriod else { return false }
-        let last = periodRule.period(labeled: periodRule.period(containing: Date()).label.previous)
-        let summary = BudgetMath.summarize(period: last, rule: periodRule, transactions: transactions, budgets: budgets, incomeSources: incomeSources)
-        return GoalNudge.shouldShow(lastComplete: summary, plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount },
+        return GoalNudge.shouldShow(lastComplete: lastCompleteSummary, plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount },
                                     budgets: budgets, transactions: transactions)
     }
 
     func dismissNudge() { updateSettings { $0.nudgeDismissed = selectedPeriod } }
+
+    /// "Takeaway went 1 210 kr over" on the nudge: the budget the last complete period overran the most.
+    var lastPeriodOverrun: CategoryLine? { GoalNudge.biggestOverrun(lastComplete: lastCompleteSummary) }
+
+    /// Overview's "last period 13 %": the last complete period's savings rate alone, rounded down as the Goal screen's
+    /// "Now" is. nil when the phone does not hold all of that period, or it had no income.
+    var lastPeriodPercent: Int? {
+        let last = SpendingAnalysis.analyze(transactions: transactions, rule: periodRule, groups: settings.groups, incomeSources: incomeSources, maxPeriods: 1)
+        guard last.periods == 1, var value = last.savingsRate.map({ $0 * 100 }) else { return nil }
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &value, 0, .down)
+        return NSDecimalNumber(decimal: rounded).intValue
+    }
+
+    /// The period before today's, the last one that is over.
+    private var lastCompleteSummary: PeriodSummary {
+        let last = periodRule.period(labeled: periodRule.period(containing: Date()).label.previous)
+        return BudgetMath.summarize(period: last, rule: periodRule, transactions: transactions, budgets: budgets, incomeSources: incomeSources)
+    }
 
     func updateSettings(_ change: (inout Settings) -> Void) {
         var s = settings

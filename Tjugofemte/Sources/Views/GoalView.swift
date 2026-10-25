@@ -11,16 +11,20 @@ struct GoalView: View {
     let currentRate: Decimal?
     /// The plan as saved, shown until the user moves the slider, a heart or a step.
     let savedBudgets: [String: Decimal]?
+    /// Called on every move, so a container showing the saved plan knows when the screen has left it.
+    let onMove: () -> Void
 
     @State private var moved = false
     @State private var needsOpen = false
     @State private var taps = 0
 
-    init(input: GoalInput, prefs: Binding<GoalPreferences>, currentRate: Decimal?, savedBudgets: [String: Decimal]? = nil) {
+    init(input: GoalInput, prefs: Binding<GoalPreferences>, currentRate: Decimal?, savedBudgets: [String: Decimal]? = nil,
+         onMove: @escaping () -> Void = {}) {
         self.input = input
         _prefs = prefs
         self.currentRate = currentRate
         self.savedBudgets = savedBudgets
+        self.onMove = onMove
     }
 
     /// What minus and plus move a want by.
@@ -139,7 +143,12 @@ struct GoalView: View {
     private func setGoal(_ percent: Int) {
         guard percent != prefs.goalPercent else { return }
         prefs.goalPercent = percent
+        move()
+    }
+
+    private func move() {
         moved = true
+        onMove()
     }
 
     // MARK: Wants
@@ -182,11 +191,11 @@ struct GoalView: View {
                 Text(caption(want, budget: budget, hearted: hearted)).appFont(size: 13).foregroundStyle(Tokens.dim)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, minHeight: Tokens.minimumTapTarget, alignment: .leading)
-                RoundStepButton(symbol: "minus", label: Text("Lower \(name) by \(Self.step.sek)")) { step(id, by: -Self.step) }
+                RoundStepButton(symbol: "minus", label: Text("Lower \(name) by \(Self.step.sek)")) { step(id, by: -Self.step, from: budget) }
                     .disabled(budget <= 0)
                 // A fixed want can only go down, for a charge about to be cancelled, and is never hearted.
                 if !want.fixed {
-                    RoundStepButton(symbol: "plus", label: Text("Raise \(name) by \(Self.step.sek)")) { step(id, by: Self.step) }
+                    RoundStepButton(symbol: "plus", label: Text("Raise \(name) by \(Self.step.sek)")) { step(id, by: Self.step, from: budget) }
                     Button { heart(id, !hearted) } label: {
                         Image(systemName: hearted ? "heart.fill" : "heart").appFont(size: 22, weight: .medium)
                             .foregroundStyle(hearted ? Tokens.accent : Tokens.dim)
@@ -238,15 +247,16 @@ struct GoalView: View {
         return raised.count == 1 ? String(localized: "\(raisedText) comes from \(named).") : String(localized: "\(raisedText) come from \(named).")
     }
 
-    private func step(_ id: String, by delta: Decimal) {
-        withAnimation(.snappy) { prefs = GoalPlanner.step(id, by: delta, input: input, prefs: prefs) }
-        moved = true
+    /// From the amount on the row, which is the saved one while a saved plan is shown.
+    private func step(_ id: String, by delta: Decimal, from shown: Decimal) {
+        withAnimation(.snappy) { prefs = GoalPlanner.step(id, by: delta, from: shown, input: input, prefs: prefs) }
+        move()
         taps += 1
     }
 
     private func heart(_ id: String, _ on: Bool) {
         withAnimation(.snappy) { prefs = GoalPlanner.heart(id, on, prefs: prefs) }
-        moved = true
+        move()
         taps += 1
     }
 
@@ -259,7 +269,7 @@ struct GoalView: View {
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Needs").appFont(size: 16, weight: .semibold).foregroundStyle(Tokens.text)
-                        Text("Kept at your usual. The app never cuts these.").appFont(size: 13).foregroundStyle(Tokens.dim)
+                        Text("Kept at your budget, or your usual where you have none. The app never trims these.").appFont(size: 13).foregroundStyle(Tokens.dim)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 8)
@@ -267,6 +277,7 @@ struct GoalView: View {
                     Image(systemName: "chevron.down").appFont(size: 14, weight: .semibold).foregroundStyle(Tokens.muted)
                         .rotationEffect(.degrees(needsOpen ? 180 : 0))
                 }
+                .padding(.vertical, 12)
                 .frame(minHeight: 64)
                 .contentShape(Rectangle())
             }

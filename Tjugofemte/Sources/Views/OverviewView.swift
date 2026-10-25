@@ -6,6 +6,9 @@ struct OverviewView: View {
     @State private var explaining: ExplanationSheet.Content?
     @State private var planning = false
     @State private var reconnecting = false
+    @State private var adjusting = false
+    @State private var upgrading = false
+    @State private var taps = 0
 
     var body: some View {
         NavigationStack {
@@ -15,7 +18,10 @@ struct OverviewView: View {
                     Banner(message: "Bank access has expired.", systemImage: "exclamationmark.triangle", tint: Tokens.over,
                            action: ("Reconnect", { reconnecting = true }))
                 }
-                if model.hasPlan { heroCard } else { planCard }
+                // The upgrade card leads to the same setup as "Plan my budget", with the history question first, so one is shown.
+                if model.hasPlan { heroCard } else if !model.showsGoalCard { planCard }
+                if model.showsNudge { nudgeCard }
+                if model.showsGoalCard { goalCard }
                 soFarCard
                 if !model.summary.categories.isEmpty { budgetsCard }
                 if !model.summary.quarterly.isEmpty { quarterlyCard }
@@ -27,6 +33,9 @@ struct OverviewView: View {
             .navigationDestination(isPresented: $reconnecting) { BankPickerView() }
             .sheet(item: $explaining) { ExplanationSheet(content: $0) }
             .sheet(isPresented: $planning) { PlanSetupView(mode: .revise) }
+            .sheet(isPresented: $adjusting) { GoalSheet() }
+            .sheet(isPresented: $upgrading) { GoalUpgradeFlow() }
+            .sensoryFeedback(.impact(weight: .light), trigger: taps)
         }
     }
 
@@ -41,6 +50,9 @@ struct OverviewView: View {
                     SectionLabel(text: "Move to savings on payday")
                     Text(shown.value.sek).font(Tokens.numberFont(size: 44)).foregroundStyle(shown.value < 0 ? Tokens.over : Tokens.accent)
                         .lineLimit(1).minimumScaleFactor(0.6)
+                    if let goal = model.settings.goal {
+                        Text(goalLine(goal)).appFont(size: 14).foregroundStyle(Tokens.body).fixedSize(horizontal: false, vertical: true)
+                    }
                     if s.adjustedSavingsTarget != nil {
                         Text("Income came in below plan, so the target is lowered from \(s.savingsTarget.value.sek).")
                             .appFont(size: 13).foregroundStyle(Tokens.over).fixedSize(horizontal: false, vertical: true)
@@ -58,6 +70,83 @@ struct OverviewView: View {
                                        note: "Planned income minus every budget, fixed when the period starts. Move it on payday and the rest of the month takes care of itself.")
                 }
                 .padding(.top, -6)
+            }
+        }
+    }
+
+    /// "Goal 20 %, last period 13 %"; the goal alone until a whole period with income is on the phone.
+    private func goalLine(_ goal: GoalPreferences) -> String {
+        let percent = GoalView.percent(goal.goalPercent)
+        guard let last = model.lastPeriodPercent else { return String(localized: "Goal \(percent)") }
+        return String(localized: "Goal \(percent), last period \(GoalView.percent(last))")
+    }
+
+    /// "Adjust plan?": the last complete period ran more than 5 % of planned income past the plan.
+    private var nudgeCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 4) {
+                Text(nudgeText).appFont(size: 14).foregroundStyle(Tokens.text).fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 12)
+                Spacer(minLength: 0)
+                Button {
+                    taps += 1
+                    withAnimation(.snappy) { model.dismissNudge() }
+                } label: {
+                    Image(systemName: "xmark").appFont(size: 13, weight: .semibold).foregroundStyle(Tokens.muted)
+                        .frame(width: Tokens.minimumTapTarget, height: Tokens.minimumTapTarget)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(PressFeedback())
+                .padding(.trailing, -10)
+                .accessibilityLabel(Text("Not now"))
+            }
+            Button {
+                taps += 1
+                adjusting = true
+            } label: {
+                Text("Adjust plan").appFont(size: 14, weight: .semibold).foregroundStyle(Tokens.onAccent)
+                    .padding(.horizontal, 16)
+                    .frame(minHeight: Tokens.minimumTapTarget)
+                    .background(Tokens.accent, in: Capsule())
+            }
+            .buttonStyle(PressFeedback())
+        }
+        .padding(.leading, 16)
+        .padding(.trailing, 6)
+        .padding(.bottom, 14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Tokens.ground, in: RoundedRectangle(cornerRadius: Tokens.cardRadius, style: .continuous))
+    }
+
+    /// "Last period you saved 13 %, 7 points under your goal. Takeaway went 1 210 kr over." Each half only when it holds.
+    private var nudgeText: String {
+        var parts: [String] = []
+        if let last = model.lastPeriodPercent {
+            let saved = GoalView.percent(last)
+            let under = (model.settings.goal?.goalPercent ?? 0) - last
+            parts.append(under > 1 ? String(localized: "Last period you saved \(saved), \(under)\u{00A0}points under your goal.")
+                         : under == 1 ? String(localized: "Last period you saved \(saved), 1\u{00A0}point under your goal.")
+                         : String(localized: "Last period you saved \(saved)."))
+        }
+        if let over = model.lastPeriodOverrun, let remaining = over.remaining {
+            parts.append(String(localized: "\(CategoryInfo.name(over.categoryID)) went \((-remaining).sek) over."))
+        }
+        return parts.isEmpty ? String(localized: "Last period you spent more than planned.") : parts.joined(separator: " ")
+    }
+
+    /// For an install from before the goal setup. Never forced; until it is done the old budgets keep working.
+    private var goalCard: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionLabel(text: "Savings goal")
+                (model.hasPlan
+                    ? Text("Pick how much of your income to save, and the app suggests budgets from your history. Until then your budgets work as before. Spending the app could not sort sits in Unsorted, which has no budget yet.")
+                    : Text("Pick how much of your income to save, and the app suggests budgets from your history."))
+                    .appFont(size: 15).foregroundStyle(Tokens.body).fixedSize(horizontal: false, vertical: true)
+                BigButton(title: "Set a savings goal") {
+                    taps += 1
+                    upgrading = true
+                }
             }
         }
     }

@@ -11,13 +11,18 @@ struct PlanSetupView: View {
     @Environment(\.dismiss) private var dismiss
     let mode: Mode
 
-    @State private var step = 0
+    @State private var step: Int
     @State private var startDay = 25
     @State private var paydayGuess: Int?
     @State private var incomes: [DraftIncome] = []
     /// Seeded the first time the Goal step opens; after that only its slider and "Settle" move the goal.
     @State private var prefs: GoalPreferences?
     @State private var seededFromData = false
+
+    init(mode: Mode, startStep: Int = 0) {
+        self.mode = mode
+        _step = State(initialValue: startStep)
+    }
 
     struct DraftIncome: Identifiable {
         let id: String
@@ -28,8 +33,9 @@ struct PlanSetupView: View {
         var periodsSeen = 0
     }
 
+    /// Step 3, where the upgrade card starts.
+    static let sortStep = 2
     private let stepCount = 6
-    private let sortStep = 2
     private let moneyStep = 3
     private let goalStep = 4
     private var rule: PeriodRule { model.periodRule(startDay: startDay, incomes: draftSources) }
@@ -51,7 +57,7 @@ struct PlanSetupView: View {
                 switch step {
                 case 0: paydayStep
                 case 1: incomeStep
-                case sortStep: SortStepView()
+                case Self.sortStep: SortStepView()
                 case moneyStep: YourMoneyView(rule: rule, incomes: draftSources)
                 case goalStep: goalStepView
                 default: summaryStep
@@ -158,7 +164,7 @@ struct PlanSetupView: View {
                     }
                     Hairline()
                     summaryLine(String(localized: "Planned income"), input.plannedIncome, kind: .plain)
-                    summaryLine(String(localized: "Needs, at your usual"), -input.needs.values.reduce(0, +), kind: .plain)
+                    summaryLine(String(localized: "Needs, at your budget or usual"), -input.needs.values.reduce(0, +), kind: .plain)
                     summaryLine(wantsLabel(input, plan), -plan.wantsTotal, kind: .plain)
                     summaryLine(String(localized: "Savings target"), target, kind: .total)
                 }
@@ -249,7 +255,7 @@ struct PlanSetupView: View {
                     if mode == .revise { TextAction(title: "Cancel", tint: Tokens.muted) { dismiss() } }
                     else if step == 0 { TextAction(title: "Skip for now", tint: Tokens.muted) { model.skipPlan() } }
                     // Sorting is optional: the rest stays in Unsorted.
-                    else if step == sortStep { TextAction(title: "Skip", tint: Tokens.muted) { go(to: step + 1) } }
+                    else if step == Self.sortStep { TextAction(title: "Skip", tint: Tokens.muted) { go(to: step + 1) } }
                 }
                 .frame(width: 110, alignment: .trailing)
             }
@@ -310,6 +316,26 @@ struct PlanSetupView: View {
         let input = goalInput
         model.applyGoalPlan(startDay: startDay, incomes: draftSources, input: input, prefs: prefs ?? seededGoal(input))
         if mode == .revise { dismiss() }
+    }
+}
+
+/// "Set a savings goal" for an install set up before the goal setup existed: how much history to keep, when that was
+/// never asked, then the setup from step 3, Sort, with payday and income one Back away. Never forced: the sheet can be
+/// closed at any step, and the old budgets keep working until the goal is saved.
+struct GoalUpgradeFlow: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        Group {
+            if model.settings.retentionAsked {
+                PlanSetupView(mode: .revise, startStep: PlanSetupView.sortStep)
+            } else {
+                RetentionPromptView { model.chooseRetention(months: $0) }
+            }
+        }
+        // Room under the grab indicator, which these full screens otherwise start right at.
+        .safeAreaPadding(.top, 12)
+        .presentationDragIndicator(.visible)
     }
 }
 

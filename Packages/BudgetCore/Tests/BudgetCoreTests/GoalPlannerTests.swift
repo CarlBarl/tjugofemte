@@ -78,6 +78,17 @@ import Foundation
         #expect(GoalPlanner.step("takeaway", by: 100, input: input, prefs: prefs(20)).amounts["takeaway"] == 1_950)
     }
 
+    @Test func aStepMovesFromTheAmountShownWhenItIsNotThePlans() {
+        // A saved plan on screen: Shopping shows 2 000 where the planner says 1 600, Streaming 400 under its usual 425.
+        let down = GoalPlanner.step("shopping", by: -100, from: 2_000, input: input, prefs: prefs(20))
+        #expect(down.amounts["shopping"] == 1_900); #expect(down.hearted == ["shopping"]); #expect(down.goalPercent == 20)
+        #expect(GoalPlanner.step("shopping", by: 100, from: 2_000, input: input, prefs: prefs(20)).amounts["shopping"] == 2_100)
+        #expect(GoalPlanner.step("shopping", by: 10_000, from: 2_000, input: input, prefs: prefs(20)).amounts["shopping"] == 7_000)   // 2 000 + 5 000
+        let fixedDown = GoalPlanner.step("streaming", by: -100, from: 400, input: input, prefs: prefs(20))
+        #expect(fixedDown.amounts["streaming"] == 300); #expect(fixedDown.hearted.isEmpty)
+        #expect(GoalPlanner.step("streaming", by: 100, from: 400, input: input, prefs: prefs(20)).amounts["streaming"] == 425)   // never above usual
+    }
+
     @Test func aStepIsClampedToZeroAndFiveThousandAboveTheBudget() {
         #expect(GoalPlanner.step("takeaway", by: -10_000, input: input, prefs: prefs(20)).amounts["takeaway"] == 0)
         #expect(GoalPlanner.step("takeaway", by: 10_000, input: input, prefs: prefs(20)).amounts["takeaway"] == 6_850)   // 1 850 + 5 000
