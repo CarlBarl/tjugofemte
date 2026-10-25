@@ -321,15 +321,16 @@ struct PlanSetupView: View {
 }
 
 /// "Set a savings goal" for an install set up before the goal setup existed: how much history to keep, when that was
-/// never asked, then the setup from step 3, Sort, with payday and income one Back away. An install without income (the
-/// old setup skipped at its first step) starts at step 2, Income, since the goal is a share of it. Never forced: the
-/// sheet can be closed at any step, and the old budgets keep working until the goal is saved.
+/// never asked and the phone keeps less than 12 months, then the setup from step 3, Sort, with payday and income one
+/// Back away. An install without income (the old setup skipped at its first step) starts at step 2, Income, since the
+/// goal is a share of it. Never forced: the sheet can be closed at any step, and the old budgets keep working until the
+/// goal is saved.
 struct GoalUpgradeFlow: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         Group {
-            if model.settings.retentionAsked {
+            if !model.asksRetention {
                 PlanSetupView(mode: .revise, startStep: model.incomeSources.isEmpty ? PlanSetupView.incomeStep : PlanSetupView.sortStep)
             } else {
                 RetentionPromptView { model.chooseRetention(months: $0) }

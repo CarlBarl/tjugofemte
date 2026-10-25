@@ -50,6 +50,8 @@ final class AppModel {
                 errorMessage = error.localizedDescription
             }
         }
+        // An install that already keeps 12 months or more has nothing to gain from the history prompt, so it is never shown.
+        if !settings.retentionAsked && settings.retention.months >= Self.promptedRetention { updateSettings { $0.retentionAsked = true } }
         try? purge()
         // Screenshots, UI tests and App Review notes: `-demo` opens straight into sample data, `-demo-upgrade` into
         // sample data from before the goal setup.
@@ -439,12 +441,18 @@ final class AppModel {
         budgets + GoalSetup.quarterlyNeeds(transactions: transactions, rule: rule, groups: settings.groups, budgets: budgets)
     }
 
-    /// The answer to "Keep up to 12 months on this phone?". A longer history needs one fetch back to the new cutoff,
-    /// because a normal refresh starts a week before the newest stored row.
+    /// "Keep up to 12 months on this phone?" before the setup and the upgrade card: only while the phone keeps less.
+    var asksRetention: Bool { !settings.retentionAsked && settings.retention.months < Self.promptedRetention }
+    private static let promptedRetention = 12
+
+    /// The answer to "Keep up to 12 months on this phone?". It never shortens the history, which only Settings does. A
+    /// longer history needs one fetch back to the new cutoff, because a normal refresh starts a week before the newest
+    /// stored row.
     func chooseRetention(months: Int) {
-        let longer = months > settings.retention.months
+        let kept = max(months, settings.retention.months)
+        let longer = kept > settings.retention.months
         updateSettings {
-            $0.retention = RetentionPolicy(months: months)
+            $0.retention = RetentionPolicy(months: kept)
             $0.retentionAsked = true
             if longer { $0.fullFetchPending = true }
         }

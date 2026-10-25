@@ -10,7 +10,7 @@ struct StartFlow: View {
             NavigationStack {
                 Group {
                     // Asked here rather than in the account picker, which a session with one account skips.
-                    if model.settings.retentionAsked {
+                    if !model.asksRetention {
                         PlanSetupView(mode: .firstRun)
                     } else {
                         RetentionPromptView { model.chooseRetention(months: $0) }
