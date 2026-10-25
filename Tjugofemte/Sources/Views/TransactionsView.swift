@@ -41,6 +41,7 @@ struct TransactionsView: View {
             }
             .refreshable { await model.refresh() }
             .toolbar(.hidden, for: .navigationBar)
+            .statusBarInk()
             .sheet(item: $editing) { CategoryPicker(transaction: $0) }
         }
     }

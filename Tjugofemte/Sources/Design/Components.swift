@@ -20,12 +20,7 @@ struct Screen<Content: View>: View {
         }
         .scrollIndicators(.hidden)
         .scrollDismissesKeyboard(.interactively)
-        // Always there, even with no banner: its ink reaches up behind the status bar, so scrolled text slides under it, not onto the clock.
-        .safeAreaInset(edge: .top, spacing: 0) {
-            VStack(spacing: 0) { if banner { DemoBanner() } }
-                .frame(maxWidth: .infinity)
-                .background(Tokens.bg)
-        }
+        .safeAreaInset(edge: .top, spacing: 0) { if banner { DemoBanner() } }
         .background(Tokens.bg)
     }
 }

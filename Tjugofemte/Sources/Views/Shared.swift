@@ -118,6 +118,23 @@ struct DemoBanner: View {
     }
 }
 
+extension View {
+    /// For a stack root that hides the navigation bar: nothing else sits behind the status bar, so scrolled text would land on the clock.
+    /// The ink covers the top safe area, which with the bar hidden is the status bar and no more. Sheets with a bar never get it.
+    func statusBarInk() -> some View { modifier(StatusBarInk()) }
+}
+
+private struct StatusBarInk: ViewModifier {
+    @Environment(AppModel.self) private var model
+
+    func body(content: Content) -> some View {
+        // With sample data the banner's own ground already covers the status bar; the ink would paint over it.
+        content.safeAreaInset(edge: .top, spacing: 0) {
+            if !model.isDemo { Color.clear.frame(height: 0).background(Tokens.bg) }
+        }
+    }
+}
+
 /// The period, its dates and the arrows to move between periods. Overview and Transactions share it.
 struct PeriodHeader: View {
     @Environment(AppModel.self) private var model

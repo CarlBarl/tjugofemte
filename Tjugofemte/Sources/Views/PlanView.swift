@@ -27,6 +27,7 @@ struct PlanView: View {
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
+            .statusBarInk()
             .sheet(item: $editingSource) { IncomeSourceForm(source: $0) }
             .sheet(item: $editingBudget) { BudgetForm(budget: $0) }
             .sheet(isPresented: $revising) { PlanSetupView(mode: .revise) }
