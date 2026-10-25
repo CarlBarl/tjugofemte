@@ -160,6 +160,40 @@ import Foundation
         #expect(GoalPlanner.step("gone", by: 100, input: input, prefs: prefs(20)) == prefs(20))
     }
 
+    // The demo month: needs 19 950, flexible wants 9 800, fixed wants and Unsorted 3 050.
+    let demo = GoalInput(plannedIncome: 39_200,
+        needs: ["rent": 11_500, "groceries": 4_500, "studentLoan": 1_650, "transport": 1_200, "insurance": 600, "health": 500],
+        wants: [WantInput(categoryID: "takeaway", usual: 4_200, fixed: false), WantInput(categoryID: "shopping", usual: 3_350, fixed: false),
+                WantInput(categoryID: "entertainment", usual: 2_250, fixed: false), WantInput(categoryID: "unsorted", usual: 1_550, fixed: true),
+                WantInput(categoryID: "subscriptions", usual: 550, fixed: true), WantInput(categoryID: "gym", usual: 500, fixed: true),
+                WantInput(categoryID: "streaming", usual: 450, fixed: true)])
+
+    @Test func aSavedPlanIsDescribedAsItIsNotAsThePlannerWouldTrimIt() {
+        // Saved at 20 %, then Takeaway set to 4 500 by hand in Plan: hearted there, the other wants still as saved.
+        let pr = prefs(20, hearted: ["takeaway"], amounts: ["takeaway": 4_500])
+        let saved: [String: Decimal] = ["takeaway": 4_500, "shopping": 2_850, "entertainment": 1_900, "unsorted": 1_550,
+                                        "subscriptions": 550, "gym": 500, "streaming": 450, "rent": 11_500]   // a need's budget is not a want's
+        let s = GoalPlanner.summary(of: saved, input: demo, prefs: pr)
+        #expect(s.budgets["shopping"] == 2_850); #expect(s.budgets["rent"] == nil)
+        #expect(s.wantsTotal == 12_300); #expect(s.plannedSavings == 6_950)   // 17.7 % of 39 200
+        #expect(s.outOfReach); #expect(s.shortfall == 890)                    // 7 840 for 20 %
+        #expect(s.cutPercent == 15)                                           // 4 750 of a usual 5 600
+        #expect(!s.beyondGoal)
+        // The planner would trim Shopping and Entertainment further and reach 20 %; its reachable rate is the same for both.
+        let p = GoalPlanner.plan(demo, pr)
+        #expect(p.plannedSavings == 7_850); #expect(!p.outOfReach); #expect(p.cutPercent == 31)
+        #expect(s.reachablePercent == p.reachablePercent); #expect(s.reachablePercent == 22)
+    }
+
+    @Test func aSavedPlanMissingAWantShowsThePlannersBudgetForIt() {
+        let s = GoalPlanner.summary(of: ["takeaway": 4_200, "shopping": 3_350], input: demo, prefs: prefs(0))
+        #expect(s.budgets == GoalPlanner.plan(demo, prefs(0)).budgets)       // at 0 % the planner keeps every usual
+        #expect(s.plannedSavings == 6_400); #expect(s.cutPercent == 0); #expect(s.beyondGoal); #expect(!s.outOfReach)
+        // Trimmed and still past a 10 % goal: the wants are not at their usual, so this is a cut, not "beyond the goal".
+        let trimmed = GoalPlanner.summary(of: ["shopping": 2_850, "entertainment": 1_900], input: demo, prefs: prefs(10))
+        #expect(trimmed.plannedSavings == 7_250); #expect(trimmed.cutPercent == 9); #expect(!trimmed.beyondGoal); #expect(!trimmed.outOfReach)
+    }
+
     @Test func defaultGoalIsTwentyOrTheCurrentRateCappedAtReachable() {
         #expect(GoalPlanner.defaultGoal(currentRate: 0.08, reachablePercent: 20) == 20)
         #expect(GoalPlanner.defaultGoal(currentRate: 0.27, reachablePercent: 35) == 27)

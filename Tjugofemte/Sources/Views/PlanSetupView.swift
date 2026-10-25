@@ -33,7 +33,8 @@ struct PlanSetupView: View {
         var periodsSeen = 0
     }
 
-    /// Step 3, where the upgrade card starts.
+    /// Steps 2 and 3, where the upgrade card starts: Income when the install has no income yet, else Sort.
+    static let incomeStep = 1
     static let sortStep = 2
     private let stepCount = 6
     private let moneyStep = 3
@@ -56,7 +57,7 @@ struct PlanSetupView: View {
             Group {
                 switch step {
                 case 0: paydayStep
-                case 1: incomeStep
+                case Self.incomeStep: incomeStepView
                 case Self.sortStep: SortStepView()
                 case moneyStep: YourMoneyView(rule: rule, incomes: draftSources)
                 case goalStep: goalStepView
@@ -111,7 +112,7 @@ struct PlanSetupView: View {
             : String(localized: "Your salary seems to land on the \(PeriodText.ordinalDay(paydayGuess)).")
     }
 
-    private var incomeStep: some View {
+    private var incomeStepView: some View {
         Screen {
             ScreenTitle(label: "Step 2 of 6", title: String(localized: "Your income"),
                         subtitle: incomes.contains { $0.periodsSeen > 0 }
@@ -320,15 +321,16 @@ struct PlanSetupView: View {
 }
 
 /// "Set a savings goal" for an install set up before the goal setup existed: how much history to keep, when that was
-/// never asked, then the setup from step 3, Sort, with payday and income one Back away. Never forced: the sheet can be
-/// closed at any step, and the old budgets keep working until the goal is saved.
+/// never asked, then the setup from step 3, Sort, with payday and income one Back away. An install without income (the
+/// old setup skipped at its first step) starts at step 2, Income, since the goal is a share of it. Never forced: the
+/// sheet can be closed at any step, and the old budgets keep working until the goal is saved.
 struct GoalUpgradeFlow: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         Group {
             if model.settings.retentionAsked {
-                PlanSetupView(mode: .revise, startStep: PlanSetupView.sortStep)
+                PlanSetupView(mode: .revise, startStep: model.incomeSources.isEmpty ? PlanSetupView.incomeStep : PlanSetupView.sortStep)
             } else {
                 RetentionPromptView { model.chooseRetention(months: $0) }
             }

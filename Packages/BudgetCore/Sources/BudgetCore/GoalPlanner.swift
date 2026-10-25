@@ -124,6 +124,30 @@ public enum GoalPlanner {
                         shortfall: outOfReach ? PlanSuggestions.roundUp(goal - plannedSavings, to: shortfallStep) : 0)
     }
 
+    /// Want budgets set elsewhere, such as a saved plan, described the way `plan` describes its own: what they save,
+    /// whether that reaches the goal and the gap when not, and how far the flexible wants that are not hearted sit below
+    /// their usual. A want without a budget here gets the planner's, and anything that is not a want is left out. The
+    /// reachable rate depends only on the preferences, so it is the planner's.
+    public static func summary(of budgets: [String: Decimal], input: GoalInput, prefs: GoalPreferences) -> GoalPlan {
+        let planned = plan(input, prefs)
+        let shown = planned.budgets.merging(budgets.filter { planned.budgets[$0.key] != nil }) { $1 }
+        let goal = input.plannedIncome * Decimal(prefs.goalPercent) / 100
+        let wantsTotal = shown.values.reduce(0, +)
+        let plannedSavings = input.plannedIncome - input.needs.values.reduce(0, +) - wantsTotal
+        var usual: Decimal = 0
+        var kept: Decimal = 0
+        for w in input.wants where !w.fixed && !prefs.hearted.contains(w.categoryID) {
+            usual += w.usual
+            kept += shown[w.categoryID] ?? w.usual
+        }
+        let cutPercent = usual > 0 && kept < usual ? whole(100 - kept * 100 / usual, .plain) : 0
+        let outOfReach = plannedSavings < goal
+        return GoalPlan(budgets: shown, wantsTotal: wantsTotal, plannedSavings: plannedSavings,
+                        reachablePercent: planned.reachablePercent, reachableMax: planned.reachableMax,
+                        outOfReach: outOfReach, beyondGoal: cutPercent == 0 && plannedSavings > goal, cutPercent: cutPercent,
+                        shortfall: outOfReach ? PlanSuggestions.roundUp(goal - plannedSavings, to: shortfallStep) : 0)
+    }
+
     /// Minus and plus move from the budget on screen: `shown` when the screen shows something other than the plan, such
     /// as a saved plan, else the planned budget. A flexible want is hearted at the result; a fixed want can go down but
     /// never above its usual, and is never hearted. A category not in the input is left alone.

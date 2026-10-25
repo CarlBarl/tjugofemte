@@ -34,11 +34,12 @@ struct GoalView: View {
 
     var body: some View {
         let plan = GoalPlanner.plan(input, prefs)
-        let budgets = shownBudgets(plan)
+        let shown = shownPlan(plan)
         VStack(alignment: .leading, spacing: 16) {
-            goalCard(plan, planned: input.plannedIncome - needsTotal - budgets.values.reduce(0, +))
-            if !input.wants.isEmpty { wantsCard(budgets) }
-            if let from = fromText(plan) {
+            goalCard(shown, planned: shown.plannedSavings)
+            if !input.wants.isEmpty { wantsCard(shown.budgets) }
+            // The line explains how the planner shares out a raise, so it shows only while the planner's budgets do.
+            if shown == plan, let from = fromText(plan) {
                 Text(from).appFont(size: 14).foregroundStyle(Tokens.text).fixedSize(horizontal: false, vertical: true)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 14)
@@ -51,10 +52,12 @@ struct GoalView: View {
         .sensoryFeedback(.impact(weight: .light), trigger: taps)
     }
 
-    /// The saved plan until the user moves something, then the planner's.
-    private func shownBudgets(_ plan: GoalPlan) -> [String: Decimal] {
-        guard let savedBudgets, !moved else { return plan.budgets }
-        return plan.budgets.merging(savedBudgets.filter { plan.budgets[$0.key] != nil }) { $1 }
+    /// The saved plan until the user moves something, then the planner's. While it shows, the savings, the status line
+    /// and the gap banner all describe the saved budgets; a saved plan the planner would make the same is the planner's.
+    private func shownPlan(_ plan: GoalPlan) -> GoalPlan {
+        guard let savedBudgets, !moved else { return plan }
+        let saved = GoalPlanner.summary(of: savedBudgets, input: input, prefs: prefs)
+        return saved.budgets == plan.budgets ? plan : saved
     }
 
     private var needsTotal: Decimal { input.needs.values.reduce(0, +) }
