@@ -382,8 +382,12 @@ final class AppModel {
     // MARK: Plan setup
 
     func incomeSuggestions(rule: PeriodRule) -> [IncomeSuggestion] { PlanSuggestions.incomes(transactions: transactions, rule: rule) }
-    func budgetSuggestions(rule: PeriodRule) -> BudgetSuggestions { PlanSuggestions.budgets(transactions: transactions, rule: rule) }
     func paydayGuess() -> Int? { PlanSuggestions.payday(transactions: transactions, rule: periodRule) }
+
+    /// The periods for a payday and income sources the setup has not saved yet, resolved as `reload` resolves the saved ones.
+    func periodRule(startDay: Int, incomes: [IncomeSource]) -> PeriodRule {
+        .resolved(startDay: startDay, manual: settings.periodOverrides, transactions: transactions, incomeSources: incomes)
+    }
 
     /// The setup writes the whole plan at once; sources and budgets left out of it are removed.
     func applyPlan(startDay: Int, incomes: [IncomeSource], budgets newBudgets: [Budget]) {
@@ -400,8 +404,11 @@ final class AppModel {
 
     func skipPlan() { updateSettings { $0.planDone = true } }
 
-    func analysis() -> SpendingAnalysis {
-        SpendingAnalysis.analyze(transactions: transactions, rule: periodRule, groups: settings.groups, incomeSources: incomeSources)
+    func analysis() -> SpendingAnalysis { analysis(rule: periodRule, incomes: incomeSources) }
+
+    /// The setup's steps 3 to 6 pass the payday and income sources it has not saved yet.
+    func analysis(rule: PeriodRule, incomes: [IncomeSource]) -> SpendingAnalysis {
+        SpendingAnalysis.analyze(transactions: transactions, rule: rule, groups: settings.groups, incomeSources: incomes)
     }
 
     func sortCandidates() -> [SortCandidate] { SortStep.candidates(transactions: transactions) }
@@ -412,14 +419,24 @@ final class AppModel {
 
     func recurringCharges() -> [RecurringCharge] { RecurringDetector.detect(transactions: transactions) }
 
-    func goalInput(plannedIncome: Decimal) -> GoalInput {
-        GoalSetup.input(plannedIncome: plannedIncome, transactions: transactions, rule: periodRule, budgets: budgets, groups: settings.groups)
+    func goalInput(plannedIncome: Decimal) -> GoalInput { goalInput(plannedIncome: plannedIncome, rule: periodRule) }
+
+    /// With the setup's payday when it is not saved yet.
+    func goalInput(plannedIncome: Decimal, rule: PeriodRule) -> GoalInput {
+        GoalSetup.input(plannedIncome: plannedIncome, transactions: transactions, rule: rule, budgets: planningBudgets(rule: rule), groups: settings.groups)
     }
 
     /// Writes the goal's budgets the way `applyPlan` writes a plan, then keeps the goal and hearts.
     func applyGoalPlan(startDay: Int, incomes: [IncomeSource], input: GoalInput, prefs: GoalPreferences) {
-        applyPlan(startDay: startDay, incomes: incomes, budgets: GoalSetup.budgets(input: input, prefs: prefs, existing: budgets))
+        let existing = planningBudgets(rule: periodRule(startDay: startDay, incomes: incomes))
+        applyPlan(startDay: startDay, incomes: incomes, budgets: GoalSetup.budgets(input: input, prefs: prefs, existing: existing))
         updateSettings { $0.goal = prefs; $0.goalSetupDone = true }
+    }
+
+    /// The stored budgets, and a quarterly one for each need the transactions show is paid once a quarter and has none,
+    /// so a first run plans CSN at a third each period rather than its payments averaged over every period.
+    private func planningBudgets(rule: PeriodRule) -> [Budget] {
+        budgets + GoalSetup.quarterlyNeeds(transactions: transactions, rule: rule, groups: settings.groups, budgets: budgets)
     }
 
     /// The answer to "Keep up to 12 months on this phone?". A longer history needs one fetch back to the new cutoff,

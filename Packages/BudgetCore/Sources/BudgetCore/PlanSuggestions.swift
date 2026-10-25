@@ -14,24 +14,9 @@ public struct IncomeSuggestion: Equatable, Sendable, Identifiable {
     public let depositDays: [Int]
 }
 
-public struct BudgetSuggestion: Equatable, Sendable, Identifiable {
-    public var id: String { categoryID }
-    public let categoryID: String
-    public let amount: Decimal
-}
-
-public struct BudgetSuggestions: Equatable, Sendable {
-    public let lines: [BudgetSuggestion]
-    /// Complete periods fully covered by data that the averages are built on. 0 means the current period so far was used.
-    public let completePeriods: Int
-}
-
 /// Plan numbers guessed from the transactions already on the phone, for the user to confirm rather than type.
 public enum PlanSuggestions {
     static let minimumIncome: Decimal = 1_000
-    static let minimumBudget: Decimal = 50
-    static let budgetStep: Decimal = 50
-    static let periodsToAverage = 3
 
     public static func incomes(transactions: [Transaction], rule: PeriodRule, today: Date = Date()) -> [IncomeSuggestion] {
         let dataPeriods = Set(transactions.map { rule.period(containing: $0.bookingDate).label }).count
@@ -50,36 +35,6 @@ public enum PlanSuggestions {
         .sorted { ($0.amount, $1.key) > ($1.amount, $0.key) }
         .prefix(4)
         .map { $0 }
-    }
-
-    /// Averages over the last three complete periods that the data fully covers; the current period so far when there is none.
-    public static func budgets(transactions: [Transaction], rule: PeriodRule, today: Date = Date()) -> BudgetSuggestions {
-        let spending = transactions.filter { categoryKind($0.categoryID) == .spending }
-        let current = rule.period(containing: today)
-        var periods: [PayPeriod] = []
-        if let dataStart = transactions.map(\.bookingDate).min() {
-            var label = current.label.previous
-            while periods.count < periodsToAverage {
-                let p = rule.period(labeled: label)
-                guard p.start >= dataStart else { break }
-                periods.append(p)
-                label = label.previous
-            }
-        }
-        let complete = periods.count
-        if periods.isEmpty { periods = [current] }
-
-        var totals: [String: Decimal] = [:]
-        for t in spending where periods.contains(where: { $0.contains(t.bookingDate) }) {
-            totals[t.categoryID, default: 0] -= t.amount
-        }
-        let lines = totals.compactMap { id, total -> BudgetSuggestion? in
-            let average = total / Decimal(periods.count)
-            guard average >= minimumBudget else { return nil }
-            return BudgetSuggestion(categoryID: id, amount: roundUp(average, to: budgetStep))
-        }
-        .sorted { ($0.amount, $1.categoryID) > ($1.amount, $0.categoryID) }
-        return BudgetSuggestions(lines: lines, completePeriods: complete)
     }
 
     /// The main income's latest deposit day: salaries move earlier around weekends, never later.

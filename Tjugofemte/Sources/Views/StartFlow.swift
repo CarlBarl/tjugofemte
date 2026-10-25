@@ -1,14 +1,25 @@
 import SwiftUI
 
-/// What the app shows until it has something to show: the welcome, the bank wizard, then the plan setup.
-/// Two separate stacks, so the pushed bank screens vanish the moment the account is chosen.
+/// What the app shows until it has something to show: the welcome, the bank wizard, how much history to keep, then the
+/// plan setup. Two separate stacks, so the pushed bank screens vanish the moment the account is chosen.
 struct StartFlow: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         if model.stage == .ready {
-            NavigationStack { PlanSetupView(mode: .firstRun).toolbar(.hidden, for: .navigationBar).statusBarInk() }
-                .tint(Tokens.accent)
+            NavigationStack {
+                Group {
+                    // Asked here rather than in the account picker, which a session with one account skips.
+                    if model.settings.retentionAsked {
+                        PlanSetupView(mode: .firstRun)
+                    } else {
+                        RetentionPromptView { model.chooseRetention(months: $0) }
+                    }
+                }
+                .toolbar(.hidden, for: .navigationBar)
+                .statusBarInk()
+            }
+            .tint(Tokens.accent)
         } else {
             NavigationStack { WelcomeView().toolbar(.hidden, for: .navigationBar).statusBarInk() }
                 .tint(Tokens.accent)

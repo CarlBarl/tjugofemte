@@ -5,6 +5,9 @@ import BudgetCore
 /// and they write the user's groups. The setup owns the bottom bar.
 struct YourMoneyView: View {
     @Environment(AppModel.self) private var model
+    /// The setup's payday and income sources, which on a first run are not saved yet.
+    let rule: PeriodRule
+    let incomes: [IncomeSource]
     @State private var explaining: ExplanationSheet.Content?
     @State private var showsAllCharges = false
     @State private var flips = 0
@@ -15,7 +18,7 @@ struct YourMoneyView: View {
     private static let flippable = CategoryInfo.spending.filter { $0 != DefaultCategory.unsorted.rawValue }
 
     var body: some View {
-        let analysis = model.analysis()
+        let analysis = model.analysis(rule: rule, incomes: incomes)
         Screen {
             ScreenTitle(label: "Step 4 of 6", title: String(localized: "Your money"), subtitle: subtitle(analysis.periods))
             rateCard(analysis)
@@ -191,7 +194,7 @@ struct YourMoneyView: View {
 
     /// Each want at its usual, the figure the Goal screen shows next to it, rather than the analysis's unrounded mean.
     private func wantsCard(_ a: SpendingAnalysis) -> some View {
-        let input = model.goalInput(plannedIncome: model.incomeSources.reduce(0) { $0 + $1.plannedAmount })
+        let input = model.goalInput(plannedIncome: incomes.reduce(0) { $0 + $1.plannedAmount }, rule: rule)
         return RowCard {
             SectionLabel(text: "Biggest wants")
                 .frame(maxWidth: .infinity, alignment: .leading)

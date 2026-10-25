@@ -56,6 +56,16 @@ import Foundation
         #expect(u["groceries"] == UsualAmount(amount: 100, periods: 12))   // the two oldest would make it 1 550
     }
 
+    @Test func aPartlyCoveredOldestPeriodIsLeftOut() {
+        // Data starts mid-August: the August period is only half covered and would understate spending.
+        let txs = [
+            tx(day(8, 15), -1_000, "ICA", "groceries"),
+            tx(day(9, 4), -2_000, "ICA", "groceries"),
+        ]
+        let u = Usual.perCategory(transactions: txs, rule: rule, today: today)
+        #expect(u == ["groceries": UsualAmount(amount: 2_000, periods: 1)])
+    }
+
     @Test func noCompletePeriodUsesThisPeriodSoFar() {
         // Data starts the day after the October period began, so no period before it is fully covered.
         let txs = [

@@ -29,7 +29,24 @@ public enum GoalSetup {
         // Quarterly need budgets are already in `usual` as a third of themselves.
         for b in budgets where b.cadence == .monthly && groups.group(of: b.categoryID) == .need { needs[b.categoryID] = b.amount }
         wants.sort { ($0.usual, $1.categoryID) > ($1.usual, $0.categoryID) }
-        return GoalInput(plannedIncome: plannedIncome, needs: needs, wants: wants)
+        let periods = Usual.completePeriods(transactions: transactions, rule: rule, today: today, maxPeriods: SpendingAnalysis.maxPeriods).count
+        return GoalInput(plannedIncome: plannedIncome, needs: needs, wants: wants, quarterly: quarterly, periods: periods)
+    }
+
+    /// Needs without a budget that the recurring charges show are paid once a quarter, such as CSN on a first run: a
+    /// quarterly budget at the charge, due in the month of the period it was last paid in. Given to `input` and
+    /// `budgets` with the stored budgets, they plan a third each period instead of the payment averaged over every
+    /// period, which would leave a CSN month 3 300 kr over. The biggest charge wins when a need has two.
+    public static func quarterlyNeeds(transactions: [Transaction], rule: PeriodRule, groups: CategoryGroups, budgets: [Budget]) -> [Budget] {
+        let budgeted = Set(budgets.map(\.categoryID))
+        var found: [String: Budget] = [:]
+        // Rent and CSN are kept in here; the detector leaves them out only for the Your money list.
+        for c in RecurringDetector.detect(transactions: transactions, excluding: []) where c.cadence == .quarterly
+            && groups.group(of: c.categoryID) == .need && !budgeted.contains(c.categoryID) && found[c.categoryID] == nil {
+            found[c.categoryID] = Budget(categoryID: c.categoryID, amount: c.amount,
+                                         cadence: .quarterly(firstDueMonth: rule.period(containing: c.lastSeen).label.month))
+        }
+        return found.values.sorted { $0.categoryID < $1.categoryID }
     }
 
     /// A need keeps its budget as it was, amount and cadence; a need without one gets its usual, monthly. Each want gets

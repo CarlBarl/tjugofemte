@@ -77,6 +77,41 @@ import Foundation
         ])
     }
 
+    @Test func aNeedPaidOnceAQuarterGetsAQuarterlyBudgetDueInItsPeriodsMonth() {
+        // CSN two days into the May and August periods, 26 April and 26 July on the calendar, so the due month is the
+        // period's, not the calendar's. Rent is a monthly need, Spotify Family a quarterly want.
+        let csn = [5, 8].map { tx(day($0, 2), -4_950, "CENTRALA STUDIESTODSNAMNDEN", "studentLoan") }
+        let rent = [5, 6, 7, 8, 9].map { tx(day($0, 1), -10_400, "Hyra Bostadsbolaget", "rent") }
+        let family = [5, 8].map { tx(day($0, 4), -447, "SPOTIFY FAMILY", "streaming") }
+        let found = GoalSetup.quarterlyNeeds(transactions: csn + rent + family, rule: rule, groups: CategoryGroups(), budgets: [])
+        #expect(found == [Budget(categoryID: "studentLoan", amount: 4_950, cadence: .quarterly(firstDueMonth: 8))])
+    }
+
+    @Test func aNeedWithABudgetOrFlippedToAWantGetsNoQuarterlyBudget() {
+        let csn = [5, 8].map { tx(day($0, 2), -4_950, "CENTRALA STUDIESTODSNAMNDEN", "studentLoan") }
+        let budget = Budget(categoryID: "studentLoan", amount: 1_500, cadence: .monthly)
+        #expect(GoalSetup.quarterlyNeeds(transactions: csn, rule: rule, groups: CategoryGroups(), budgets: [budget]).isEmpty)
+        #expect(GoalSetup.quarterlyNeeds(transactions: csn, rule: rule, groups: CategoryGroups(overrides: ["studentLoan": .want]), budgets: []).isEmpty)
+    }
+
+    @Test func aFoundQuarterlyNeedIsPlannedAtAThirdAndWrittenQuarterly() {
+        // The four complete periods after May hold one of the two draws, which on its own averages to 1 250.
+        let txs = [5, 8].map { tx(day($0, 2), -4_950, "CENTRALA STUDIESTODSNAMNDEN", "studentLoan") }
+            + [6, 7, 8, 9].map { tx(day($0, 1), -10_400, "Hyra Bostadsbolaget", "rent") }
+        let found = GoalSetup.quarterlyNeeds(transactions: txs, rule: rule, groups: CategoryGroups(), budgets: [])
+        let input = GoalSetup.input(plannedIncome: 34_200, transactions: txs, rule: rule, budgets: found, groups: CategoryGroups(), today: today)
+        #expect(input.needs == ["rent": 10_400, "studentLoan": 1_650])
+        #expect(input.quarterly == ["studentLoan": 4_950])
+        #expect(input.periods == 4)
+        #expect(GoalSetup.budgets(input: input, prefs: GoalPreferences(goalPercent: 20, hearted: [], amounts: [:]), existing: found) == [
+            Budget(categoryID: "rent", amount: 10_400, cadence: .monthly),
+            Budget(categoryID: "studentLoan", amount: 4_950, cadence: .quarterly(firstDueMonth: 8)),
+        ])
+        let averaged = GoalSetup.input(plannedIncome: 34_200, transactions: txs, rule: rule, budgets: [], groups: CategoryGroups(), today: today)
+        #expect(averaged.needs["studentLoan"] == 1_250)
+        #expect(averaged.quarterly.isEmpty)
+    }
+
     @Test func theDefaultGoalIsTwentyOrTheCurrentRateCappedAtWhatIsReachable() {
         // The mockup's month reaches 20 % with every flexible want at half.
         let tight = GoalInput(plannedIncome: 34_200,

@@ -23,6 +23,84 @@
         }
       }
     },
+    "%@ a quarter, a third each period": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ per kvartal, en tredjedel varje period"
+          }
+        }
+      }
+    },
+    "%@ and %lld more": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ and %2$lld more"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ och %2$lld till"
+          }
+        }
+      }
+    },
+    "%@ come from %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ come from %2$@."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ tas från %2$@."
+          }
+        }
+      }
+    },
+    "%@ come out of what you save beyond your goal.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ tas från det du sparar utöver målet."
+          }
+        }
+      }
+    },
+    "%@ comes from %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ comes from %2$@."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ tas från %2$@."
+          }
+        }
+      }
+    },
+    "%@ comes out of what you save beyond your goal.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ tas från det du sparar utöver målet."
+          }
+        }
+      }
+    },
     "%@ in %@": {
       "localizations": {
         "en": {
@@ -55,6 +133,22 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ hittills den här perioden."
+          }
+        }
+      }
+    },
+    "%@ to %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@ to %2$@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ till %2$@"
           }
         }
       }
@@ -111,6 +205,48 @@
         }
       }
     },
+    "%@, %@, %@. Change any of it later under Plan.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, %2$@, %3$@. Change any of it later under Plan."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, %2$@, %3$@. Ändra vad du vill senare under Plan."
+          }
+        }
+      }
+    },
+    "%@, usually %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "%1$@, usually %2$@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@, brukar vara %2$@"
+          }
+        }
+      }
+    },
+    "%lld budgets": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld budgetar"
+          }
+        }
+      }
+    },
     "%lld charges, %@ a month": {
       "localizations": {
         "en": {
@@ -133,6 +269,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld dagar kvar"
+          }
+        }
+      }
+    },
+    "%lld income sources": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld inkomstkällor"
           }
         }
       }
@@ -202,12 +348,32 @@
     "1": {
       "shouldTranslate": false
     },
+    "1 budget": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 budget"
+          }
+        }
+      }
+    },
     "1 charge, %@ a month": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "1 dragning, %@ i månaden"
+          }
+        }
+      }
+    },
+    "1 income source": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 inkomstkälla"
           }
         }
       }
@@ -467,6 +633,16 @@
         }
       }
     },
+    "Anything older is deleted. You can change the length in Settings.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allt äldre raderas. Du kan ändra längden under Inställningar."
+          }
+        }
+      }
+    },
     "Application ID": {
       "localizations": {
         "sv": {
@@ -549,6 +725,16 @@
     },
     "beta": {
       "shouldTranslate": false
+    },
+    "Biggest changes": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Största ändringarna"
+          }
+        }
+      }
     },
     "Biggest wants": {
       "localizations": {
@@ -666,6 +852,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Stänger bankkopplingen och raderar nyckeln, planen och varje transaktion från den här telefonen."
+          }
+        }
+      }
+    },
+    "Collapsed": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hopfälld"
           }
         }
       }
@@ -900,6 +1096,16 @@
         }
       }
     },
+    "Expanded": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Utfälld"
+          }
+        }
+      }
+    },
     "Export CSV": {
       "localizations": {
         "sv": {
@@ -946,6 +1152,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Första månaden den dras"
+          }
+        }
+      }
+    },
+    "Fixed charges, never trimmed": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fasta dragningar, kortas aldrig"
+          }
+        }
+      }
+    },
+    "Fixed charges, you set %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fasta dragningar, du satte %@"
           }
         }
       }
@@ -1000,6 +1226,26 @@
         }
       }
     },
+    "Heart what matters to you. Hearted wants are never cut, and minus or plus sets them yourself.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sätt ett hjärta på det som betyder något för dig. Nöjen med hjärta kortas aldrig, och med minus och plus bestämmer du själv."
+          }
+        }
+      }
+    },
+    "History": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Historik"
+          }
+        }
+      }
+    },
     "History says %@": {
       "localizations": {
         "sv": {
@@ -1026,6 +1272,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Hur räknas det här ut?"
+          }
+        }
+      }
+    },
+    "How much do you want to save?": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hur mycket vill du spara?"
           }
         }
       }
@@ -1150,12 +1406,52 @@
         }
       }
     },
+    "Keep 12 months": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spara 12 månader"
+          }
+        }
+      }
+    },
+    "Keep 3 months": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spara 3 månader"
+          }
+        }
+      }
+    },
     "Keep history": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Spara historik"
+          }
+        }
+      }
+    },
+    "Keep up to 12 months on this phone?": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spara upp till 12 månader på telefonen?"
+          }
+        }
+      }
+    },
+    "Kept at your usual. The app never cuts these.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ligger kvar på det vanliga. Appen kortar aldrig dessa."
           }
         }
       }
@@ -1280,6 +1576,22 @@
         }
       }
     },
+    "Lower %@ by %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Lower %1$@ by %2$@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sänk %1$@ med %2$@"
+          }
+        }
+      }
+    },
     "lön": {
       "shouldTranslate": false
     },
@@ -1373,12 +1685,52 @@
         }
       }
     },
+    "Needs, at your usual": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Behov, som vanligt"
+          }
+        }
+      }
+    },
+    "Needs, fixed charges and hearted wants come to %@ more than your income. Lower one of them or add income.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Behov, fasta dragningar och nöjen med hjärta är %@ mer än din inkomst. Sänk något av dem eller lägg till inkomst."
+          }
+        }
+      }
+    },
     "Never": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Aldrig"
+          }
+        }
+      }
+    },
+    "Never trimmed, may hold bills": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kortas aldrig, kan innehålla räkningar"
+          }
+        }
+      }
+    },
+    "Never trimmed, you set %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kortas aldrig, du satte %@"
           }
         }
       }
@@ -1503,6 +1855,16 @@
         }
       }
     },
+    "No planned income yet, so there is nothing to save from. Go back and add your income.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ingen planerad inkomst än, så det finns inget att spara från. Gå tillbaka och lägg till din inkomst."
+          }
+        }
+      }
+    },
     "No tracking": {
       "localizations": {
         "sv": {
@@ -1569,6 +1931,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Inte än · %@ planerat"
+          }
+        }
+      }
+    },
+    "Now %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nu %@"
           }
         }
       }
@@ -1669,6 +2041,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "En siffra på lönedagen."
+          }
+        }
+      }
+    },
+    "Only on this phone": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bara på telefonen"
           }
         }
       }
@@ -1779,6 +2161,16 @@
         }
       }
     },
+    "Payday the %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lönedag den %@"
+          }
+        }
+      }
+    },
     "Payday to payday": {
       "localizations": {
         "sv": {
@@ -1825,6 +2217,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Personnummer"
+          }
+        }
+      }
+    },
+    "Pick a goal. Your budgets follow from it, trimmed from the wants you care least about.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Välj ett mål. Budgetarna följer av det och kortas i de nöjen du bryr dig minst om."
           }
         }
       }
@@ -1949,6 +2351,16 @@
         }
       }
     },
+    "Protect %@ from cuts": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skydda %@ från att kortas"
+          }
+        }
+      }
+    },
     "Pull down to fetch again. New transactions show up once the bank has booked them.": {
       "localizations": {
         "sv": {
@@ -1975,6 +2387,32 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kvartalskostnader"
+          }
+        }
+      }
+    },
+    "Raise %@ by %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Raise %1$@ by %2$@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Höj %1$@ med %2$@"
+          }
+        }
+      }
+    },
+    "Reachable %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nåbart %@"
           }
         }
       }
@@ -2159,6 +2597,26 @@
         }
       }
     },
+    "Savings goal": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mål"
+          }
+        }
+      }
+    },
+    "Savings goal in percent of income": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mål för sparandet i procent av inkomsten"
+          }
+        }
+      }
+    },
     "Savings rate": {
       "localizations": {
         "sv": {
@@ -2245,6 +2703,16 @@
         }
       }
     },
+    "Set my goal": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sätt mitt mål"
+          }
+        }
+      }
+    },
     "Set your income and budgets and this card becomes one number: what to move to savings on payday.": {
       "localizations": {
         "sv": {
@@ -2261,6 +2729,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Inställningar"
+          }
+        }
+      }
+    },
+    "Settle at %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nöj dig med %@"
           }
         }
       }
@@ -2311,6 +2789,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Signerade anrop efter banklistan, dina konton och dina transaktioner. Enable Banking är en licensierad open banking-leverantör i Finland och vidarebefordrar dem till din bank. Anropen innehåller telefonens IP-adress och appens namn, som Enable Banking sparar i sina loggar under en tid de inte publicerar."
+          }
+        }
+      }
+    },
+    "Skip": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoppa över"
           }
         }
       }
@@ -2415,6 +2903,16 @@
         }
       }
     },
+    "Steadier numbers": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stadigare siffror"
+          }
+        }
+      }
+    },
     "Step %lld of %lld": {
       "localizations": {
         "sv": {
@@ -2435,12 +2933,32 @@
         }
       }
     },
+    "Step 1 of 6": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steg 1 av 6"
+          }
+        }
+      }
+    },
     "Step 2 of 4": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Steg 2 av 4"
+          }
+        }
+      }
+    },
+    "Step 2 of 6": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steg 2 av 6"
           }
         }
       }
@@ -2481,6 +2999,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Steg 4 av 6"
+          }
+        }
+      }
+    },
+    "Step 5 of 6": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steg 5 av 6"
+          }
+        }
+      }
+    },
+    "Step 6 of 6": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steg 6 av 6"
+          }
+        }
+      }
+    },
+    "Stop protecting %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sluta skydda %@"
           }
         }
       }
@@ -2675,6 +3223,16 @@
         }
       }
     },
+    "The period starts the day your salary arrives. Until it has, it starts on the banking day before payday when payday falls on a weekend or holiday.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perioden börjar den dag lönen kommer. Innan dess börjar den bankdagen före lönedagen om den infaller på en helg eller helgdag."
+          }
+        }
+      }
+    },
     "The period starts the day your salary arrives. Until then it starts on payday, or the banking day before when payday is a weekend or holiday.": {
       "localizations": {
         "sv": {
@@ -2805,6 +3363,16 @@
         }
       }
     },
+    "This plan saves %@ less than that each month.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planen sparar %@ mindre än så varje månad."
+          }
+        }
+      }
+    },
     "This removes your real bank data too, not only the sample. It cannot be undone. Your Enable Banking application stays in their control panel; delete it there too if you are done.": {
       "localizations": {
         "sv": {
@@ -2861,6 +3429,48 @@
           "stringUnit": {
             "state": "translated",
             "value": "Till api.enablebanking.com"
+          }
+        }
+      }
+    },
+    "To reach %@ you need %@ more each month. Lower a hearted want or lower a need.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "To reach %1$@ you need %2$@ more each month. Lower a hearted want or lower a need."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "För att nå %1$@ behöver du %2$@ mer varje månad. Sänk ett nöje med hjärta eller ett behov."
+          }
+        }
+      }
+    },
+    "To reach %@ you need %@ more each month. Lower a hearted want, lower a need, or settle at %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "To reach %1$@ you need %2$@ more each month. Lower a hearted want, lower a need, or settle at %3$@."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "För att nå %1$@ behöver du %2$@ mer varje månad. Sänk ett nöje med hjärta, sänk ett behov eller nöj dig med %3$@."
+          }
+        }
+      }
+    },
+    "to savings each payday": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "till sparande varje lönedag"
           }
         }
       }
@@ -2975,12 +3585,84 @@
         }
       }
     },
+    "Usual means what you have spent this period so far.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det du brukar spendera räknas på den här perioden hittills."
+          }
+        }
+      }
+    },
+    "Usual means what you spent in the last complete period.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det du brukar spendera räknas på den senaste hela perioden."
+          }
+        }
+      }
+    },
+    "Usual means your average over the last %lld complete periods.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det du brukar spendera är ditt snitt över de senaste %lld hela perioderna."
+          }
+        }
+      }
+    },
     "Usually %@": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Brukar vara %@"
+          }
+        }
+      }
+    },
+    "Usually %@, %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Usually %1$@, %2$@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brukar vara %1$@, %2$@"
+          }
+        }
+      }
+    },
+    "Usually %@, kept": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brukar vara %@, behålls"
+          }
+        }
+      }
+    },
+    "Usually %@, you set %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Usually %1$@, you set %2$@"
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brukar vara %1$@, du satte %2$@"
           }
         }
       }
@@ -3015,6 +3697,52 @@
         }
       }
     },
+    "Wants you have not hearted are trimmed by %@ to reach %@. None is cut by more than half; fixed charges and Unsorted are left alone.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Wants you have not hearted are trimmed by %1$@ to reach %2$@. None is cut by more than half; fixed charges and Unsorted are left alone."
+          }
+        },
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nöjen utan hjärta kortas med %1$@ för att nå %2$@. Inget kortas mer än till hälften, och fasta dragningar och Osorterat lämnas orörda."
+          }
+        }
+      }
+    },
+    "Wants, at your usual": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nöjen, som vanligt"
+          }
+        }
+      }
+    },
+    "Wants, trimmed from %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nöjen, kortade från %@"
+          }
+        }
+      }
+    },
+    "Wants, usually %@": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nöjen, brukar vara %@"
+          }
+        }
+      }
+    },
     "What comes in each period. Add every source you want to plan with.": {
       "localizations": {
         "sv": {
@@ -3031,6 +3759,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vad räknas som behov?"
+          }
+        }
+      }
+    },
+    "What you usually spend and your savings rate are averages over up to 12 complete periods.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det du brukar spendera och din sparkvot är snitt över upp till 12 hela perioder."
           }
         }
       }
@@ -3125,6 +3863,26 @@
         }
       }
     },
+    "You saved %@ before.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tidigare sparade du %@."
+          }
+        }
+      }
+    },
+    "Your bank gives 90 days at a time, so the analysis grows as months build up.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Banken lämnar ut 90 dagar åt gången, så analysen växer i takt med att månaderna fylls på."
+          }
+        }
+      }
+    },
     "Your bank, your key": {
       "localizations": {
         "sv": {
@@ -3171,6 +3929,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Din data, förklarad"
+          }
+        }
+      }
+    },
+    "Your goal is %@ of income.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ditt mål är %@ av inkomsten."
           }
         }
       }
@@ -3251,6 +4019,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Din lön verkar komma den %@."
+          }
+        }
+      }
+    },
+    "Your usual spending already saves %@, so your wants stay at your usual.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Det du brukar spendera sparar redan %@, så dina nöjen ligger kvar på det vanliga."
           }
         }
       }

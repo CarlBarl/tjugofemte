@@ -18,11 +18,17 @@ public struct GoalInput: Equatable, Sendable {
     public let plannedIncome: Decimal
     public let needs: [String: Decimal]
     public let wants: [WantInput]
+    /// The needs paid once a quarter, at the quarterly amount, for "4 950 kr a quarter, a third each period".
+    public let quarterly: [String: Decimal]
+    /// Complete periods the usual amounts are built on. 0 means the current period so far was used.
+    public let periods: Int
 
-    public init(plannedIncome: Decimal, needs: [String: Decimal], wants: [WantInput]) {
+    public init(plannedIncome: Decimal, needs: [String: Decimal], wants: [WantInput], quarterly: [String: Decimal] = [:], periods: Int = 0) {
         self.plannedIncome = plannedIncome
         self.needs = needs
         self.wants = wants
+        self.quarterly = quarterly
+        self.periods = periods
     }
 }
 
