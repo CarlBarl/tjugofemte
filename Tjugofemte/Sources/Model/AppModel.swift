@@ -510,20 +510,26 @@ final class AppModel {
         do {
             let demo = try LocalStore.inMemory()
             let rule = PeriodRule(startDay: 25)
+            // `-demo-upgrade` opens as an install from before the goal setup: the old budgets and the "Set a savings goal" card.
+            let upgrade = ProcessInfo.processInfo.arguments.contains("-demo-upgrade")
             for r in DemoData.rules { try demo.addRule(r) }
             try demo.insertNew(DemoData.transactions(rule: rule))
-            for b in DemoData.budgets { try demo.saveBudget(b) }
+            for b in upgrade ? DemoData.budgets : DemoData.quarterlyBudgets { try demo.saveBudget(b) }
             for s in DemoData.incomeSources { try demo.saveIncomeSource(s) }
             var s = try demo.settings()
             s.bankName = "Demo"
             // Twelve periods of history: the default three months would purge most of it on the first settings change.
             s.retention = RetentionPolicy(months: 12)
-            // `-demo-upgrade` opens as an install from before the goal setup, with the "Set a savings goal" card.
-            s.goalSetupDone = !ProcessInfo.processInfo.arguments.contains("-demo-upgrade")
             try demo.saveSettings(s)
             demoStore = demo
             reload()
             selectedPeriod = periodRule.period(containing: Date()).label
+            // `-demo` opens finished: the goal setup has run at its default goal.
+            if !upgrade {
+                let input = goalInput(plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount })
+                applyGoalPlan(startDay: rule.startDay, incomes: incomeSources, input: input,
+                              prefs: GoalSetup.defaultPreferences(input: input, currentRate: analysis().savingsRate))
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

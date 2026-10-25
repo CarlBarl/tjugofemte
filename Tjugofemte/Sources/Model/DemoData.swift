@@ -91,7 +91,13 @@ enum DemoData {
         IncomeSource(id: "demo-partner", name: String(localized: "Partner, rent share"), plannedAmount: 5_000, keyword: "swish mottagen"),
     ]
 
-    static let budgets = [
+    /// The student loan, due every third month. `-demo` plans its goal from it, so the Goal screen has a quarterly need.
+    static let quarterlyBudgets = [
+        Budget(categoryID: DefaultCategory.studentLoan.rawValue, amount: 4_950, cadence: .quarterly(firstDueMonth: 2)),
+    ]
+
+    /// The plan an install made before the goal setup, for `-demo-upgrade`.
+    static let budgets = quarterlyBudgets + [
         Budget(categoryID: DefaultCategory.rent.rawValue, amount: 11_500, cadence: .monthly),
         Budget(categoryID: DefaultCategory.groceries.rawValue, amount: 4_500, cadence: .monthly),
         Budget(categoryID: DefaultCategory.takeaway.rawValue, amount: 1_500, cadence: .monthly),
@@ -99,7 +105,6 @@ enum DemoData {
         Budget(categoryID: DefaultCategory.transport.rawValue, amount: 1_200, cadence: .monthly),
         Budget(categoryID: DefaultCategory.gym.rawValue, amount: 499, cadence: .monthly),
         Budget(categoryID: DefaultCategory.insurance.rawValue, amount: 600, cadence: .monthly),
-        Budget(categoryID: DefaultCategory.studentLoan.rawValue, amount: 4_950, cadence: .quarterly(firstDueMonth: 2)),
     ]
 
     struct SeededGenerator: RandomNumberGenerator {

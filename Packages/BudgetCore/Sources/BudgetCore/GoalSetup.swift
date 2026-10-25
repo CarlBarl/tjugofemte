@@ -3,8 +3,9 @@ import Foundation
 /// Between what the phone stores and the goal planner: the planner's input from the transactions, the plan as budget
 /// rows, and a budget edited by hand as a heart.
 public enum GoalSetup {
-    /// Needs and wants at their usual. A need with a quarterly budget is a third of that budget. A want is fixed when
-    /// recurring charges make it up, and Unsorted always is. Wants are biggest first, as the Goal screen lists them.
+    /// A need with a budget is planned at that budget, a quarterly one at a third of it; a need without one at its usual.
+    /// Wants are at their usual, fixed when recurring charges make them up, and Unsorted always is. Wants are biggest
+    /// first, as the Goal screen lists them.
     public static func input(plannedIncome: Decimal, transactions: [Transaction], rule: PeriodRule, budgets: [Budget],
                              groups: CategoryGroups, today: Date = Date()) -> GoalInput {
         var quarterly: [String: Decimal] = [:]
@@ -25,20 +26,29 @@ public enum GoalSetup {
             case .saving, nil: break
             }
         }
+        // Quarterly need budgets are already in `usual` as a third of themselves.
+        for b in budgets where b.cadence == .monthly && groups.group(of: b.categoryID) == .need { needs[b.categoryID] = b.amount }
         wants.sort { ($0.usual, $1.categoryID) > ($1.usual, $0.categoryID) }
         return GoalInput(plannedIncome: plannedIncome, needs: needs, wants: wants)
     }
 
-    /// One budget per need at its usual and one per want as planned, monthly. A need that had a quarterly budget keeps
-    /// that budget, since its usual is a third of it. Sorted by category, as the store returns them.
+    /// A need keeps its budget as it was, amount and cadence; a need without one gets its usual, monthly. Each want gets
+    /// its planned budget, monthly. Sorted by category, as the store returns them.
     public static func budgets(input: GoalInput, prefs: GoalPreferences, existing: [Budget]) -> [Budget] {
         let plan = GoalPlanner.plan(input, prefs)
         let needs = input.needs.map { id, amount -> Budget in
-            if let old = existing.first(where: { $0.categoryID == id }), case .quarterly = old.cadence { return old }
-            return Budget(categoryID: id, amount: amount, cadence: .monthly)
+            existing.first { $0.categoryID == id } ?? Budget(categoryID: id, amount: amount, cadence: .monthly)
         }
         let wants = plan.budgets.map { Budget(categoryID: $0.key, amount: $0.value, cadence: .monthly) }
         return (needs + wants).sorted { $0.categoryID < $1.categoryID }
+    }
+
+    /// The goal before the user moves anything: `GoalPlanner.defaultGoal` against the rate reachable with no hearts.
+    public static func defaultPreferences(input: GoalInput, currentRate: Decimal?) -> GoalPreferences {
+        let none = GoalPreferences(goalPercent: 0, hearted: [], amounts: [:])
+        var prefs = none
+        prefs.goalPercent = GoalPlanner.defaultGoal(currentRate: currentRate, reachablePercent: GoalPlanner.plan(input, none).reachablePercent)
+        return prefs
     }
 
     /// A want budget set by hand in the Plan tab counts as hearted at that amount, a third of it each period when it is

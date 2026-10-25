@@ -38,13 +38,14 @@ import Foundation
                                 WantInput(categoryID: "streaming", usual: 150, fixed: true)])
     }
 
-    @Test func aQuarterlyNeedBudgetIsAThirdOfItAndMonthlyBudgetsDoNotCount() {
+    @Test func aNeedWithABudgetIsPlannedAtItAndOneWithoutAtItsUsual() {
         let budgets = [Budget(categoryID: "studentLoan", amount: 6_000, cadence: .quarterly(firstDueMonth: 2)),
                        Budget(categoryID: "rent", amount: 12_000, cadence: .monthly),
+                       Budget(categoryID: "health", amount: 400, cadence: .monthly),     // no spending at all
                        Budget(categoryID: "takeaway", amount: 1_500, cadence: .monthly)]
         let input = GoalSetup.input(plannedIncome: 34_200, transactions: history, rule: rule, budgets: budgets, groups: CategoryGroups(), today: today)
-        #expect(input.needs["studentLoan"] == 2_000)
-        #expect(input.needs["rent"] == 10_400)
+        #expect(input.needs == ["rent": 12_000, "studentLoan": 2_000, "health": 400, "groceries": 4_800])
+        // A want's budget is not its usual: wants are planned from what they usually cost.
         #expect(input.wants.first == WantInput(categoryID: "takeaway", usual: 3_600, fixed: false))
     }
 
@@ -60,19 +61,36 @@ import Foundation
         #expect(input == GoalInput(plannedIncome: 0, needs: [:], wants: []))
     }
 
-    @Test func budgetsAreThePlanWithAQuarterlyNeedKept() {
-        let input = GoalInput(plannedIncome: 34_200, needs: ["rent": 10_400, "studentLoan": 1_650],
-                              wants: [WantInput(categoryID: "takeaway", usual: 3_600, fixed: false), WantInput(categoryID: "streaming", usual: 425, fixed: true)])
+    @Test func aGoalPlanKeepsAHandSetNeedBudgetAndGivesANeedWithoutOneItsUsual() {
+        // Rent was set by hand above its usual 10 400; groceries has no budget yet.
         let existing = [Budget(categoryID: "studentLoan", amount: 4_950, cadence: .quarterly(firstDueMonth: 2)),
                         Budget(categoryID: "rent", amount: 11_000, cadence: .monthly)]
+        let input = GoalSetup.input(plannedIncome: 34_200, transactions: history, rule: rule, budgets: existing, groups: CategoryGroups(), today: today)
         let prefs = GoalPreferences(goalPercent: 20, hearted: [], amounts: ["streaming": 0])
-        let plan = GoalPlanner.plan(input, prefs)
         #expect(GoalSetup.budgets(input: input, prefs: prefs, existing: existing) == [
-            Budget(categoryID: "rent", amount: 10_400, cadence: .monthly),
+            Budget(categoryID: "groceries", amount: 4_800, cadence: .monthly),
+            Budget(categoryID: "rent", amount: 11_000, cadence: .monthly),
             Budget(categoryID: "streaming", amount: 0, cadence: .monthly),
             Budget(categoryID: "studentLoan", amount: 4_950, cadence: .quarterly(firstDueMonth: 2)),
-            Budget(categoryID: "takeaway", amount: plan.budgets["takeaway"]!, cadence: .monthly),
+            Budget(categoryID: "takeaway", amount: 3_600, cadence: .monthly),
+            Budget(categoryID: "unsorted", amount: 250, cadence: .monthly),
         ])
+    }
+
+    @Test func theDefaultGoalIsTwentyOrTheCurrentRateCappedAtWhatIsReachable() {
+        // The mockup's month reaches 20 % with every flexible want at half.
+        let tight = GoalInput(plannedIncome: 34_200,
+            needs: ["rent": 10_400, "groceries": 4_800, "studentLoan": 1_650, "transport": 1_400, "insurance": 600, "health": 450],
+            wants: [WantInput(categoryID: "takeaway", usual: 3_600, fixed: false), WantInput(categoryID: "shopping", usual: 3_100, fixed: false),
+                    WantInput(categoryID: "entertainment", usual: 1_900, fixed: false), WantInput(categoryID: "unsorted", usual: 1_850, fixed: true),
+                    WantInput(categoryID: "subscriptions", usual: 790, fixed: true), WantInput(categoryID: "gym", usual: 499, fixed: true),
+                    WantInput(categoryID: "streaming", usual: 425, fixed: true)])
+        #expect(GoalSetup.defaultPreferences(input: tight, currentRate: 0.08) == GoalPreferences(goalPercent: 20, hearted: [], amounts: [:]))
+        #expect(GoalSetup.defaultPreferences(input: tight, currentRate: 0.27).goalPercent == 20)
+        // Here 70 % is reachable, so a higher current rate is kept.
+        let roomy = GoalInput(plannedIncome: 40_000, needs: ["rent": 10_000], wants: [WantInput(categoryID: "takeaway", usual: 4_000, fixed: false)])
+        #expect(GoalSetup.defaultPreferences(input: roomy, currentRate: 0.27).goalPercent == 27)
+        #expect(GoalSetup.defaultPreferences(input: roomy, currentRate: nil).goalPercent == 20)
     }
 
     @Test func aWantBudgetSetByHandIsHeartedAtThatAmount() {
