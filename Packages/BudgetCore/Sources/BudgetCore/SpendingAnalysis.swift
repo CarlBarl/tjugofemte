@@ -95,7 +95,9 @@ public struct SpendingAnalysis: Equatable, Sendable {
 public enum GoalNudge {
     /// A quarterly payment beyond its third of the period was set aside by the plan in the periods before, so it is added
     /// back to left over first: a CSN month that is otherwise on plan does not nudge. Left over itself is not changed.
+    /// Never without planned income, where 5 % of nothing would nudge at 1 kr in the red.
     public static func shouldShow(lastComplete: PeriodSummary, plannedIncome: Decimal, budgets: [Budget], transactions: [Transaction]) -> Bool {
+        guard plannedIncome > 0 else { return false }
         let period = lastComplete.period
         var setAside: Decimal = 0
         for b in budgets where b.cadence != .monthly {

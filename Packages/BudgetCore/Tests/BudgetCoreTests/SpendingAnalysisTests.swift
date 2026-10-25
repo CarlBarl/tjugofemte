@@ -141,6 +141,12 @@ import Foundation
         #expect(!GoalNudge.shouldShow(lastComplete: lastComplete(spent: 33_910), plannedIncome: 34_200, budgets: [], transactions: []))   // -1 710 is exactly 5 %
     }
 
+    @Test func noPlannedIncomeNeverNudges() {
+        // 5 % of nothing is nothing, so 1 kr in the red, or 7 800, would nudge without a plan to adjust.
+        #expect(!GoalNudge.shouldShow(lastComplete: lastComplete(spent: 32_201), plannedIncome: 0, budgets: [], transactions: []))
+        #expect(!GoalNudge.shouldShow(lastComplete: lastComplete(spent: 40_000), plannedIncome: 0, budgets: [], transactions: []))
+    }
+
     // Rent and groceries on budget, and the student loan due every third month from February, so November pays the quarter.
     let nudgeBudgets = [Budget(categoryID: "rent", amount: 10_400, cadence: .monthly), Budget(categoryID: "groceries", amount: 4_800, cadence: .monthly),
                         Budget(categoryID: "studentLoan", amount: 4_950, cadence: .quarterly(firstDueMonth: 2))]
