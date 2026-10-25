@@ -169,17 +169,6 @@
         }
       }
     },
-    "%@ · %@": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "%1$@ · %2$@"
-          }
-        }
-      },
-      "shouldTranslate": false
-    },
     "%@ %@": {
       "localizations": {
         "en": {
@@ -639,16 +628,6 @@
         }
       }
     },
-    "An amount per category and period. 0 means no budget.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ett belopp per kategori och period. 0 betyder ingen budget."
-          }
-        }
-      }
-    },
     "An RSA key created inside this phone's Keychain. It signs every request to Enable Banking. It never existed as a file, is never backed up, and cannot move to another phone.": {
       "localizations": {
         "sv": {
@@ -675,16 +654,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Applikations-ID"
-          }
-        }
-      }
-    },
-    "Averages from your last %lld complete periods, rounded up to 50 kr. Change what you like. 0 means no budget.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Snitt från dina senaste %lld hela perioder, avrundat uppåt till 50 kr. Ändra vad du vill. 0 betyder ingen budget."
           }
         }
       }
@@ -739,16 +708,6 @@
         }
       }
     },
-    "Based on this period so far, rounded up. Change what you like. 0 means no budget.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Baserat på den här perioden hittills, avrundat uppåt. Ändra vad du vill. 0 betyder ingen budget."
-          }
-        }
-      }
-    },
     "beta": {
       "shouldTranslate": false
     },
@@ -782,22 +741,22 @@
         }
       }
     },
-    "Budgets per period": {
+    "Budgets, income sources, keyword rules, your savings goal, the wants you hearted, which categories count as needs, and settings, in the same local database.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Budgetar per period"
+            "value": "Budgetar, inkomster, nyckelordsregler, ditt mål för sparandet, nöjena du satt hjärta på, vilka kategorier som räknas som behov och inställningar, i samma lokala databas."
           }
         }
       }
     },
-    "Budgets, income sources, keyword rules and settings, in the same local database.": {
+    "Calculations": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Budgetar, inkomster, nyckelordsregler och inställningar, i samma lokala databas."
+            "value": "Uträkningar"
           }
         }
       }
@@ -992,12 +951,12 @@
         }
       }
     },
-    "Date, amount, currency, counterparty text and category. Nothing else from the bank's response is kept. Stored in an encrypted SQLite database protected by iOS Data Protection, excluded from iCloud and computer backups, and trimmed to the history length you choose.": {
+    "Date, amount, currency, counterparty text and category. Nothing else from the bank's response is kept. Stored in an encrypted SQLite database protected by iOS Data Protection, excluded from iCloud and computer backups, and kept only as long as you choose, 3 to 24 months. Anything older is deleted.": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Datum, belopp, valuta, motpartstext och kategori. Inget annat ur bankens svar behålls. Lagras i en krypterad SQLite-databas skyddad av iOS Data Protection, undantagen från iCloud- och datorsäkerhetskopior och rensad till den historik du väljer."
+            "value": "Datum, belopp, valuta, motpartstext och kategori. Inget annat ur bankens svar behålls. Lagras i en krypterad SQLite-databas skyddad av iOS Data Protection, undantagen från iCloud- och datorsäkerhetskopior, och behålls bara så länge du väljer, 3 till 24 månader. Allt äldre raderas."
           }
         }
       }
@@ -1152,16 +1111,6 @@
         }
       }
     },
-    "Fewer categories": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Färre kategorier"
-          }
-        }
-      }
-    },
     "Filed under %@, rule saved": {
       "localizations": {
         "sv": {
@@ -1294,16 +1243,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Historik"
-          }
-        }
-      }
-    },
-    "History says %@": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Historiken säger %@"
           }
         }
       }
@@ -1504,16 +1443,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ligger kvar på din budget, eller på det du brukar spendera där budget saknas. Appen kortar aldrig dessa."
-          }
-        }
-      }
-    },
-    "Kept at your usual. The app never cuts these.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ligger kvar på det vanliga. Appen kortar aldrig dessa."
           }
         }
       }
@@ -1743,16 +1672,6 @@
         }
       }
     },
-    "More categories": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fler kategorier"
-          }
-        }
-      }
-    },
     "Move to savings on payday": {
       "localizations": {
         "sv": {
@@ -1799,16 +1718,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Behov, din budget eller som vanligt"
-          }
-        }
-      }
-    },
-    "Needs, at your usual": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Behov, som vanligt"
           }
         }
       }
@@ -2273,22 +2182,6 @@
         }
       }
     },
-    "Payday %@ · %lld income sources · %lld budgets": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Payday %1$@ · %2$lld income sources · %3$lld budgets"
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lönedag %@ · %lld inkomstkällor · %lld budgetar"
-          }
-        }
-      }
-    },
     "Payday the %@": {
       "localizations": {
         "sv": {
@@ -2305,16 +2198,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lön till lön"
-          }
-        }
-      }
-    },
-    "Per quarter, a third each period": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Per kvartal, en tredjedel varje period"
           }
         }
       }
@@ -3081,32 +2964,12 @@
         }
       }
     },
-    "Step 1 of 4": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Steg 1 av 4"
-          }
-        }
-      }
-    },
     "Step 1 of 6": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Steg 1 av 6"
-          }
-        }
-      }
-    },
-    "Step 2 of 4": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Steg 2 av 4"
           }
         }
       }
@@ -3121,32 +2984,12 @@
         }
       }
     },
-    "Step 3 of 4": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Steg 3 av 4"
-          }
-        }
-      }
-    },
     "Step 3 of 6": {
       "localizations": {
         "sv": {
           "stringUnit": {
             "state": "translated",
             "value": "Steg 3 av 6"
-          }
-        }
-      }
-    },
-    "Step 4 of 4": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Steg 4 av 4"
           }
         }
       }
@@ -3941,16 +3784,6 @@
         }
       }
     },
-    "When payday is a weekend or holiday, the period starts on the banking day before.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "När lönedagen är en helg eller helgdag börjar perioden bankdagen innan."
-          }
-        }
-      }
-    },
     "When you connect, the system browser opens Enable Banking's login page, your bank's page and BankID. That is the same as logging in to your bank yourself.": {
       "localizations": {
         "sv": {
@@ -4061,16 +3894,6 @@
         }
       }
     },
-    "Your budgets": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dina budgetar"
-          }
-        }
-      }
-    },
     "Your data": {
       "localizations": {
         "sv": {
@@ -4177,6 +4000,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Din lön verkar komma den %@."
+          }
+        }
+      }
+    },
+    "Your savings rate, what you usually spend and your recurring charges are worked out on this phone from the stored transactions, each time a screen shows them. None of it is stored separately or sent anywhere.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Din sparkvot, det du brukar spendera och dina återkommande dragningar räknas fram på telefonen ur de lagrade transaktionerna, varje gång en skärm visar dem. Inget av det lagras för sig eller skickas någonstans."
           }
         }
       }
