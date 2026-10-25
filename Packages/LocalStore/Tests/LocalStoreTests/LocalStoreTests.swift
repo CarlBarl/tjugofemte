@@ -175,15 +175,27 @@ import BudgetCore
         #expect(back.planDone == true)
     }
 
+    @Test func goalPreferencesAndGroupsRoundTrip() throws {
+        var s = Settings()
+        s.goal = GoalPreferences(goalPercent: 20, hearted: ["takeaway"], amounts: ["takeaway": 4_100])
+        s.groups = CategoryGroups(overrides: ["groceries": .want])
+        s.goalSetupDone = true; s.retentionAsked = true; s.nudgeDismissed = PeriodLabel(year: 2026, month: 11)
+        try store.saveSettings(s)
+        #expect(try store.settings() == s)
+    }
+
+    @Test func freshSettingsHaveNoGoal() throws { #expect(try store.settings().goal == nil); #expect(try store.settings().goalSetupDone == false) }
+
     @Test func wipeEmptiesEveryTable() throws {
         _ = try store.insertNew([tx("a", day(2026, 10, 1), -10, "ICA", "groceries")])
         try store.addRule(KeywordRule(keyword: "ica", categoryID: "groceries"))
         try store.saveBudget(Budget(categoryID: "rent", amount: 1, cadence: .monthly))
         try store.saveIncomeSource(IncomeSource(id: "s", name: "x", plannedAmount: 1, keyword: nil))
-        var s = try store.settings(); s.bankName = "Swedbank"; try store.saveSettings(s)
+        var s = try store.settings(); s.bankName = "Swedbank"; s.goal = GoalPreferences(goalPercent: 20, hearted: ["takeaway"], amounts: [:]); try store.saveSettings(s)
         try store.wipe()
         #expect(try store.allTransactions().isEmpty && store.rules().isEmpty && store.budgets().isEmpty && store.incomeSources().isEmpty)
         #expect(try store.settings().bankName == nil)
+        #expect(try store.settings().goal == nil)
     }
 
     @Test func openingOnDiskExcludesTheDirectoryFromBackup() throws {

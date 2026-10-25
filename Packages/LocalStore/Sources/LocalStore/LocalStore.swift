@@ -32,6 +32,16 @@ public struct Settings: Equatable, Sendable {
     /// The next fetch reaches back to the retention cutoff instead of a week before the newest row. True until one
     /// such fetch has succeeded, so installs that stored rows with an older decoder repair themselves.
     public var fullFetchPending = true
+    /// The savings goal and hearts from the Goal screen; nil until the user has set a goal.
+    public var goal: GoalPreferences?
+    /// The user's need and want flips. They point at the current account's spending, so an account switch clears them.
+    public var groups = CategoryGroups()
+    /// The goal setup has run once; until then an upgraded install shows the "Set a savings goal" card.
+    public var goalSetupDone = false
+    /// The user has answered how long to keep history on the phone.
+    public var retentionAsked = false
+    /// The period whose "Adjust plan?" nudge the user dismissed.
+    public var nudgeDismissed: PeriodLabel?
 
     public init() {}
 }
@@ -266,6 +276,17 @@ public final class LocalStore: Sendable {
                     s.periodOverrides[PeriodLabel(year: parts[0], month: parts[1])] = Date(timeIntervalSince1970: seconds)
                 }
             }
+            if let json = raw["goal_preferences"], let data = json.data(using: .utf8), let decoded = try? JSONDecoder().decode(GoalPreferences.self, from: data) {
+                s.goal = decoded
+            }
+            if let json = raw["group_overrides"], let data = json.data(using: .utf8), let decoded = try? JSONDecoder().decode(CategoryGroups.self, from: data) {
+                s.groups = decoded
+            }
+            s.goalSetupDone = raw["goal_setup_done"] == "1"
+            s.retentionAsked = raw["retention_asked"] == "1"
+            if let parts = raw["nudge_dismissed"]?.split(separator: "-").compactMap({ Int($0) }), parts.count == 2 {
+                s.nudgeDismissed = PeriodLabel(year: parts[0], month: parts[1])
+            }
             return s
         }
     }
@@ -284,6 +305,11 @@ public final class LocalStore: Sendable {
             ("period_overrides", json),
             ("own_account_ids", String(decoding: try JSONEncoder().encode(s.ownAccountIDs.sorted()), as: UTF8.self)),
             ("authorized_accounts", String(decoding: try JSONEncoder().encode(s.authorizedAccounts), as: UTF8.self)),
+            ("goal_preferences", try s.goal.map { String(decoding: try JSONEncoder().encode($0), as: UTF8.self) }),
+            ("group_overrides", String(decoding: try JSONEncoder().encode(s.groups), as: UTF8.self)),
+            ("goal_setup_done", s.goalSetupDone ? "1" : "0"),
+            ("retention_asked", s.retentionAsked ? "1" : "0"),
+            ("nudge_dismissed", s.nudgeDismissed.map { "\($0.year)-\($0.month)" }),
         ]
         try db.write { db in
             for (key, value) in pairs {

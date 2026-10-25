@@ -228,6 +228,8 @@ final class AppModel {
             try store.deleteAllTransactions()
             var s = settings
             s.selectedAccountUID = uid
+            s.goal = nil
+            s.groups = CategoryGroups()
             try store.saveSettings(s)
             settings = s
             reload()
