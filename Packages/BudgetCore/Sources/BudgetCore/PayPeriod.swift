@@ -60,6 +60,12 @@ public struct PeriodRule: Equatable, Sendable {
         preconditionFailure("every date belongs to some period")
     }
 
+    /// The period to show after the boundaries moved from `old` to this rule. Someone on today's period stays on today's,
+    /// so a salary that just arrived opens its period; someone who went to another period stays there.
+    public func keepingToday(_ selected: PeriodLabel, from old: PeriodRule, today: Date = Date()) -> PeriodLabel {
+        selected == old.period(containing: today).label ? period(containing: today).label : selected
+    }
+
     private func start(of label: PeriodLabel) -> Date {
         if let override = overrides[label] { return Calendar.stockholm.startOfDay(for: override) }
         // A start day late in the month belongs to the following month's period.

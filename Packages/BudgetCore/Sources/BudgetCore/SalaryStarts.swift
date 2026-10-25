@@ -7,8 +7,9 @@ public enum SalaryStarts {
     static let daysEarly = 7
     static let daysLate = 5
 
-    /// The salary is the keyed income source with the largest plan. A booking counts once it is at least half of that plan,
-    /// so a small refund from the employer does not open a period. Calendar months (`startDay` 1) are left alone.
+    /// The salary is the keyed income source with the largest plan. A booking counts when it is categorized as income, as
+    /// BudgetMath counts it, and is at least half of that plan, so a small refund from the employer does not open a period.
+    /// Calendar months (`startDay` 1) are left alone.
     public static func detect(transactions: [Transaction], incomeSources: [IncomeSource], startDay: Int) -> [PeriodLabel: Date] {
         guard startDay != 1,
               let salary = incomeSources.filter({ !Categorizer.normalize($0.keyword ?? "").isEmpty }).max(by: { $0.plannedAmount < $1.plannedAmount }),
@@ -16,7 +17,7 @@ public enum SalaryStarts {
         let cal = Calendar.stockholm
         let nominal = PeriodRule(startDay: startDay)
         var starts: [PeriodLabel: Date] = [:]
-        for t in transactions where t.amount > 0 && t.amount >= salary.plannedAmount / 2
+        for t in transactions where categoryKind(t.categoryID) == .income && t.amount > 0 && t.amount >= salary.plannedAmount / 2
             && Categorizer.matches(keyword, in: Categorizer.normalize(t.counterparty)) {
             let day = cal.startOfDay(for: t.bookingDate)
             let c = cal.dateComponents([.year, .month], from: day)

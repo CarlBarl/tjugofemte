@@ -68,7 +68,7 @@ struct SettingsView: View {
 
     private var periodCard: some View {
         RowCard {
-            Row(title: String(localized: "Payday"), caption: String(localized: "When it falls on a weekend or holiday, the period starts on the banking day before.")) {
+            Row(title: String(localized: "Payday"), caption: String(localized: "The period starts the day your salary arrives. Until then it starts on payday, or the banking day before when payday is a weekend or holiday.")) {
                 Picker("Payday", selection: Binding(get: { model.settings.startDay }, set: { day in model.updateSettings { $0.startDay = day } })) {
                     ForEach(1...28, id: \.self) { Text(PeriodText.ordinalDay($0)).tag($0) }
                 }

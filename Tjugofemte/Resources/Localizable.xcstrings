@@ -2225,6 +2225,16 @@
         }
       }
     },
+    "The period starts the day your salary arrives. Until then it starts on payday, or the banking day before when payday is a weekend or holiday.": {
+      "localizations": {
+        "sv": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perioden börjar den dag lönen kommer. Innan dess börjar den på lönedagen, eller bankdagen före om lönedagen infaller på en helg eller helgdag."
+          }
+        }
+      }
+    },
     "The private half never leaves the phone and cannot be exported. The public half is what you hand to Enable Banking in the next step. Sharing it is safe.": {
       "localizations": {
         "sv": {
@@ -2491,16 +2501,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "När är lönedagen?"
-          }
-        }
-      }
-    },
-    "When it falls on a weekend or holiday, the period starts on the banking day before.": {
-      "localizations": {
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "När den infaller på en helg eller helgdag börjar perioden bankdagen innan."
           }
         }
       }
