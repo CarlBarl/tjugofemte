@@ -51,7 +51,7 @@ public struct GoalPlan: Equatable, Sendable {
     public let reachablePercent: Int
     /// What that highest goal saves in kronor; negative when needs, fixed and hearted wants alone are more than the income.
     public let reachableMax: Decimal
-    /// Even half of usual on every flexible want does not reach the goal. The goal stays where the user put it.
+    /// The plan saves less than the goal. The goal stays where the user put it, and `shortfall` is the gap.
     public let outOfReach: Bool
     /// Usual spending already saves more than the goal, so nothing is trimmed.
     public let beyondGoal: Bool
@@ -104,7 +104,9 @@ public enum GoalPlanner {
         let wantsTotal = budgets.values.reduce(0, +)
         let plannedSavings = income - needs - wantsTotal
         let reachableMax = income - needs - fixed - protected - halves
-        let outOfReach = room < rest / 2
+        // Covers the spec's U < H/2, where every flexible want sits at its half, and also halves rounded up to 50 kr
+        // that miss the goal by a few kronor when the room is half the usual or a little more.
+        let outOfReach = plannedSavings < goal
 
         var cutPercent = 0
         if rest > 0, room > 0, room < rest {
@@ -137,14 +139,17 @@ public enum GoalPlanner {
     }
 
     /// What each flexible want that is not hearted gives up for the hearted wants raised above their usual, biggest first.
-    /// The comparison is the same goal and hearts with no amounts set. Empty without a raise, and when the goal is out of reach.
+    /// The comparison is the same preferences with only the raised wants back at their usual, so it shows the raise alone.
+    /// Empty without a raise, and when the goal is out of reach.
     public static func raiseSources(input: GoalInput, prefs: GoalPreferences) -> [RaiseSource] {
-        let raised = input.wants.contains { w in
+        let raised = input.wants.filter { w in
             !w.fixed && prefs.hearted.contains(w.categoryID) && (prefs.amounts[w.categoryID] ?? w.usual) > w.usual
         }
         let now = plan(input, prefs)
-        guard raised, !now.outOfReach else { return [] }
-        let base = plan(input, GoalPreferences(goalPercent: prefs.goalPercent, hearted: prefs.hearted, amounts: [:]))
+        guard !raised.isEmpty, !now.outOfReach else { return [] }
+        var unraised = prefs
+        for w in raised { unraised.amounts[w.categoryID] = nil }
+        let base = plan(input, unraised)
         return input.wants.compactMap { w -> RaiseSource? in
             guard !w.fixed, !prefs.hearted.contains(w.categoryID),
                   let before = base.budgets[w.categoryID], let after = now.budgets[w.categoryID], before > after else { return nil }

@@ -10,6 +10,8 @@ import Foundation
                 WantInput(categoryID: "entertainment", usual: 1_900, fixed: false), WantInput(categoryID: "unsorted", usual: 1_850, fixed: true),
                 WantInput(categoryID: "subscriptions", usual: 790, fixed: true), WantInput(categoryID: "gym", usual: 499, fixed: true),
                 WantInput(categoryID: "streaming", usual: 425, fixed: true)])
+    // At 25 % the room is 975 for a 1 950 kr want: the factor is exactly a half.
+    let small = GoalInput(plannedIncome: 10_000, needs: ["rent": 6_525], wants: [WantInput(categoryID: "shopping", usual: 1_950, fixed: false)])
 
     func prefs(_ goal: Int, hearted: Set<String> = [], amounts: [String: Decimal] = [:]) -> GoalPreferences {
         .init(goalPercent: goal, hearted: hearted, amounts: amounts)
@@ -39,6 +41,22 @@ import Foundation
         #expect(p.plannedSavings == 4_186); #expect(p.reachablePercent == 13)
         let from = GoalPlanner.raiseSources(input: input, prefs: pr)
         #expect(from.map(\.categoryID) == ["shopping", "entertainment"]); #expect(from.map(\.amount) == [350, 200])
+    }
+
+    @Test func aRaiseIsMeasuredWithEverythingElseAsSet() {
+        // Streaming lowered to 325 stays lowered in the comparison; only the raised takeaway goes back to its usual.
+        let pr = prefs(12, hearted: ["takeaway"], amounts: ["takeaway": 4_100, "streaming": 325])
+        let base = GoalPlanner.plan(input, prefs(12, hearted: ["takeaway"], amounts: ["streaming": 325]))
+        let p = GoalPlanner.plan(input, pr)
+        #expect(base.budgets["shopping"] == 2_300); #expect(base.budgets["entertainment"] == 1_400)
+        #expect(p.budgets["shopping"] == 2_000); #expect(p.budgets["entertainment"] == 1_200)
+        let from = GoalPlanner.raiseSources(input: input, prefs: pr)
+        #expect(from.map(\.categoryID) == ["shopping", "entertainment"]); #expect(from.map(\.amount) == [300, 200])
+        #expect(from.map(\.amount).reduce(0, +) == 500)   // the whole raise, as savings are 4 136 either way
+        #expect(base.plannedSavings == p.plannedSavings)
+        // A hearted want lowered below usual stays lowered too, so Shopping alone pays the 500.
+        let lowered = prefs(12, hearted: ["takeaway", "entertainment"], amounts: ["takeaway": 4_100, "entertainment": 1_000])
+        #expect(GoalPlanner.raiseSources(input: input, prefs: lowered) == [RaiseSource(categoryID: "shopping", amount: 500)])
     }
 
     @Test func noRaiseHasNoSources() {
@@ -99,13 +117,21 @@ import Foundation
         // Nothing is left to trim (H is 0), and the usual spending saves 2 736 against a goal of 1 710.
         let p = GoalPlanner.plan(input, prefs(5, hearted: ["takeaway", "shopping", "entertainment"]))
         #expect(p.beyondGoal); #expect(!p.outOfReach); #expect(p.plannedSavings == 2_736); #expect(p.reachablePercent == 8)
+        // At 8 % the goal is 2 736 exactly: reached, not beyond.
+        let exact = GoalPlanner.plan(input, prefs(8, hearted: ["takeaway", "shopping", "entertainment"]))
+        #expect(!exact.outOfReach); #expect(!exact.beyondGoal); #expect(exact.shortfall == 0)
     }
 
     @Test func noCutGoesBelowHalfOfUsual() {
-        // Room 975 for a 1 950 kr want: the factor is exactly a half, and 975 rounded down would be 950.
-        let small = GoalInput(plannedIncome: 10_000, needs: ["rent": 6_525], wants: [WantInput(categoryID: "shopping", usual: 1_950, fixed: false)])
-        #expect(GoalPlanner.plan(small, prefs(25)).budgets["shopping"] == 1_000)
+        #expect(GoalPlanner.plan(small, prefs(25)).budgets["shopping"] == 1_000)   // 975 rounded down would be 950
         #expect(GoalPlanner.plan(small, prefs(24)).budgets["shopping"] == 1_050)
+    }
+
+    @Test func missingTheGoalOnlyByTheHalfRoundingUpIsOutOfReach() {
+        let p = GoalPlanner.plan(small, prefs(25))
+        #expect(p.plannedSavings == 2_475)   // against 2 500
+        #expect(p.outOfReach); #expect(p.shortfall == 30); #expect(p.reachablePercent == 24)
+        #expect(!GoalPlanner.plan(small, prefs(24)).outOfReach)   // 2 425 against 2 400
     }
 
     @Test func noIncomeReachesNothing() {
