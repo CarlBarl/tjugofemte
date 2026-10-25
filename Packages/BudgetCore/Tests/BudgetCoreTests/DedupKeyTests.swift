@@ -60,9 +60,4 @@ import Foundation
     @Test func differentTextsOnTheSameDayAndAmountAreUnaffected() {
         #expect(DedupKey.makeAll([coffee, paper]) == [make(coffee), make(paper)])
     }
-
-    @Test func theSameFetchGivesTheSameKeys() {
-        let fetch = [coffee, paper, coffee, coffee]
-        #expect(DedupKey.makeAll(fetch) == DedupKey.makeAll(fetch))
-    }
 }

@@ -66,6 +66,18 @@ import BudgetCore
         #expect(try store.recategorizeUnlocked { _, _ in "shopping" } == 1)  // and still locked: only the other one changes
     }
 
+    @Test func aRefetchInTheOppositeOrderKeepsBothRepeatsTheirTotalAndTheLock() throws {
+        let fetch = twoCoffees()
+        try store.storeFetched(fetch, window: day(2026, 10, 1), completesFullFetch: false)
+        try store.setCategory(fetch[0].dedupKey, to: "groceries")
+        try store.storeFetched(twoCoffees().reversed(), window: day(2026, 10, 1), completesFullFetch: false)  // keyed again, as every refresh does
+        let rows = try store.allTransactions()
+        #expect(rows.count == 2)
+        #expect(rows.map(\.amount).reduce(0, +) == fetch.map(\.amount).reduce(0, +))
+        #expect(rows.first { $0.dedupKey == fetch[0].dedupKey }?.categoryID == "groceries")
+        #expect(try store.recategorizeUnlocked { _, _ in "shopping" } == 1)  // one still locked, the other untouched
+    }
+
     @Test func anEmptyAnswerDoesNotCompleteTheFullFetch() throws {
         _ = try store.insertNew([tx("a", day(2026, 10, 1), -245, "CARL ELELID", "transfer")])
         try store.storeFetched([], window: day(2026, 7, 25), completesFullFetch: true)

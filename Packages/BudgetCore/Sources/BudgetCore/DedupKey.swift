@@ -4,13 +4,14 @@ import CryptoKit
 /// Stable identity for a booked transaction. Bank id first, entry reference second,
 /// and a fingerprint when the bank gives neither (or gives unstable ones).
 public enum DedupKey {
-    public static func make(transactionID: String?, entryReference: String?, bookingDate: Date,
-                            amount: Decimal, currency: String, counterparty: String) -> String {
+    /// Internal so a fetch can only be keyed with `makeAll`: one key at a time would merge repeat payments.
+    static func make(transactionID: String?, entryReference: String?, bookingDate: Date,
+                     amount: Decimal, currency: String, counterparty: String) -> String {
         bankKey(transactionID: transactionID, entryReference: entryReference)
             ?? fingerprint(material(bookingDate: bookingDate, amount: amount, currency: currency, counterparty: counterparty))
     }
 
-    /// What `make` takes for one transaction.
+    /// The fields one transaction's key is made from.
     public struct Item: Sendable {
         public let transactionID: String?
         public let entryReference: String?
