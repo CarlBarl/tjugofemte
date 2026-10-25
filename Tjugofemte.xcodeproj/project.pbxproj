@@ -26,15 +26,18 @@
 		78F10FE3F4CAC8A8C7F70B05 /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7DED7B9B3A6FE6CD7FFE720 /* Links.swift */; };
 		8BD920960C04B1939B431A23 /* StartFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8377CB5A51D711512AAC205 /* StartFlow.swift */; };
 		A0AB9953A5864F5C9BC70D31 /* TjugofemteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9251E7846E548859451A65 /* TjugofemteApp.swift */; };
+		AF6A31BEFD61EE2B80136744 /* SortStepView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBC040486FCEB8E7B881BB7 /* SortStepView.swift */; };
 		C9A95525E46DFAFF5F5FABEC /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85304AD5DD4BED2309CAF6D6 /* RootView.swift */; };
 		D0470D173F307B375922A8C8 /* TransactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB1C268E374B5F4B59F57263 /* TransactionsView.swift */; };
 		D86BB65A038B623B06EA9088 /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC18E455048B9AD580426915 /* Tokens.swift */; };
 		F0D8C1BB987F0846B6B850C9 /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE7C653DFD30A13EBD95405 /* Shared.swift */; };
+		F1D7A138A7328F3B477BF5CA /* YourMoneyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06FFC25F7E6AEFE72D54F370 /* YourMoneyView.swift */; };
 		F9C82B06A0720BD83611EF15 /* BudgetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 5C6AA8E3DF0DF7B964ABB156 /* BudgetCore */; };
 		FFAD0462F767AC70D0C5D257 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7FCA31158650BDD105DF36A /* AppModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		06FFC25F7E6AEFE72D54F370 /* YourMoneyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YourMoneyView.swift; sourceTree = "<group>"; };
 		0A4002BEE4C453F1223B4076 /* PlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanView.swift; sourceTree = "<group>"; };
 		0E112C69A713E85D6674F36B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		2842F7C4A3D3DCD43A04255D /* BankViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankViews.swift; sourceTree = "<group>"; };
@@ -43,6 +46,7 @@
 		6E9E99AAA2C80B5C7AEA8019 /* Tjugofemte.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Tjugofemte.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6F0F82ABCB6AB1F589F2A9E0 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		7592D05E606C071FBEF92942 /* PlanSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanSetupView.swift; sourceTree = "<group>"; };
+		7BBC040486FCEB8E7B881BB7 /* SortStepView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortStepView.swift; sourceTree = "<group>"; };
 		85304AD5DD4BED2309CAF6D6 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		90B882996C671EBCCF6D8593 /* BudgetCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BudgetCore; path = Packages/BudgetCore; sourceTree = SOURCE_ROOT; };
 		9E0D7748BB939EC0106F8887 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -90,8 +94,10 @@
 				3F54943C28D2B21C485DDD70 /* RulesView.swift */,
 				0E112C69A713E85D6674F36B /* SettingsView.swift */,
 				EEE7C653DFD30A13EBD95405 /* Shared.swift */,
+				7BBC040486FCEB8E7B881BB7 /* SortStepView.swift */,
 				E8377CB5A51D711512AAC205 /* StartFlow.swift */,
 				AB1C268E374B5F4B59F57263 /* TransactionsView.swift */,
+				06FFC25F7E6AEFE72D54F370 /* YourMoneyView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -271,10 +277,12 @@
 				724D01E80492B1BA719C6256 /* RulesView.swift in Sources */,
 				1E24B8236A7B4E8FFDAFB9F7 /* SettingsView.swift in Sources */,
 				F0D8C1BB987F0846B6B850C9 /* Shared.swift in Sources */,
+				AF6A31BEFD61EE2B80136744 /* SortStepView.swift in Sources */,
 				8BD920960C04B1939B431A23 /* StartFlow.swift in Sources */,
 				A0AB9953A5864F5C9BC70D31 /* TjugofemteApp.swift in Sources */,
 				D86BB65A038B623B06EA9088 /* Tokens.swift in Sources */,
 				D0470D173F307B375922A8C8 /* TransactionsView.swift in Sources */,
+				F1D7A138A7328F3B477BF5CA /* YourMoneyView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

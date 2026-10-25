@@ -4,6 +4,14 @@ import BudgetCore
 extension Decimal {
     var sek: String { formatted(.currency(code: "SEK").precision(.fractionLength(0))) }
     var sekExact: String { formatted(.currency(code: "SEK").precision(.fractionLength(0...2))) }
+
+    /// A share such as 0.56 as a whole percent, "56 %", with a space that does not break.
+    func percentText(rounding mode: NSDecimalNumber.RoundingMode) -> String {
+        var value = self * 100
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &value, 0, mode)
+        return "\(rounded.formatted())\u{00A0}%"
+    }
 }
 
 enum CategoryInfo {
@@ -68,27 +76,41 @@ enum PeriodText {
 
 /// "How is this calculated": one line per term and the total.
 struct ExplanationView: View {
-    let explained: Explained
+    /// Signed amounts; the total is their sum.
+    let lines: [(label: String, amount: Decimal)]
+
+    init(explained: Explained) {
+        lines = Self.lines(explained)
+    }
+
+    /// Lines that are not one of BudgetMath's terms, such as the savings rate's.
+    init(lines: [(label: String, amount: Decimal)]) {
+        self.lines = lines
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            ForEach(Array(explained.terms.enumerated()), id: \.offset) { _, term in
+            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
                 HStack {
-                    Text(label(term.kind)).appFont(size: 15).foregroundStyle(Tokens.body)
+                    Text(line.label).appFont(size: 15).foregroundStyle(Tokens.body)
                     Spacer()
-                    Text(term.amount.sek).font(Tokens.numberFont(size: 15, weight: .medium)).foregroundStyle(Tokens.text)
+                    Text(line.amount.sek).font(Tokens.numberFont(size: 15, weight: .medium)).foregroundStyle(Tokens.text)
                 }
             }
             Hairline()
             HStack {
                 Text("Total").appFont(size: 15, weight: .semibold).foregroundStyle(Tokens.text)
                 Spacer()
-                Text(explained.value.sek).font(Tokens.numberFont(size: 17)).foregroundStyle(Tokens.accent)
+                Text(lines.reduce(Decimal(0)) { $0 + $1.amount }.sek).font(Tokens.numberFont(size: 17)).foregroundStyle(Tokens.accent)
             }
         }
     }
 
-    private func label(_ kind: Explained.Kind) -> String {
+    nonisolated static func lines(_ explained: Explained) -> [(label: String, amount: Decimal)] {
+        explained.terms.map { (label($0.kind), $0.amount) }
+    }
+
+    private nonisolated static func label(_ kind: Explained.Kind) -> String {
         switch kind {
         case .plannedIncome: String(localized: "Planned income")
         case .categoryBudgets: String(localized: "Category budgets")

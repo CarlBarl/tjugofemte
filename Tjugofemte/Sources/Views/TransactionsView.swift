@@ -57,34 +57,58 @@ struct TransactionsView: View {
 struct CategoryPicker: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
-    let transaction: Transaction
+    private let title: String
+    private let detail: String
+    private let categories: [String]
+    /// A transaction gets the "Always put it here" toggle. Without one, `onPick` gets the choice: the sort step's
+    /// merchants always get a rule.
+    private let transaction: Transaction?
+    private let onPick: ((String) -> Void)?
     @State private var always = false
+
+    init(transaction: Transaction) {
+        title = transaction.counterparty
+        detail = "\(transaction.amount.sekExact) · \(transaction.bookingDate.formatted(.dateTime.day().month(.wide)))"
+        categories = CategoryInfo.all
+        self.transaction = transaction
+        onPick = nil
+    }
+
+    init(title: String, detail: String, categories: [String], onPick: @escaping (String) -> Void) {
+        self.title = title
+        self.detail = detail
+        self.categories = categories
+        transaction = nil
+        self.onPick = onPick
+    }
 
     var body: some View {
         NavigationStack {
             Screen {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(transaction.counterparty).appFont(size: 22, weight: .bold, rounded: true).foregroundStyle(Tokens.text)
-                    Text("\(transaction.amount.sekExact) · \(transaction.bookingDate.formatted(.dateTime.day().month(.wide)))").appFont(size: 15).foregroundStyle(Tokens.muted)
+                    Text(title).appFont(size: 22, weight: .bold, rounded: true).foregroundStyle(Tokens.text)
+                    Text(detail).appFont(size: 15).foregroundStyle(Tokens.muted)
                 }
-                RowCard {
-                    Row(title: String(localized: "Always put it here"), caption: String(localized: "Creates a keyword rule you can edit under Settings.")) {
-                        Toggle("", isOn: $always).labelsHidden().tint(Tokens.accent)
+                if transaction != nil {
+                    RowCard {
+                        Row(title: String(localized: "Always put it here"), caption: String(localized: "Creates a keyword rule you can edit under Settings.")) {
+                            Toggle("", isOn: $always).labelsHidden().tint(Tokens.accent)
+                        }
                     }
                 }
                 RowCard {
-                    ForEach(CategoryInfo.all, id: \.self) { id in
+                    ForEach(categories, id: \.self) { id in
                         Button {
-                            model.setCategory(transaction, to: id, always: always)
+                            if let transaction { model.setCategory(transaction, to: id, always: always) } else { onPick?(id) }
                             dismiss()
                         } label: {
                             Row(title: CategoryInfo.name(id), symbol: CategoryInfo.symbol(id)) {
-                                if id == transaction.categoryID { Image(systemName: "checkmark").appFont(size: 15, weight: .semibold).foregroundStyle(Tokens.accent) }
+                                if id == transaction?.categoryID { Image(systemName: "checkmark").appFont(size: 15, weight: .semibold).foregroundStyle(Tokens.accent) }
                             }
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        if id != CategoryInfo.all.last { Hairline() }
+                        if id != categories.last { Hairline() }
                     }
                 }
             }

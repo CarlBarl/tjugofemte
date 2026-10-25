@@ -208,8 +208,18 @@ struct ExplanationSheet: View {
     struct Content: Identifiable {
         let id = UUID()
         let title: LocalizedStringKey
-        let explained: Explained
+        let lines: [(label: String, amount: Decimal)]
         let note: LocalizedStringKey
+
+        init(title: LocalizedStringKey, explained: Explained, note: LocalizedStringKey) {
+            self.init(title: title, lines: ExplanationView.lines(explained), note: note)
+        }
+
+        init(title: LocalizedStringKey, lines: [(label: String, amount: Decimal)], note: LocalizedStringKey) {
+            self.title = title
+            self.lines = lines
+            self.note = note
+        }
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -219,7 +229,7 @@ struct ExplanationSheet: View {
         NavigationStack {
             Screen {
                 Text(content.title).appFont(size: 26, weight: .bold, rounded: true).foregroundStyle(Tokens.text)
-                Card { ExplanationView(explained: content.explained) }
+                Card { ExplanationView(lines: content.lines) }
                 Text(content.note).appFont(size: 15).foregroundStyle(Tokens.muted).fixedSize(horizontal: false, vertical: true)
             }
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }

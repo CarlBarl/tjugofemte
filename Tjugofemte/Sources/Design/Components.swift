@@ -299,6 +299,15 @@ struct Banner: View {
     }
 }
 
+/// Dims while the finger is down, for chips and small text buttons that have no press state of their own.
+struct PressFeedback: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.55 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
 /// A line of small round dots, one per step.
 struct StepDots: View {
     let count: Int
