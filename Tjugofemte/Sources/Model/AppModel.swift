@@ -275,10 +275,12 @@ final class AppModel {
             let from = fullFetch ? cutoff : max(cutoff, overlap ?? cutoff)
             let fetched = try await client().transactions(accountUID: uid, from: from)
             let categorizer = Categorizer(userRules: rules, ownAccountIDs: settings.ownAccountIDs)
-            let fresh = fetched.records.map { r in
-                Transaction(dedupKey: DedupKey.make(transactionID: r.transactionID, entryReference: r.entryReference, bookingDate: r.bookingDate,
-                                                    amount: r.amount, currency: r.currency, counterparty: r.counterparty),
-                            bookingDate: r.bookingDate, amount: r.amount, currency: r.currency, counterparty: r.counterparty,
+            let keys = DedupKey.makeAll(fetched.records.map { r in
+                DedupKey.Item(transactionID: r.transactionID, entryReference: r.entryReference, bookingDate: r.bookingDate,
+                              amount: r.amount, currency: r.currency, counterparty: r.counterparty)
+            })
+            let fresh = zip(fetched.records, keys).map { r, key in
+                Transaction(dedupKey: key, bookingDate: r.bookingDate, amount: r.amount, currency: r.currency, counterparty: r.counterparty,
                             categoryID: categorizer.categorize(text: r.counterparty, amount: r.amount, counterpartyAccountID: r.counterpartyAccountID))
             }
             try store.storeFetched(fresh, window: fetched.from, completesFullFetch: fullFetch)
