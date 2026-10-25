@@ -463,14 +463,14 @@ final class AppModel {
     var showsGoalCard: Bool { isSetUp && !settings.goalSetupDone }
 
     /// Overview's "Adjust plan?": the last complete period, the one before today's, ended more than 5 % of planned income
-    /// in the red. At most once per period.
+    /// in the red. At most once per period, today's, whichever period the screen shows.
     var showsNudge: Bool {
-        guard settings.goalSetupDone, settings.nudgeDismissed != selectedPeriod else { return false }
+        guard settings.goalSetupDone, settings.nudgeDismissed != periodRule.period(containing: Date()).label else { return false }
         return GoalNudge.shouldShow(lastComplete: lastCompleteSummary, plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount },
                                     budgets: budgets, transactions: transactions)
     }
 
-    func dismissNudge() { updateSettings { $0.nudgeDismissed = selectedPeriod } }
+    func dismissNudge() { updateSettings { $0.nudgeDismissed = periodRule.period(containing: Date()).label } }
 
     /// "Takeaway went 1 210 kr over" on the nudge: the budget the last complete period overran the most.
     var lastPeriodOverrun: CategoryLine? { GoalNudge.biggestOverrun(lastComplete: lastCompleteSummary) }
