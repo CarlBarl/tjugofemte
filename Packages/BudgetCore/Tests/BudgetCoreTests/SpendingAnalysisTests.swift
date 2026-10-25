@@ -1,0 +1,111 @@
+import Testing
+import Foundation
+@testable import BudgetCore
+
+@Suite struct SpendingAnalysisTests {
+    let rule = PeriodRule(startDay: 25)
+    // Friday 17 Oct 2026: October period (25 Sep to 22 Oct) is current; September and earlier are complete.
+    let today = d(2026, 10, 17)
+    let salary = IncomeSource(id: "salary", name: "Lön", plannedAmount: 34_200, keyword: "lön")
+
+    func start(_ month: Int) -> Date { rule.period(labeled: PeriodLabel(year: 2026, month: month)).start }
+    func day(_ month: Int, _ offset: Int) -> Date { Calendar.stockholm.date(byAdding: .day, value: offset, to: start(month))! }
+
+    func tx(_ date: Date, _ amount: Decimal, _ text: String, _ category: String) -> Transaction {
+        Transaction(dedupKey: "\(text)-\(date.timeIntervalSince1970)", bookingDate: date, amount: amount, currency: "SEK", counterparty: text, categoryID: category)
+    }
+
+    /// The mockup's month from the period's first day: salary 34 200, needs 19 300, wants 12 164 and 2 000 to savings.
+    func mockupMonth(_ month: Int, takeaway: Decimal = 3_600) -> [Transaction] {
+        let rows: [(Decimal, String, String)] = [
+            (34_200, "Lön", "income"),
+            (-10_400, "Hyra", "rent"), (-4_800, "ICA", "groceries"), (-1_650, "CSN", "studentLoan"),
+            (-1_400, "SL", "transport"), (-600, "Folksam", "insurance"), (-450, "Apoteket", "health"),
+            (-takeaway, "Foodora", "takeaway"), (-3_100, "Zalando", "shopping"), (-1_900, "Filmstaden", "entertainment"),
+            (-1_850, "Okänd butik", "unsorted"), (-790, "Adobe", "subscriptions"), (-499, "SATS", "gym"), (-425, "Netflix", "streaming"),
+            (-2_000, "Till sparkonto", "savings"),
+        ]
+        return rows.enumerated().map { i, row in tx(day(month, i), row.0, row.1, row.2) }
+    }
+
+    // July, August and September 2026: the salary on 25 Jun is the earliest transaction.
+    var txs: [Transaction] { [7, 8, 9].flatMap { mockupMonth($0) } }
+
+    @Test func ratesTheMockupMonthAtEightPercent() {
+        let a = SpendingAnalysis.analyze(transactions: txs, rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today)
+        #expect(a.periods == 3)
+        #expect(a.incomePerPeriod == 34_200)
+        #expect(a.needsPerPeriod == 19_300)
+        #expect(a.wantsPerPeriod == 12_164)
+        #expect(a.savedPerPeriod == 2_736)
+        #expect(a.savingsRate == Decimal(2_736) / Decimal(34_200))   // the 2 000 transfer is not spending
+        #expect(a.topWants.map(\.categoryID) == ["takeaway", "shopping", "entertainment"])
+        #expect(a.topWants[0].changePercent == nil)   // fewer than six periods: no trend
+    }
+
+    @Test func swishThatMatchesNoIncomeSourceIsOtherIncome() {
+        let swish = [7, 8, 9].map { tx(day($0, 20), 1_500, "Swish mottagen Kim", "income") }
+        let a = SpendingAnalysis.analyze(transactions: txs + swish, rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today)
+        #expect(a.otherIncomePerPeriod == 1_500)
+        #expect(a.incomePerPeriod == 35_700)   // other income still counts in the rate
+    }
+
+    @Test func flippingGroceriesMovesItToWants() {
+        let a = SpendingAnalysis.analyze(transactions: txs, rule: rule, groups: CategoryGroups(overrides: ["groceries": .want]),
+                                         incomeSources: [salary], today: today)
+        #expect(a.needsPerPeriod == 14_500)
+        #expect(a.wantsPerPeriod == 16_964)
+        #expect(a.topWants.map(\.categoryID) == ["groceries", "takeaway", "shopping"])
+    }
+
+    @Test func sixPeriodsShowATrend() {
+        // April to June at 3 000 on takeaway, July to September at 3 600.
+        let txs = [4, 5, 6].flatMap { mockupMonth($0, takeaway: 3_000) } + [7, 8, 9].flatMap { mockupMonth($0) }
+        let a = SpendingAnalysis.analyze(transactions: txs, rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today)
+        #expect(a.periods == 6)
+        #expect(a.topWants[0] == WantTrend(categoryID: "takeaway", perPeriod: 3_300, changePercent: 20))
+        #expect(a.topWants[1].changePercent == 0)   // shopping is flat
+    }
+
+    @Test func noCompletePeriodUsesThisPeriodSoFar() {
+        // Data starts on the October period's first day, so no period before it is fully covered.
+        let a = SpendingAnalysis.analyze(transactions: mockupMonth(10), rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today)
+        #expect(a.periods == 0)
+        #expect(a.incomePerPeriod == 34_200)
+        #expect(a.needsPerPeriod == 19_300)
+        #expect(a.wantsPerPeriod == 12_164)
+        #expect(a.savingsRate == Decimal(2_736) / Decimal(34_200))
+        #expect(a.topWants[0].changePercent == nil)
+    }
+
+    @Test func transfersAndThisPeriodAreLeftOut() {
+        let extra = [
+            tx(day(8, 16), 5_000, "Från sparkonto", "transfer"),
+            tx(day(8, 17), -5_000, "Egen överföring", "transfer"),
+            tx(day(10, 2), -999, "Foodora", "takeaway"),             // the current period, not complete
+        ]
+        let a = SpendingAnalysis.analyze(transactions: txs + extra, rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today)
+        #expect(a.incomePerPeriod == 34_200)
+        #expect(a.otherIncomePerPeriod == 0)
+        #expect(a.needsPerPeriod == 19_300)
+        #expect(a.wantsPerPeriod == 12_164)
+        #expect(a.topWants[0].perPeriod == 3_600)
+    }
+
+    @Test func noIncomeHasNoRate() {
+        #expect(SpendingAnalysis.analyze(transactions: [], rule: rule, groups: CategoryGroups(), incomeSources: [], today: today).savingsRate == nil)
+    }
+
+    /// A complete period that took in 34 200, spent `spent` and had a savings target of 2 000.
+    func lastComplete(spent: Decimal) -> PeriodSummary {
+        PeriodSummary(period: rule.period(labeled: PeriodLabel(year: 2026, month: 9)), savingsTarget: Explained([(.plannedIncome, 34_200), (.categoryBudgets, -32_200)]),
+                      adjustedSavingsTarget: nil, categories: [], quarterly: [], incomes: [], otherIncome: 0,
+                      leftOverSoFar: Explained([(.actualIncome, 34_200), (.actualSpending, -spent), (.savingsTarget, -2_000)]))
+    }
+
+    @Test func nudgeFiresBelowMinusFivePercentOfPlannedIncome() {
+        #expect(lastComplete(spent: 33_911).leftOverSoFar.value == -1_711)
+        #expect(GoalNudge.shouldShow(lastComplete: lastComplete(spent: 33_911), plannedIncome: 34_200))
+        #expect(!GoalNudge.shouldShow(lastComplete: lastComplete(spent: 33_910), plannedIncome: 34_200))   // -1 710 is exactly 5 %
+    }
+}
