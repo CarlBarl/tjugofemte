@@ -196,9 +196,12 @@ struct GoalView: View {
                     .frame(maxWidth: .infinity, minHeight: Tokens.minimumTapTarget, alignment: .leading)
                 RoundStepButton(symbol: "minus", label: Text("Lower \(name) by \(Self.step.sek)")) { step(id, by: -Self.step, from: budget) }
                     .disabled(budget <= 0)
-                // A fixed want can only go down, for a charge about to be cancelled, and is never hearted.
-                if !want.fixed {
+                // A fixed want goes down for a charge about to be cancelled, and back up only as far as its usual. It is
+                // never hearted.
+                if !want.fixed || budget < want.usual {
                     RoundStepButton(symbol: "plus", label: Text("Raise \(name) by \(Self.step.sek)")) { step(id, by: Self.step, from: budget) }
+                }
+                if !want.fixed {
                     Button { heart(id, !hearted) } label: {
                         Image(systemName: hearted ? "heart.fill" : "heart").appFont(size: 22, weight: .medium)
                             .foregroundStyle(hearted ? Tokens.accent : Tokens.dim)
