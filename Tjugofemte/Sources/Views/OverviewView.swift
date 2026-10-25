@@ -23,6 +23,7 @@ struct OverviewView: View {
             }
             .refreshable { await model.refresh() }
             .toolbar(.hidden, for: .navigationBar)
+            .statusBarInk()
             .navigationDestination(isPresented: $reconnecting) { BankPickerView() }
             .sheet(item: $explaining) { ExplanationSheet(content: $0) }
             .sheet(isPresented: $planning) { PlanSetupView(mode: .revise) }

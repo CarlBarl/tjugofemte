@@ -21,6 +21,7 @@ struct SettingsView: View {
                 aboutCard
             }
             .toolbar(.hidden, for: .navigationBar)
+            .statusBarInk()
             .confirmationDialog("Delete everything?", isPresented: $confirmDelete, titleVisibility: .visible) {
                 Button("Delete everything", role: .destructive) { Task { await model.deleteEverything() } }
             } message: {

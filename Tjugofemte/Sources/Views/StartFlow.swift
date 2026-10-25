@@ -7,10 +7,10 @@ struct StartFlow: View {
 
     var body: some View {
         if model.stage == .ready {
-            NavigationStack { PlanSetupView(mode: .firstRun).toolbar(.hidden, for: .navigationBar) }
+            NavigationStack { PlanSetupView(mode: .firstRun).toolbar(.hidden, for: .navigationBar).statusBarInk() }
                 .tint(Tokens.accent)
         } else {
-            NavigationStack { WelcomeView().toolbar(.hidden, for: .navigationBar) }
+            NavigationStack { WelcomeView().toolbar(.hidden, for: .navigationBar).statusBarInk() }
                 .tint(Tokens.accent)
         }
     }
