@@ -40,7 +40,8 @@ struct PlanSetupView: View {
     private let moneyStep = 3
     private let goalStep = 4
     private var rule: PeriodRule { model.periodRule(startDay: startDay, incomes: draftSources) }
-    private var plannedIncome: Decimal { incomes.filter(\.included).reduce(0) { $0 + $1.amount } }
+    /// What step 2 totals: the rows that will be saved, so an included row without a name does not count.
+    private var plannedIncome: Decimal { draftSources.reduce(0) { $0 + $1.plannedAmount } }
     /// The sources as they will be saved; steps 3 to 6 plan with these before they are.
     private var draftSources: [IncomeSource] {
         incomes
