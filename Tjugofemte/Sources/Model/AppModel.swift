@@ -79,6 +79,7 @@ final class AppModel {
     }
 
     func reload() {
+        let before = periodRule
         do {
             settings = try store.settings()
             transactions = try store.allTransactions()
@@ -89,6 +90,8 @@ final class AppModel {
             errorMessage = error.localizedDescription
         }
         salaryStarts = SalaryStarts.detect(transactions: transactions, incomeSources: incomeSources, startDay: settings.startDay)
+        // A fetched salary, a recategorized row or an edited income source can move the boundaries; today's period follows them.
+        selectedPeriod = periodRule.keepingToday(selectedPeriod, from: before)
     }
 
     // MARK: Onboarding

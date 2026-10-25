@@ -43,6 +43,18 @@ import Foundation
         #expect(custom.period(labeled: PeriodLabel(year: 2027, month: 1)).start == d(2026, 12, 23))
     }
 
+    @Test func todaysPeriodFollowsTodayWhenItsStartMoves() {
+        // Payday Thu 22 Oct: the salary arrives a day before the nominal start and opens November.
+        let moved = PeriodRule(startDay: 25, overrides: [PeriodLabel(year: 2026, month: 11): d(2026, 10, 22)])
+        #expect(moved.keepingToday(PeriodLabel(year: 2026, month: 10), from: rule, today: d(2026, 10, 22)) == PeriodLabel(year: 2026, month: 11))
+    }
+
+    @Test func periodTheUserNavigatedToStaysSelected() {
+        let moved = PeriodRule(startDay: 25, overrides: [PeriodLabel(year: 2026, month: 11): d(2026, 10, 22)])
+        #expect(moved.keepingToday(PeriodLabel(year: 2026, month: 9), from: rule, today: d(2026, 10, 22)) == PeriodLabel(year: 2026, month: 9))
+        #expect(moved.keepingToday(PeriodLabel(year: 2026, month: 12), from: rule, today: d(2026, 10, 22)) == PeriodLabel(year: 2026, month: 12))
+    }
+
     @Test func labelsStepAcrossYears() {
         #expect(PeriodLabel(year: 2026, month: 12).next == PeriodLabel(year: 2027, month: 1))
         #expect(PeriodLabel(year: 2027, month: 1).previous == PeriodLabel(year: 2026, month: 12))

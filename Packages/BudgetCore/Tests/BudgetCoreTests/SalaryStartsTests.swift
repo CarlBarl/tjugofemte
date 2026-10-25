@@ -12,8 +12,8 @@ import Foundation
     let salary = IncomeSource(id: "salary", name: "Lön", plannedAmount: 30_000, keyword: "lön")
     let partner = IncomeSource(id: "partner", name: "Sambo", plannedAmount: 5_000, keyword: "swish mottagen")
 
-    func tx(_ key: String, _ date: Date, _ amount: Decimal, _ text: String) -> Transaction {
-        Transaction(dedupKey: key, bookingDate: date, amount: amount, currency: "SEK", counterparty: text, categoryID: "income")
+    func tx(_ key: String, _ date: Date, _ amount: Decimal, _ text: String, _ category: String = "income") -> Transaction {
+        Transaction(dedupKey: key, bookingDate: date, amount: amount, currency: "SEK", counterparty: text, categoryID: category)
     }
 
     // The real account: the salary booked one banking day before the nominal start three months running.
@@ -33,6 +33,12 @@ import Foundation
         let expense = tx("x", d(2026, 10, 20), 550, "Lön utlägg")
         #expect(SalaryStarts.detect(transactions: [expense], incomeSources: [salary], startDay: 25).isEmpty)
         let detected = SalaryStarts.detect(transactions: [expense] + realSalaries, incomeSources: [salary], startDay: 25)
+        #expect(detected[november] == d(2026, 10, 22))
+    }
+
+    @Test func creditCategorizedAsTransferDoesNotMoveTheStart() {
+        let transfer = tx("t", d(2026, 10, 20), 30_000, "LÖN", "transfer")  // matches the keyword, but the user marked it a transfer
+        let detected = SalaryStarts.detect(transactions: [transfer] + realSalaries, incomeSources: [salary], startDay: 25)
         #expect(detected[november] == d(2026, 10, 22))
     }
 
