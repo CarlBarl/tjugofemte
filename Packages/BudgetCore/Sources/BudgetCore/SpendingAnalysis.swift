@@ -30,7 +30,7 @@ public struct SpendingAnalysis: Equatable, Sendable {
     public var savedPerPeriod: Decimal { incomePerPeriod - needsPerPeriod - wantsPerPeriod }
     /// Saved as a share of income, negative when needs and wants are more than the income. nil without income.
     public var savingsRate: Decimal? { incomePerPeriod > 0 ? savedPerPeriod / incomePerPeriod : nil }
-    /// The three biggest want categories, biggest first.
+    /// The three biggest want categories, biggest first. Unsorted is in `wantsPerPeriod` but never here: it is not a real want.
     public let topWants: [WantTrend]
 
     public static func analyze(transactions: [Transaction], rule: PeriodRule, groups: CategoryGroups,
@@ -67,7 +67,7 @@ public struct SpendingAnalysis: Equatable, Sendable {
         let top = wants.map { id, totals in
             WantTrend(categoryID: id, perPeriod: totals.reduce(0, +) / count, changePercent: changePercent(totals))
         }
-        .filter { $0.perPeriod > 0 }
+        .filter { $0.categoryID != DefaultCategory.unsorted.rawValue && $0.perPeriod > 0 }
         .sorted { ($0.perPeriod, $1.categoryID) > ($1.perPeriod, $0.categoryID) }
         .prefix(topWantCount)
         let wantsTotal = wants.values.reduce(Decimal(0)) { $0 + $1.reduce(0, +) }

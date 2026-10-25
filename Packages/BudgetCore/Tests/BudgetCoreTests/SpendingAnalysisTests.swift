@@ -43,6 +43,14 @@ import Foundation
         #expect(a.topWants[0].changePercent == nil)   // fewer than six periods: no trend
     }
 
+    @Test func unsortedIsAWantButNeverABiggestWant() {
+        // 3 000 more unsorted each period makes it 4 850, ahead of takeaway at 3 600.
+        let extra = [7, 8, 9].map { tx(day($0, 20), -3_000, "PRESSBYRAN 5521", "unsorted") }
+        let a = SpendingAnalysis.analyze(transactions: txs + extra, rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today)
+        #expect(a.wantsPerPeriod == 15_164)   // still in the split
+        #expect(a.topWants.map(\.categoryID) == ["takeaway", "shopping", "entertainment"])
+    }
+
     @Test func swishThatMatchesNoIncomeSourceIsOtherIncome() {
         let swish = [7, 8, 9].map { tx(day($0, 20), 1_500, "Swish mottagen Kim", "income") }
         let a = SpendingAnalysis.analyze(transactions: txs + swish, rule: rule, groups: CategoryGroups(), incomeSources: [salary], today: today)
