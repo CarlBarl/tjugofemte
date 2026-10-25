@@ -20,6 +20,8 @@ final class AppModel {
     private(set) var rules: [KeywordRule] = []
     private(set) var budgets: [Budget] = []
     private(set) var incomeSources: [IncomeSource] = []
+    /// Period starts read off the salary's booking days, recomputed on every reload.
+    private var salaryStarts: [PeriodLabel: Date] = [:]
     var selectedPeriod: PeriodLabel
 
     private(set) var hasKey = Keychain.privateKey() != nil
@@ -38,7 +40,7 @@ final class AppModel {
         diskStore = try! LocalStore.open(in: support)
         selectedPeriod = PeriodLabel(year: 2000, month: 1)
         reload()
-        selectedPeriod = settings.periodRule.period(containing: Date()).label
+        selectedPeriod = periodRule.period(containing: Date()).label
         try? purge()
         // Screenshots, UI tests and App Review notes: `-demo` opens straight into sample data.
         if ProcessInfo.processInfo.arguments.contains("-demo") { startDemo() }
@@ -58,7 +60,18 @@ final class AppModel {
     var isSetUp: Bool { isDemo || (stage == .ready && settings.planDone) }
     var hasPlan: Bool { !budgets.isEmpty || !incomeSources.isEmpty }
 
-    var periodRule: PeriodRule { settings.periodRule }
+    /// Each period starts the day the salary booked; a start picked by hand in Settings wins.
+    var periodRule: PeriodRule {
+        PeriodRule(startDay: settings.startDay, overrides: SalaryStarts.overrides(detected: salaryStarts, manual: settings.periodOverrides))
+    }
+
+    /// The same rule for a payday that is not saved yet, as the plan setup previews it.
+    func periodRule(startDay: Int) -> PeriodRule {
+        guard startDay != settings.startDay else { return periodRule }
+        let detected = SalaryStarts.detect(transactions: transactions, incomeSources: incomeSources, startDay: startDay)
+        return PeriodRule(startDay: startDay, overrides: SalaryStarts.overrides(detected: detected, manual: settings.periodOverrides))
+    }
+
     var period: PayPeriod { periodRule.period(labeled: selectedPeriod) }
 
     var summary: PeriodSummary {
@@ -75,6 +88,7 @@ final class AppModel {
         } catch {
             errorMessage = error.localizedDescription
         }
+        salaryStarts = SalaryStarts.detect(transactions: transactions, incomeSources: incomeSources, startDay: settings.startDay)
     }
 
     // MARK: Onboarding

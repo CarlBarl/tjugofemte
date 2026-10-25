@@ -111,7 +111,8 @@ import BudgetCore
     }
 
     @Test func settingsHoldThePeriodRuleAndRetention() throws {
-        #expect(try store.settings().periodRule == PeriodRule(startDay: 25))
+        #expect(try store.settings().startDay == 25)
+        #expect(try store.settings().periodOverrides.isEmpty)
         #expect(try store.settings().retention == RetentionPolicy(months: 3))
         #expect(try store.settings().planDone == false)
         var s = try store.settings()
@@ -126,7 +127,8 @@ import BudgetCore
         s.authorizedAccounts = [AuthorizedAccount(uid: "acc-1", title: "Privatkonto", subtitle: "•••• 7466"), AuthorizedAccount(uid: "acc-2", title: "e-sparkonto", subtitle: "•••• 0402")]
         try store.saveSettings(s)
         let back = try store.settings()
-        #expect(back.periodRule == PeriodRule(startDay: 27, overrides: [PeriodLabel(year: 2026, month: 12): day(2026, 11, 20)]))
+        #expect(back.startDay == 27)
+        #expect(back.periodOverrides == [PeriodLabel(year: 2026, month: 12): day(2026, 11, 20)])
         #expect(back.retention == RetentionPolicy(months: 12))
         #expect(back.selectedAccountUID == "acc-1")
         #expect(back.bankName == "Swedbank")
