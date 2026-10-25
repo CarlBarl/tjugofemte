@@ -113,7 +113,43 @@ import Foundation
 
     @Test func nudgeFiresBelowMinusFivePercentOfPlannedIncome() {
         #expect(lastComplete(spent: 33_911).leftOverSoFar.value == -1_711)
-        #expect(GoalNudge.shouldShow(lastComplete: lastComplete(spent: 33_911), plannedIncome: 34_200))
-        #expect(!GoalNudge.shouldShow(lastComplete: lastComplete(spent: 33_910), plannedIncome: 34_200))   // -1 710 is exactly 5 %
+        #expect(GoalNudge.shouldShow(lastComplete: lastComplete(spent: 33_911), plannedIncome: 34_200, budgets: [], transactions: []))
+        #expect(!GoalNudge.shouldShow(lastComplete: lastComplete(spent: 33_910), plannedIncome: 34_200, budgets: [], transactions: []))   // -1 710 is exactly 5 %
+    }
+
+    // Rent and groceries on budget, and the student loan due every third month from February, so November pays the quarter.
+    let nudgeBudgets = [Budget(categoryID: "rent", amount: 10_400, cadence: .monthly), Budget(categoryID: "groceries", amount: 4_800, cadence: .monthly),
+                        Budget(categoryID: "studentLoan", amount: 4_950, cadence: .quarterly(firstDueMonth: 2))]
+
+    func onPlan(_ month: Int) -> [Transaction] {
+        [tx(start(month), 34_200, "Lön", "income"), tx(day(month, 2), -10_400, "Hyra", "rent"), tx(day(month, 4), -4_800, "ICA", "groceries")]
+    }
+
+    func nudge(_ month: Int, _ txs: [Transaction], budgets: [Budget]) -> (leftOver: Decimal, shows: Bool) {
+        let summary = BudgetMath.summarize(period: rule.period(labeled: PeriodLabel(year: 2026, month: month)), rule: rule, transactions: txs,
+                                           budgets: budgets, incomeSources: [salary])
+        return (summary.leftOverSoFar.value, GoalNudge.shouldShow(lastComplete: summary, plannedIncome: 34_200, budgets: budgets, transactions: txs))
+    }
+
+    @Test func aQuarterlyPaymentThePlanSetAsideDoesNotNudge() {
+        let csn = onPlan(11) + [tx(day(11, 9), -4_950, "CSN", "studentLoan")]
+        let n = nudge(11, csn, budgets: nudgeBudgets)
+        #expect(n.leftOver == -3_300)   // left over itself still counts the whole quarter
+        #expect(!n.shows)
+        // 2 000 of takeaway on top is past the 1 710 line once the quarter is added back.
+        let over = nudge(11, csn + [tx(day(11, 12), -2_000, "Foodora", "takeaway")], budgets: nudgeBudgets)
+        #expect(over.leftOver == -5_300)
+        #expect(over.shows)
+    }
+
+    @Test func overspendingOutsideAQuarterlyCategoryNudgesAsBefore() {
+        // October pays no quarter, so nothing is added back, and 3 500 over is -1 850 against -1 710.
+        let october = nudge(10, onPlan(10) + [tx(day(10, 12), -3_500, "Foodora", "takeaway")], budgets: nudgeBudgets)
+        #expect(october.leftOver == -1_850); #expect(october.shows)
+        #expect(!nudge(10, onPlan(10) + [tx(day(10, 12), -3_000, "Foodora", "takeaway")], budgets: nudgeBudgets).shows)   // -1 350
+        // Without a quarterly budget at all.
+        let monthly = Array(nudgeBudgets.prefix(2))
+        #expect(nudge(10, onPlan(10) + [tx(day(10, 12), -2_000, "Foodora", "takeaway")], budgets: monthly).shows)       // -2 000
+        #expect(!nudge(10, onPlan(10) + [tx(day(10, 12), -1_000, "Foodora", "takeaway")], budgets: monthly).shows)      // -1 000
     }
 }

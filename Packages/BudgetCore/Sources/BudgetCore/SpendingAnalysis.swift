@@ -91,7 +91,15 @@ public struct SpendingAnalysis: Equatable, Sendable {
 
 /// "Adjust plan?" on Overview, once a complete period ends more than 5 % of planned income in the red.
 public enum GoalNudge {
-    public static func shouldShow(lastComplete: PeriodSummary, plannedIncome: Decimal) -> Bool {
-        lastComplete.leftOverSoFar.value < -plannedIncome * 5 / 100
+    /// A quarterly payment beyond its third of the period was set aside by the plan in the periods before, so it is added
+    /// back to left over first: a CSN month that is otherwise on plan does not nudge. Left over itself is not changed.
+    public static func shouldShow(lastComplete: PeriodSummary, plannedIncome: Decimal, budgets: [Budget], transactions: [Transaction]) -> Bool {
+        let period = lastComplete.period
+        var setAside: Decimal = 0
+        for b in budgets where b.cadence != .monthly {
+            let spent = transactions.filter { $0.categoryID == b.categoryID && period.contains($0.bookingDate) }.reduce(Decimal(0)) { $0 - $1.amount }
+            setAside += max(0, spent - b.amount / 3)
+        }
+        return lastComplete.leftOverSoFar.value + setAside < -plannedIncome * 5 / 100
     }
 }

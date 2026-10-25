@@ -443,7 +443,8 @@ final class AppModel {
         guard settings.goalSetupDone, settings.nudgeDismissed != selectedPeriod else { return false }
         let last = periodRule.period(labeled: periodRule.period(containing: Date()).label.previous)
         let summary = BudgetMath.summarize(period: last, rule: periodRule, transactions: transactions, budgets: budgets, incomeSources: incomeSources)
-        return GoalNudge.shouldShow(lastComplete: summary, plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount })
+        return GoalNudge.shouldShow(lastComplete: summary, plannedIncome: incomeSources.reduce(0) { $0 + $1.plannedAmount },
+                                    budgets: budgets, transactions: transactions)
     }
 
     func dismissNudge() { updateSettings { $0.nudgeDismissed = selectedPeriod } }
