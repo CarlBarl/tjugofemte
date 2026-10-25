@@ -68,11 +68,29 @@ import Foundation
 
     @Test func manualStartWinsOverDetectedStart() {
         let detected = SalaryStarts.detect(transactions: realSalaries, incomeSources: [salary], startDay: 25)
-        let merged = SalaryStarts.overrides(detected: detected, manual: [november: d(2026, 10, 20)])
+        let merged = SalaryStarts.overrides(detected: detected, manual: [november: d(2026, 10, 20)], startDay: 25)
         #expect(merged == [september: d(2026, 8, 24), october: d(2026, 9, 24), november: d(2026, 10, 20)])
         let rule = PeriodRule(startDay: 25, overrides: merged)
         #expect(rule.period(labeled: november).start == d(2026, 10, 20))
         #expect(rule.period(labeled: october).start == d(2026, 9, 24))
+    }
+
+    @Test func resolvedRuleStartsOnTheRealSalaryDays() {
+        let nominal = PeriodRule(startDay: 25)
+        let resolved = PeriodRule.resolved(startDay: 25, manual: [:], transactions: realSalaries, incomeSources: [salary])
+        #expect([september, october, november].map { nominal.period(labeled: $0).start } == [d(2026, 8, 25), d(2026, 9, 25), d(2026, 10, 23)])
+        #expect([september, october, november].map { resolved.period(labeled: $0).start } == [d(2026, 8, 24), d(2026, 9, 24), d(2026, 10, 22)])
+        let manual = PeriodRule.resolved(startDay: 25, manual: [november: d(2026, 10, 20)], transactions: realSalaries, incomeSources: [salary])
+        #expect(manual.period(labeled: november).start == d(2026, 10, 20))
+        #expect(manual.period(labeled: october).start == d(2026, 9, 24))
+    }
+
+    @Test func detectedStartOnOrBeforeThePreviousPeriodsStartIsDropped() {
+        // A manual October start on 22 Oct and the detected November start on 22 Oct would leave October empty.
+        let rule = PeriodRule.resolved(startDay: 25, manual: [october: d(2026, 10, 22)], transactions: realSalaries, incomeSources: [salary])
+        #expect(rule.period(labeled: november).start == d(2026, 10, 23))
+        #expect(rule.period(labeled: october).end >= rule.period(labeled: october).start)
+        #expect(rule.period(labeled: september).start == d(2026, 8, 24))
     }
 
     @Test func calendarMonthsAndKeywordlessSourcesDetectNothing() {
@@ -84,9 +102,16 @@ import Foundation
 
     @Test func onlyTheLargestKeyedSourceCounts() {
         let swish = tx("s", d(2026, 10, 19), 5_000, "Swish mottagen Alex")
-        let bigPlanOnly = IncomeSource(id: "big", name: "Bonus", plannedAmount: 90_000, keyword: nil)
-        let detected = SalaryStarts.detect(transactions: [swish] + realSalaries, incomeSources: [partner, bigPlanOnly, salary], startDay: 25)
+        let detected = SalaryStarts.detect(transactions: [swish] + realSalaries, incomeSources: [partner, salary], startDay: 25)
         #expect(detected[november] == d(2026, 10, 22))
+    }
+
+    @Test func biggerSourceWithoutKeywordMeansNoDetection() {
+        // The salary is plan-only, so the keyed source is a small Swish one; it must not open periods.
+        let planOnlySalary = IncomeSource(id: "salary", name: "Lön", plannedAmount: 30_000, keyword: nil)
+        let swishSource = IncomeSource(id: "swish", name: "Swish", plannedAmount: 2_000, keyword: "swish mottagen")
+        let swish = tx("s", d(2026, 10, 20), 2_000, "Swish mottagen Alex")
+        #expect(SalaryStarts.detect(transactions: [swish] + realSalaries, incomeSources: [planOnlySalary, swishSource], startDay: 25).isEmpty)
     }
 
     @Test func salaryNeverOpensTheNeighbouringMonthsPeriod() {

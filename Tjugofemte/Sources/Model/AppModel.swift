@@ -20,8 +20,8 @@ final class AppModel {
     private(set) var rules: [KeywordRule] = []
     private(set) var budgets: [Budget] = []
     private(set) var incomeSources: [IncomeSource] = []
-    /// Period starts read off the salary's booking days, recomputed on every reload.
-    private var salaryStarts: [PeriodLabel: Date] = [:]
+    /// Payday, the salary's booking days and manual starts, rebuilt on every reload; only a reload changes those inputs.
+    private(set) var periodRule = PeriodRule(startDay: Settings().startDay)
     var selectedPeriod: PeriodLabel
 
     private(set) var hasKey = Keychain.privateKey() != nil
@@ -60,18 +60,6 @@ final class AppModel {
     var isSetUp: Bool { isDemo || (stage == .ready && settings.planDone) }
     var hasPlan: Bool { !budgets.isEmpty || !incomeSources.isEmpty }
 
-    /// Each period starts the day the salary booked; a start picked by hand in Settings wins.
-    var periodRule: PeriodRule {
-        PeriodRule(startDay: settings.startDay, overrides: SalaryStarts.overrides(detected: salaryStarts, manual: settings.periodOverrides))
-    }
-
-    /// The same rule for a payday that is not saved yet, as the plan setup previews it.
-    func periodRule(startDay: Int) -> PeriodRule {
-        guard startDay != settings.startDay else { return periodRule }
-        let detected = SalaryStarts.detect(transactions: transactions, incomeSources: incomeSources, startDay: startDay)
-        return PeriodRule(startDay: startDay, overrides: SalaryStarts.overrides(detected: detected, manual: settings.periodOverrides))
-    }
-
     var period: PayPeriod { periodRule.period(labeled: selectedPeriod) }
 
     var summary: PeriodSummary {
@@ -89,8 +77,9 @@ final class AppModel {
         } catch {
             errorMessage = error.localizedDescription
         }
-        salaryStarts = SalaryStarts.detect(transactions: transactions, incomeSources: incomeSources, startDay: settings.startDay)
-        // A fetched salary, a recategorized row or an edited income source can move the boundaries; today's period follows them.
+        periodRule = .resolved(startDay: settings.startDay, manual: settings.periodOverrides, transactions: transactions, incomeSources: incomeSources)
+        // A fetched salary, a recategorized row, an edited income source or a settings change can move the boundaries;
+        // today's period follows them, any other selected period stays, and a new payday shows today's.
         selectedPeriod = periodRule.keepingToday(selectedPeriod, from: before)
     }
 
@@ -387,8 +376,7 @@ final class AppModel {
             try store.saveSettings(s)
             settings = s
             try purge()
-            reload()
-            selectedPeriod = periodRule.period(containing: Date()).label
+            reload()  // keeps the selected period, so editing a past period's start stays on it
         } catch {
             errorMessage = error.localizedDescription
         }
